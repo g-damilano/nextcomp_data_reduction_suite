@@ -134,6 +134,17 @@ mkdir "%DIST_DIR%" || exit /b 1
 move /y "%DIST_EXE%" "%FINAL_EXE%" >nul
 if errorlevel 1 exit /b %errorlevel%
 
+copy /y "LICENSE" "%DIST_DIR%\LICENSE" >nul
+if errorlevel 1 exit /b %errorlevel%
+copy /y "NOTICE.md" "%DIST_DIR%\NOTICE.md" >nul
+if errorlevel 1 exit /b %errorlevel%
+copy /y "THIRD_PARTY_NOTICES.md" "%DIST_DIR%\THIRD_PARTY_NOTICES.md" >nul
+if errorlevel 1 exit /b %errorlevel%
+copy /y "README.md" "%DIST_DIR%\README.md" >nul
+if errorlevel 1 exit /b %errorlevel%
+copy /y "GUIDELINES.md" "%DIST_DIR%\GUIDELINES.md" >nul
+if errorlevel 1 exit /b %errorlevel%
+
 echo Editable resource defaults are embedded in the exe.
 echo On first run they are materialized under the OS user app-data folder:
 echo   %%APPDATA%%\NextCOMP\mtdp_enrichment

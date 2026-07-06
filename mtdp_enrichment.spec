@@ -77,6 +77,13 @@ datas += tree_datas("src/mtdp_enrichment/schema_library", "mtdp_enrichment/schem
 datas += tree_datas("src/mtdp_enrichment/assets", "mtdp_enrichment/assets", {".ico", ".png", ".jpg", ".jpeg", ".svg"})
 datas += tree_datas_all(react_frontend / "dist", "react_gui/dist")
 datas += tree_datas(react_frontend / "desktop", "react_gui/desktop", {".py"})
+datas += [
+    ("LICENSE", "legal"),
+    ("NOTICE.md", "legal"),
+    ("THIRD_PARTY_NOTICES.md", "legal"),
+    ("README.md", "legal"),
+    ("GUIDELINES.md", "legal"),
+]
 
 CONDA_RUNTIME_DLLS = (
     "zstd.dll",

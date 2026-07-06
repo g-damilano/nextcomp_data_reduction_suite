@@ -162,10 +162,23 @@ Small raw/MTDP fixtures remain so regression tests and examples can run.
 
 ## Licence and notices
 
-This project is distributed under the Apache License, Version 2.0. See
-[LICENSE](LICENSE), [NOTICE.md](NOTICE.md), and
+The project-authored source code, documentation, configuration, templates, and
+packaging scripts in this repository are distributed under the Apache License,
+Version 2.0. See [LICENSE](LICENSE), [NOTICE.md](NOTICE.md), and
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+The in-app "Licensing & notices" panel mirrors the repository notice summary.
+Binary release folders also include `LICENSE`, `NOTICE.md`,
+`THIRD_PARTY_NOTICES.md`, `README.md`, and `GUIDELINES.md` beside the
+executable.
 
 The Apache-2.0 project licence does not grant rights over third-party standards
 documents, institutional marks, third-party logos, generated user outputs, or
 dependencies installed from package managers.
+
+## Funding
+
+This work was developed with support from the UK Engineering and Physical
+Sciences Research Council (EPSRC) programme Grant EP/T011653/1, Next Generation
+Fibre-Reinforced Composites (NextCOMP): a Full Scale Redesign for Compression,
+Imperial College London and the University of Bristol.
