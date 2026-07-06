@@ -3,6 +3,7 @@ import { ShadowReactScreen } from '../components/ShadowReactScreen.jsx';
 import MtdpPackagingApp from './MtdpPackagingApp.jsx';
 import baseCss from '../styles/mtdp-packaging-v4.css?raw';
 import chromeCss from '../styles/window-chrome.css?raw';
+import guideCss from '../styles/section-guidelines.css?raw';
 
 const fillCss = `
 .stage, .stage--desktop{
@@ -28,7 +29,7 @@ const fillCss = `
 
 export default function PackagingScreen() {
   return (
-    <ShadowReactScreen css={baseCss + fillCss + chromeCss} className="packaging-shadow">
+    <ShadowReactScreen css={baseCss + fillCss + chromeCss + guideCss} className="packaging-shadow">
       <div className="stage stage--desktop">
         <MtdpPackagingApp />
       </div>

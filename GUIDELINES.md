@@ -1,20 +1,27 @@
 # NextCOMP Data Reduction Suite Guidelines
 
-This guide explains how to use the release-candidate interface and what each
-screen is expected to help the user decide. The same guidance is summarised in
-the application Help menu.
+These guidelines are for scientists using the application to prepare,
+reduce, review, and share compression-test results. They focus on what to do in
+each screen, what evidence to check, and when it is reasonable to move to the
+next stage.
 
-## 1. Launcher
+The screenshots below show the current production desktop interface.
 
-The launcher is the entry point for the three production modules.
+## Choose The Right Module
 
-![Launcher](docs/assets/guidelines/01-launcher.png)
+![Launcher journey](docs/assets/guidelines/01-launcher-journey.png)
 
-Use:
+The launcher opens the three production modules.
 
-- Dataset Packaging to create or inspect an MTDP package.
-- Method to create, edit, import, export, or save editable methods.
-- Analysis to run a method against an MTDP package and generate an MTDA archive.
+- Dataset Packaging: create or inspect an MTDP package from raw test files.
+- Method: create and manage editable method versions. The ISO reference remains
+  protected.
+- Analysis: run one MTDP package through one method and produce an MTDA archive.
+
+Use Dataset Packaging first when your raw files have not yet been packaged.
+Use Method when the analysis rules need a controlled editable version. Use
+Analysis when you already have a complete MTDP package and are ready to reduce,
+review, and export results.
 
 Keyboard shortcuts:
 
@@ -27,177 +34,147 @@ Keyboard shortcuts:
 - `Ctrl+Q`: quit the application.
 - `Esc`: close menus and dialogs.
 
-## 2. Dataset Packaging
+## Dataset Packaging: Raw Files To MTDP
 
-Dataset Packaging turns raw measurement files into a traceable MTDP input
-package. The raw files are copied into the package; they are not modified.
+![Dataset Packaging entry](docs/assets/guidelines/02-dataset-packaging-entry.png)
 
-![Dataset packaging empty state](docs/assets/guidelines/02-dataset-empty.png)
+Dataset Packaging turns raw measurement files, sidecars, metadata, image
+evidence, and supplemental files into a traceable MTDP input package. The
+original files are copied into the package and are not modified.
 
-Typical use:
+Typical workflow:
 
-1. Choose the folder or files containing raw compression-test measurements.
-2. Review automatic grouping.
-3. Inspect each run and confirm channel interpretation.
-4. Fill or import metadata.
-5. Attach supplemental files where required.
-6. Export the MTDP package.
+1. Choose source files, a source folder, or an existing MTDP package.
+2. Review the proposed grouping so each physical specimen maps to the correct
+   run.
+3. Confirm channel assignments for load, strain, time, crosshead, and any
+   supporting traces.
+4. Complete dataset-level and run-level metadata.
+5. Attach image evidence and supplemental files where they explain the test
+   context.
+6. Validate the package and resolve export-blocking metadata gaps.
+7. Export the MTDP package and use that package as the Analysis input.
 
-The grouping view helps confirm that each physical specimen/run has been
-assigned to the correct package member.
+Before moving on, confirm the package identity, run count, run names, specimen
+dimensions, and required channels. If the package cannot be exported, resolve
+the blocking fields before starting Analysis.
 
-![Dataset grouping](docs/assets/guidelines/03-dataset-grouping.png)
+## Method: Controlled Analysis Rules
 
-The run metadata view is where missing or inconsistent metadata is repaired
-before analysis.
+![Method editor rules](docs/assets/guidelines/03-method-editor-rules.png)
 
-![Run metadata](docs/assets/guidelines/04-dataset-run-metadata.png)
+The Method module manages method definitions. The ISO reference method is the
+protected baseline; generated methods can be edited, renamed, saved, exported,
+imported, and deleted.
 
-Supplemental files can be attached to preserve test-context evidence without
-changing raw measurement data.
+Typical workflow:
 
-![Supplemental files](docs/assets/guidelines/06-supplemental-files.png)
+1. Start from the ISO reference or an existing generated method.
+2. Create a new editable method when you need a controlled variation.
+3. Review the pipeline map: data entry, test range, stress-strain, modulus,
+   bending, strength, acceptance, and reports.
+4. Edit controlled settings such as test range, modulus window, bending
+   thresholds, and acceptance/report rules.
+5. Review the change ledger so you understand what differs from the reference.
+6. Save the method version before selecting it in Analysis.
+7. Export or import method packages when you need to move method versions
+   between workspaces.
 
-## 3. Method Editor
+The Save method button is intended to be active only when there are unsaved
+edits. Stress-strain data are derived from the package during Analysis and are
+not edited in Method.
 
-The Method Editor manages method definitions. The ISO 14126 reference method is
-read-only and should be treated as the baseline. Editable generated methods can
-be created, renamed, modified, saved, exported, imported, or deleted.
+## Analysis: MTDP To MTDA
 
-![Method setup](docs/assets/guidelines/07-method-setup-empty.png)
+![Analysis package and method selection](docs/assets/guidelines/04-analysis-real-loaded.png)
 
-The editor separates the method into areas that affect the analysis pipeline:
+Analysis runs one MTDP package through one selected method and creates an MTDA
+analysed dataset archive. The staged pipeline keeps package selection, method
+choice, mapping, readiness, execution, validation, acceptance, and output
+review visible.
 
-- test range and boundary handling;
-- modulus window and modulus calculation;
-- bending assessment;
-- acceptance and report generation settings.
+Workflow stages:
 
-When the editor shows warnings, resolve them before saving or using a method in
-analysis.
+1. Package: choose one MTDP input package.
+2. Method: choose the ISO reference method or an editable generated method.
+3. Mapping: bind package channels and metadata to method inputs.
+4. Ready: confirm that execution-critical inputs are resolved.
+5. Run: execute the method pipeline.
+6. Validate: inspect method and output checks.
+7. Accept: decide flagged runs using scientific evidence.
+8. Output: complete report-only metadata and open or finalise the MTDA archive.
 
-![Method setup with warnings](docs/assets/guidelines/08-method-setup-ready-warnings.png)
+Only an MTDP package is the input to a method run. MTDA archives are outputs and
+should be opened through the MTDA browser or the report buttons in the Output
+stage.
 
-The mapping editor binds package fields to method inputs. Review these bindings
-when a package has missing metadata, renamed channels, or non-standard field
-labels.
+## Mapping And Readiness
 
-![Method mapping editor](docs/assets/guidelines/09-method-mapping-editor.png)
+![Analysis mapping editor](docs/assets/guidelines/06-analysis-real-mapping.png)
 
-## 4. Method Analysis
+Mapping connects package fields to method inputs. Critical mappings must be
+resolved before execution. Report-only fields may be left blank during the run
+when the software marks them as optional, but they should be reviewed before
+the archive is finalised.
 
-Method Analysis is the run wizard. Its input is an MTDP package. The output is
-an MTDA archive.
+Use the mapping editor to inspect:
 
-The wizard steps are:
+- unmapped required fields;
+- recommended candidate sources;
+- report fields that can be completed at finalisation;
+- the selected mapping profile.
 
-1. Package: choose an MTDP package.
-2. Method: choose the reference method or an editable generated method.
-3. Mapping: bind MTDP fields to method inputs.
-4. Ready: confirm readiness before execution.
-5. Run: execute the method.
-6. Validate: inspect validation checks.
-7. Accept: make scientific inclusion/exclusion decisions.
-8. Output: finalise and open reports.
+![Analysis ready to run](docs/assets/guidelines/06-analysis-real-ready-to-run.png)
 
-During execution, the run trace should show progress and allow cancellation
-where long operations expose checkpoints.
+The Ready stage should make the run state clear. If execution is enabled with
+warnings, read the warning summary before running. If Run is disabled, resolve
+the blocking package, method, or mapping issue shown in the stage cards.
 
-![Method running](docs/assets/guidelines/10-method-running-trace.png)
+## Acceptance Cockpit
 
-## 5. Acceptance Cockpit
+The acceptance cockpit is a scientific decision surface. It should help answer
+one question: should a flagged run be kept in the final report or removed?
 
-The acceptance cockpit is a scientific decision surface, not an internal
-software dashboard. Content belongs here only if it helps the user decide
-whether a flagged run should be kept or removed.
-
-![Review evidence](docs/assets/guidelines/11-method-review-evidence.png)
-
-For each flagged run, inspect:
+For each flagged run, review:
 
 - the default decision proposed by the method;
 - the defect type, such as bending or curve-shape evidence;
-- the context-relevant plot hydrated from the analysed dataset;
-- key metrics and thresholds;
-- the reason for the default decision;
-- any required justification if the default is overridden.
+- the plot generated from the analysed dataset for that defect;
+- the relevant threshold, metric, and comparison window;
+- the consequence of keeping or removing the run;
+- the justification field when you override the default decision.
 
-If a run is kept against the default removal decision, record a justification
-that explains why the scientific evidence supports inclusion.
+Do not rely on internal diagnostic labels alone. The plotted evidence, reported
+metrics, and method thresholds should support the decision. If the cockpit and
+Output manifest disagree, treat that as a defect and do not finalise the
+archive until it is resolved.
 
-## 6. Finalise Output
+## Output And MTDA Review
 
-The output step records report-completion metadata and opens the generated MTDA
-surfaces.
+![Analysis output stage](docs/assets/guidelines/08-analysis-real-output.png)
 
-![Finalize output](docs/assets/guidelines/12-method-finalize-output.png)
+The Output stage prepares the archive handoff. It should agree with the
+acceptance decisions.
 
-Before finalising:
+Review before sharing:
 
-- confirm the included/excluded run manifest;
-- complete required reviewer and amendment fields;
-- verify that the MTDA output path is the intended location;
-- open the test report and audit report for review.
+- Accept and Output list the same included and excluded runs.
+- Reviewer and finalisation fields are complete.
+- The MTDA output path points to the intended archive.
+- Test Report, Audit Report, and MTDA Browser open from the same archive.
+- Defect plots and decision-register entries match the acceptance cockpit.
+- Canonical CSV and JSON evidence members are present in the archive.
 
-The source MTDP package remains unchanged. Amendments are recorded against the
-derived MTDA output.
+The source MTDP package is not modified by Analysis. Report-only amendments and
+finalisation notes are recorded against the derived MTDA output.
 
-## 7. Activity Log
+## What To Share
 
-The activity log gives a compact audit trail of UI actions, package loading,
-mapping edits, method execution, validation, acceptance decisions, and output
-finalisation.
+For scientific review or reporting, share the MTDA archive and retain the
+source MTDP package for traceability. The MTDA archive is expected to contain
+the browsable index, formal report, audit report, plot viewers, canonical
+tables, evidence packets, provenance, and decision records.
 
-![Activity log](docs/assets/guidelines/13-method-activity-log.png)
-
-Use it to confirm the sequence of user-visible operations before saving,
-exporting, or sharing the result.
-
-## 8. MTDA Browser And Reports
-
-Open an MTDA archive through the MTDA browser. The browser is wired to the
-archive `index.html`; report navigation happens inside the page shell.
-
-Expected report surfaces:
-
-- Archive index: overview and artifact navigation.
-- Formal test report: selected runs, results, statistics, and method context.
-- Audit report: run-wise evidence packets, aggregate evidence, validation,
-  acceptance, and decision register.
-- Plot viewers: compact plot surfaces hydrated from archive data members.
-
-Stale dataset summary pages and run summary pages are not production surfaces.
-
-## 9. What To Check Before Sharing Results
-
-Before sharing an MTDA archive:
-
-- Open the MTDA browser and confirm the archive index loads.
-- Open the formal test report and audit report.
-- Confirm flagged run decisions match the acceptance screen.
-- Check plots for the flagged defects.
-- Confirm no required report-completion fields remain blank.
-- Confirm the generated archive contains canonical CSV/JSON evidence members.
-- Keep the original MTDP package for traceability.
-
-## 10. Troubleshooting
-
-If a module does not open:
-
-- rebuild the React shell with `npm run build`;
-- relaunch with `python -m mtdp_enrichment.react_shell_app`;
-- check that the Python environment has PySide6 installed.
-
-If analysis cannot run:
-
-- confirm the selected input is an MTDP package, not an MTDA archive;
-- confirm a method is selected;
-- confirm all required mapping bindings are resolved;
-- inspect readiness messages before trying again.
-
-If output appears inconsistent:
-
-- compare the Accept and Output run manifests;
-- reopen the MTDA archive index;
-- confirm the reports are loaded from the newly generated archive path rather
-  than from an older extracted workbench.
+Results and generated outputs remain the user's responsibility and should be
+reviewed before they are used for engineering, certification, or commercial
+decisions.

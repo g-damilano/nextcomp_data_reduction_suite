@@ -1,5 +1,6 @@
 import React from 'react';
 import { DcRuntimeHost } from '../components/DcRuntimeHost.jsx';
+import { SectionGuidelinesContent } from '../components/SectionGuidelines.jsx';
 import { HOME_DC, HOME_LOGIC } from '../generated/dcSources.js';
 
 export default function HomeScreen({ onLaunch, onReady }) {
@@ -124,26 +125,8 @@ function LauncherModal({ modal, setModal, closeOverlay }) {
           <ModalChrome titleId="launcher-guide-title" title="User guidelines — NextCOMP Data Reduction Suite" onClose={closeOverlay} />
           <div className="launcher-modal-body">
             <BrandPanel title="User guidelines" subtitle="Packaging, method editing, analysis, acceptance, and MTDA review." />
-            <div className="launcher-guide-copy">
-              <section>
-                <h3>Workflow</h3>
-                <ol>
-                  <li>Create or inspect an MTDP package in Dataset Packaging.</li>
-                  <li>Use Method Editor only for editable generated methods; ISO 14126 remains read-only.</li>
-                  <li>Run Method Analysis with one MTDP package and one method.</li>
-                  <li>Review validation and acceptance evidence before finalising MTDA output.</li>
-                </ol>
-              </section>
-              <section>
-                <h3>Decision rule</h3>
-                <p>The acceptance cockpit is for scientific decisions. Keep only the evidence that helps decide whether a flagged run should be kept or removed: defect-specific plots, thresholds, metrics, defaults, and justifications.</p>
-              </section>
-              <section>
-                <h3>Output review</h3>
-                <p>Open the MTDA archive index, formal report, audit report, and plot viewers. Confirm that Accept and Output run manifests agree before sharing results.</p>
-              </section>
-              <p className="launcher-guide-note">The full screenshot walkthrough is bundled as <span>GUIDELINES.md</span> in the repository root.</p>
-            </div>
+            <SectionGuidelinesContent section="suite" />
+            <p className="launcher-guide-note">The full screenshot walkthrough is bundled as <span>GUIDELINES.md</span> in the repository root.</p>
             <div className="launcher-modal-actions">
               <button className="launcher-link-button" type="button" onClick={() => setModal('shortcuts')}>Keyboard shortcuts →</button>
               <button className="launcher-primary-button" type="button" onClick={closeOverlay}>Close</button>

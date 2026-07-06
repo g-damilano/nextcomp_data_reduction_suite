@@ -1,5 +1,6 @@
 import React from 'react';
 import { DesktopWindowControls } from '../components/DesktopWindowControls.jsx';
+import { SectionGuidelinesModal } from '../components/SectionGuidelines.jsx';
 
 // ================= schema.jsx =================
 // ---------------------------------------------------------------------------
@@ -3658,7 +3659,7 @@ function App() {
           : "Schema reference unavailable — backend registry did not return candidates");
         break;
       }
-      case "about": say("Dataset Packaging — interactive UX prototype, iteration 4"); break;
+      case "about": setModal({ kind: "section-guide" }); break;
       default: break;
     }
   };
@@ -3757,6 +3758,9 @@ function App() {
             onApplyMapping={applyYamlMappingProfile}
             onRematch={rematchYamlSidecars}
             onClose={() => setModal(null)} />
+        )}
+        {modal && modal.kind === "section-guide" && (
+          <SectionGuidelinesModal section="dataset" onClose={() => setModal(null)} />
         )}
       </div>
 

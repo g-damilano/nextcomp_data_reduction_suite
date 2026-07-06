@@ -1,6 +1,7 @@
 import React from 'react';
 import './styles/suite.css';
 import './styles/window-chrome.css';
+import './styles/section-guidelines.css';
 import HomeScreen from './screens/HomeScreen.jsx';
 import PackagingScreen from './screens/PackagingScreen.jsx';
 import MethodEditorScreen from './screens/MethodEditorScreen.jsx';

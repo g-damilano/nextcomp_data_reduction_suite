@@ -675,6 +675,11 @@ export function withBackendMethodEditorLogic(logic) {
   );
   bridged = replaceOnce(
     bridged,
+    "mkItem('About Method Editor', '', () => this.fireToast('Method Editor · mtdp v0.2.0')),",
+    "mkItem('About Method Editor', '', () => { this.setState({ topMenu:null }); window.__openMethodGuidelines?.(); }),"
+  );
+  bridged = replaceOnce(
+    bridged,
     "      { k:'Ctrl+Enter', d:'Validate draft' },\n      { k:'Ctrl+G', d:'Generate new method version' },",
     "      { k:'Ctrl+Enter', d:'Validate draft' },\n      { k:'Ctrl+S', d:'Save method' },"
   );

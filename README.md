@@ -1,166 +1,128 @@
 # NextCOMP Data Reduction Suite
 
-The NextCOMP Data Reduction Suite is a desktop application for preparing,
-running, reviewing, and archiving compression-test data reductions. It is
-centred on Mechanical Test Data Package (`.mtdp`) inputs and Method Trace Data
-Archive (`.mtda`) outputs.
+The NextCOMP Data Reduction Suite is a desktop application for reducing and
+reviewing compression-test data. It helps scientists move from raw measurement
+files to a traceable analysed archive that contains results, evidence plots,
+reports, provenance, and acceptance decisions.
 
-The release-candidate interface contains:
+The suite works around two package types:
 
-- Dataset Packaging: import raw compression-test files, group runs, complete
-  metadata, attach supplemental files, and export an MTDP package.
-- Method Editor: create, import, edit, save, export, and delete editable
-  methods while keeping the ISO 14126 reference method read-only.
-- Method Analysis: choose an MTDP package, select a method, map package fields
-  to method inputs, run the reduction, inspect validation and acceptance
-  evidence, and finalise the MTDA output.
-- MTDA browser and generated HTML reports: browse the analysed dataset archive,
-  formal test report, audit report, plot evidence, canonical CSV/JSON members,
-  and decision records.
+- MTDP: the input Mechanical Test Data Package containing the source dataset.
+- MTDA: the output Method Trace Data Archive containing analysed results.
 
-The scientific intent is traceability: raw files are not modified, every method
-run is bound to its input package and method configuration, and the generated
-archive records the evidence used for inclusion, exclusion, and reporting
-decisions.
+The central principle is traceability. Raw files are not modified. Each method
+run is tied to the selected package, method version, mapping, validation state,
+acceptance decisions, and generated report archive.
 
-## Repository layout
+## Download And Run
+
+Most users should use the packaged Windows distribution rather than installing
+Python or Node.js.
+
+1. Download the latest Windows release asset from this repository.
+2. Unzip the distribution.
+3. Run:
 
 ```text
-nextcomp_data_reduction_suite/
-  src/                         Python packages for MTDP, methods, reports, archives, UI bridge
-  prototyping/.../             React/PySide6 desktop shell used by the wired interface
-  mappings/                    Canonical ISO 14126 mapping fixtures
-  datasets/                    Small raw/MTDP fixtures for smoke tests and examples
-  docs/                        User guidance, screenshots, architecture notes, release notes
-  tests/                       Regression tests covering archives, reports, methods, and UI bridge
-  templates/                   Contract/schema templates used by development and tests
-  tools/                       CLI helpers for archive finalisation, export, and validation
+NextCOMP_data_reduction_suite/NextCOMP_data_reduction_suite.exe
 ```
 
-Generated user methods are intentionally not shipped. The Method Editor writes
-new editable methods under `src/methods/generated` at runtime. The canonical ISO
-14126 method is shipped under `src/methods/iso14126` and remains the read-only
-reference method.
+The distribution folder includes the executable together with `LICENSE`,
+`NOTICE.md`, `THIRD_PARTY_NOTICES.md`, `README.md`, and `GUIDELINES.md`.
 
-## Requirements
+On first run, the application creates editable working defaults in the user
+app-data folder:
 
-- Windows 10/11 is the primary desktop target.
-- Python 3.11 or newer.
-- Node.js and npm for building the React desktop shell.
-- A virtual environment is recommended.
-
-## Install and run
-
-From a PowerShell prompt:
-
-```powershell
-cd C:\path\to\nextcomp_data_reduction_suite
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -e .[dev,units]
+```text
+%APPDATA%\NextCOMP\mtdp_enrichment
 ```
 
-Build the React assets used by the PySide6 shell:
+## What The Application Does
 
-```powershell
-cd .\prototyping\compression_gui_react_seed_validated\compression_gui_react_seed_validated
-npm install
-npm run build
-cd ..\..\..
-```
+Dataset Packaging creates or inspects MTDP input packages. Use it to import raw
+compression-test files, group runs, complete metadata, assign channels, attach
+evidence, validate package completeness, and export the package for analysis.
 
-Launch the wired desktop interface:
+Method manages method versions. Use it to create editable method versions,
+rename them, adjust controlled analysis rules, save changes, import or export
+method packages, and keep the ISO 14126 reference method protected as a
+read-only baseline.
+
+Analysis runs one MTDP package through one selected method. Use it to check
+mapping, run the method, inspect validation, review flagged specimens, decide
+which runs are included in the final report, complete report-only fields, and
+create the MTDA archive.
+
+The MTDA browser opens the analysed archive. Use it to review the archive
+index, formal test report, audit report, plot viewers, canonical CSV/JSON
+members, provenance, and decision records.
+
+## Basic Workflow
+
+1. Open Dataset Packaging.
+2. Choose raw test files, a source folder, or an existing MTDP package.
+3. Review grouping, channels, metadata, and supplemental evidence.
+4. Export the MTDP package.
+5. Open Analysis.
+6. Choose the MTDP package as the input.
+7. Select the ISO reference method or an editable generated method.
+8. Confirm or repair mapping bindings.
+9. Run the method.
+10. Inspect validation and acceptance evidence.
+11. Keep or remove flagged runs using the scientific evidence shown.
+12. Finalise the output and open the MTDA browser, test report, or audit report.
+
+See [GUIDELINES.md](GUIDELINES.md) for the usage guide and screenshots.
+
+## Scientific Review Points
+
+Before sharing results, check that:
+
+- the selected input is the intended MTDP package;
+- run count, run names, channels, and required metadata are correct;
+- the selected method version is the one intended for reporting;
+- mapping warnings have been reviewed;
+- validation warnings are understood;
+- flagged runs have been reviewed using dataset-derived plots and metrics;
+- Accept and Output list the same included and excluded runs;
+- reviewer and finalisation fields are complete;
+- the MTDA browser opens the archive `index.html`;
+- the formal test report and audit report open from the same archive.
+
+Results and generated outputs remain the user's responsibility and should be
+reviewed before they are used for engineering, certification, or commercial
+decisions.
+
+## Output Contents
+
+An MTDA archive is expected to contain:
+
+- an archive `index.html` entry point;
+- a formal test report with selected runs, results, statistics, and method
+  context;
+- an audit report with run-wise evidence, aggregate evidence, validation,
+  acceptance, and decision records;
+- plot viewers hydrated from archive data members;
+- canonical CSV and JSON evidence members;
+- provenance, checksums, report-completion metadata, and finalisation notes.
+
+Stale dataset summary pages and run summary pages are not production outputs.
+
+## Optional Source Run
+
+The packaged distribution is recommended for normal use. If you need to run the
+application from source, use a Python environment with the project dependencies
+installed, build the React shell, and launch:
 
 ```powershell
 python -m mtdp_enrichment.react_shell_app
 ```
 
-The installed console entry point is also available after `pip install -e .`:
+This source path is mainly useful for local validation or controlled research
+deployment. It is not required for ordinary use of the downloadable
+distribution.
 
-```powershell
-nextcomp-suite
-```
-
-For the legacy Qt launcher, use:
-
-```powershell
-python -m mtdp_enrichment.react_shell_app --legacy-gui
-```
-
-## Basic workflow
-
-1. Open Dataset Packaging from the launcher.
-2. Choose raw test files or an existing MTDP package.
-3. Review grouping, channels, metadata, and supplemental files.
-4. Export or save the MTDP package.
-5. Open Method Analysis.
-6. Choose the MTDP package as the analysis input.
-7. Select the ISO reference method or an editable generated method.
-8. Confirm or repair mapping bindings.
-9. Run the method.
-10. Inspect validation and acceptance evidence.
-11. Keep or remove flagged runs using the scientific evidence shown in the
-    cockpit.
-12. Finalise the output and open the MTDA browser, test report, or audit report.
-
-See [GUIDELINES.md](GUIDELINES.md) for a screenshot-led walkthrough.
-
-## Output model
-
-The suite produces MTDA archives with a browsable `index.html` entry point and
-separate report pages. The important output groups are:
-
-- Formal test report: the user-facing report table, statistics, method
-  references, and final selected runs.
-- Audit report: traceable evidence packets, method decisions, run-wise
-  reduction evidence, acceptance evidence, validation checks, and archive member
-  references.
-- Canonical data: CSV/JSON members used by the reports and plot viewers.
-- Plot viewers: compact HTML surfaces that hydrate scientific plots from
-  archive data, rather than static mock images.
-- Decision records: inclusion/exclusion defaults, human overrides, amendment
-  notes, and report-completion metadata.
-
-Stale `dataset_report.html` and run `*_summary.html` pages are not part of the
-production output model.
-
-## Tests
-
-Python tests:
-
-```powershell
-pytest tests
-```
-
-React shell validation:
-
-```powershell
-cd .\prototyping\compression_gui_react_seed_validated\compression_gui_react_seed_validated
-npm run validate
-```
-
-Some GUI tests require a desktop session and may be skipped or need a display
-backend when run headlessly.
-
-## Public release cleanup
-
-This public release folder intentionally excludes:
-
-- `.pytest_cache`, `__pycache__`, and compiled Python files.
-- `node_modules`, Vite `dist`, local dev-server logs, and build folders.
-- temporary debug scripts and temporary MTDA payloads.
-- generated local method drafts and method exports.
-- generated `.mtda` files and bulky `_workbench` HTML output folders.
-- historical prompt bundles and mockup folders that are not production inputs.
-
-The MTDA archive browser still depends on the compact handoff assets under
-`docs/design_handoff_dataset_plot_studio`, so those production input files are
-retained.
-
-Small raw/MTDP fixtures remain so regression tests and examples can run.
-
-## Licence and notices
+## Licence And Notices
 
 The project-authored source code, documentation, configuration, templates, and
 packaging scripts in this repository are distributed under the Apache License,
@@ -168,8 +130,7 @@ Version 2.0. See [LICENSE](LICENSE), [NOTICE.md](NOTICE.md), and
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 The in-app "Licensing & notices" panel mirrors the repository notice summary.
-Binary release folders also include `LICENSE`, `NOTICE.md`,
-`THIRD_PARTY_NOTICES.md`, `README.md`, and `GUIDELINES.md` beside the
+Binary release folders also include the licence and notice files beside the
 executable.
 
 The Apache-2.0 project licence does not grant rights over third-party standards

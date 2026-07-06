@@ -1,5 +1,6 @@
 import React from 'react';
 import { DesktopWindowControls } from '../components/DesktopWindowControls.jsx';
+import { SectionGuidelinesModal } from '../components/SectionGuidelines.jsx';
 
 // ===== runtime defaults =====
 /* ============================================================
@@ -3343,12 +3344,13 @@ function App() {
   const dbg = ((typeof location !== "undefined" && location.hash) || "").replace("#", "");
   const startPhase = SCENARIO_ORDER.includes(dbg) ? dbg : (dbg === "editor" ? "setup" : "setup");
   const initialPackagePath = useMemo(() => initialPackagePathFromLocation(), []);
+  const demoMode = useMemo(() => isDemoModeFromLocation(), []);
 
   const [phase, setPhase] = useState(startPhase);
-  const [pkg, setPkg] = useState(null);
-  const [pkgSel, setPkgSel] = useState("");
-  const [method, setMethod] = useState(null);
-  const [mappingResolved, setMappingResolved] = useState(false);
+  const [pkg, setPkg] = useState(() => (demoMode ? WIZ.PACKAGE : null));
+  const [pkgSel, setPkgSel] = useState(() => (demoMode ? WIZ.PACKAGE.path : ""));
+  const [method, setMethod] = useState(() => (demoMode ? WIZ.METHOD : null));
+  const [mappingResolved, setMappingResolved] = useState(() => demoMode);
   const [metadataResolved, setMetadataResolved] = useState(false);
   const [bindings, setBindings] = useState(WIZ.BINDINGS);
   const [mappingDirty, setMappingDirty] = useState(false);
@@ -3371,6 +3373,7 @@ function App() {
   const [showMapping, setShowMapping] = useState(dbg === "editor");
   const [showTweaks, setShowTweaks] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
   const [density, setDensity] = useState("balanced");
   const [accent, setAccent] = useState("#0f6cbd");
@@ -3380,7 +3383,7 @@ function App() {
   const [recentPackages, setRecentPackages] = useState([]);
   const [recentPackageLoading, setRecentPackageLoading] = useState(false);
   const [recentPackageError, setRecentPackageError] = useState(null);
-  const [selectedMethodId, setSelectedMethodId] = useState("");
+  const [selectedMethodId, setSelectedMethodId] = useState(() => (demoMode ? WIZ.METHOD.id : ""));
 
   const [log, setLog] = useState([{ ts: nowTs(0), level: "info", msg: "Method Analysis opened" }]);
   const logSeq = useRef(1);
@@ -3416,7 +3419,7 @@ function App() {
     r.setProperty("--accent-ink", dark(accent, 0.78));
   }, [accent]);
 
-  const anyOverlay = showMapping || showReportDialog || showTweaks;
+  const anyOverlay = showMapping || showReportDialog || showTweaks || showGuide;
 
   // keyboard: L log, Esc close, ← → scenario step
   useEffect(() => {
@@ -3432,6 +3435,7 @@ function App() {
         if (showMapping) setShowMapping(false);
         else if (showReportDialog) setShowReportDialog(false);
         else if (showTweaks) setShowTweaks(false);
+        else if (showGuide) setShowGuide(false);
         else if (showLog) setShowLog(false);
         else if (contextOpen) setContextOpen(false);
         else if (openMenu) setOpenMenu(null);
@@ -4381,7 +4385,6 @@ function App() {
 
   // ---- derived ----
   const acceptanceReport = useMemo(() => acceptanceReportFromSession(analysisSession), [analysisSession]);
-  const demoMode = useMemo(() => isDemoModeFromLocation(), []);
   const backendReviewRows = useMemo(() => {
     const serialized = reviewRowsFromBackendRun(analysisSession?.run);
     if (serialized.length) return serialized;
@@ -4453,7 +4456,7 @@ function App() {
       case "Open output folder": openArtifact({ id: "output_folder", title: "Output folder" }); break;
       case "Copy MTDA path": copyPath(); break;
       case "Shortcuts": flash("L · log   ← → or swipe · step   Esc · close"); break;
-      case "About Method Analysis": flash(`Method Analysis · ISO 14126 · ${WIZ.APP_VERSION}`); break;
+      case "About Method Analysis": setShowGuide(true); break;
       default: {
         const msg = `Unsupported menu action: ${label}`;
         setBackendPackageError(msg);
@@ -4569,6 +4572,7 @@ function App() {
 
       {showMapping && <MappingEditor initial={bindings} mappingSummary={analysisSession?.mapping} onClose={() => setShowMapping(false)} onSave={saveMapping} onBrowse={browseMapping} onSaveAs={saveMappingAs} onDirtyChange={setMappingDirty} />}
       {showReportDialog && <ReportCompletionDialog onClose={() => setShowReportDialog(false)} onResolveAll={(r) => { setFieldsResolved(r); setMetadataResolved(true); pushLog({ level: "ok", msg: "Report amendments applied" }); }} onApplyAmendments={applyReportAmendments} reviewer={reviewer} />}
+      {showGuide && <SectionGuidelinesModal section="analysis" onClose={() => setShowGuide(false)} />}
       {showLog && <LogDrawer entries={log} onClose={() => setShowLog(false)} />}
       {showTweaks && <div className="drawer-scrim" style={{ background: "transparent" }} onMouseDown={() => setShowTweaks(false)}><Tweaks density={density} setDensity={setDensity} accent={accent} setAccent={setAccent} onClose={() => setShowTweaks(false)} /></div>}
 
