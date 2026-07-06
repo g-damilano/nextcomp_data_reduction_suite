@@ -1,9 +1,23 @@
+<p align="center">
+  <img src="docs/assets/branding/nextcomp-data-reduction-suite-banner.png" alt="NextCOMP Data Reduction Suite banner" width="100%">
+</p>
+
 # NextCOMP Data Reduction Suite
+
+<p align="center">
+  <strong>Compression-test data reduction from raw measurement files to reviewed MTDA archives.</strong><br>
+  <a href="#download-and-run">Download and run</a> ·
+  <a href="#basic-workflow">Basic workflow</a> ·
+  <a href="GUIDELINES.md">User guidelines</a> ·
+  <a href="#licence-and-notices">Licence and notices</a>
+</p>
 
 The NextCOMP Data Reduction Suite is a desktop application for reducing and
 reviewing compression-test data. It helps scientists move from raw measurement
 files to a traceable analysed archive that contains results, evidence plots,
 reports, provenance, and acceptance decisions.
+
+![NextCOMP Data Reduction Suite launcher](docs/assets/guidelines/01-launcher-journey.png)
 
 The suite works around two package types:
 
@@ -13,6 +27,14 @@ The suite works around two package types:
 The central principle is traceability. Raw files are not modified. Each method
 run is tied to the selected package, method version, mapping, validation state,
 acceptance decisions, and generated report archive.
+
+## At A Glance
+
+| Module | Use it for | Output |
+| --- | --- | --- |
+| Dataset Packaging | Clean and organise raw compression-test files, metadata, image evidence, and supplemental files. | MTDP input package |
+| Method | Create and maintain controlled editable method versions while keeping the ISO reference read-only. | Saved method version |
+| Analysis | Run one MTDP package through one method, review warnings and flagged runs, and open the analysed archive. | MTDA analysed dataset archive |
 
 ## Download And Run
 
