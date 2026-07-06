@@ -1,0 +1,13 @@
+{% macro report_hero_card(section_attrs_html, label_html, title_html, lede_html, status_class, status_title_html, status_detail_html, body_html, wrapper_tag="section", title_attrs_html="", status_attrs_html="", compact=True) -%}{%- if compact -%}<{{ wrapper_tag }} {{ section_attrs_html|safe }}><div class="report-state-top"><div><div class="report-state-label">{{ label_html }}</div><h1{% if title_attrs_html %} {{ title_attrs_html|safe }}{% endif %}>{{ title_html }}</h1>{{ lede_html }}</div><div class="report-state-status{% if status_class %} {{ status_class }}{% endif %}"{% if status_attrs_html %} {{ status_attrs_html|safe }}{% endif %}><strong>{{ status_title_html }}</strong><span>{{ status_detail_html }}</span></div></div>{{ body_html }}</{{ wrapper_tag }}>{%- else -%}<{{ wrapper_tag }} {{ section_attrs_html|safe }}>
+  <div class="report-state-top">
+    <div>
+      <div class="report-state-label">{{ label_html }}</div>
+      <h1{% if title_attrs_html %} {{ title_attrs_html|safe }}{% endif %}>{{ title_html }}</h1>
+      {{ lede_html }}
+    </div>
+    <div class="report-state-status {{ status_class }}"{% if status_attrs_html %} {{ status_attrs_html|safe }}{% endif %}>
+      <strong>{{ status_title_html }}</strong>
+      <span>{{ status_detail_html }}</span>
+    </div>
+  </div>{{ body_html }}
+</{{ wrapper_tag }}>{%- endif -%}{%- endmacro %}

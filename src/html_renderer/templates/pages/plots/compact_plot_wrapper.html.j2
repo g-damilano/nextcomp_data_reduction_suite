@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>{{ page.title_html }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+<style>
+{% include "styles/plots/compact_plot_wrapper.css.j2" %}
+</style></head>
+<body><main class="mtda-workbench-v14 refined">
+<header class="topbar">
+<div>
+<p class="crumbs"><a href="{{ page.home_path_html }}">Back to home</a> / <a href="{{ page.package_path_html }}">Compact plot package</a></p>
+<h1 id="pageTitle">{{ page.title_html }}</h1>
+<div class="summary-strip">
+<span class="mode-chip data">external CSV data</span><span class="mode-chip settings">settings-only profiles</span><span class="mode-chip full">hydrated exports on demand</span>
+<span class="subtle" id="packageSummary">Loading package...</span>
+</div>
+</div>
+<div class="top-actions"><button type="button" id="resetPage" class="danger">Reset page</button><button type="button" id="downloadSpecQuick">JSON</button><button type="button" id="downloadSvgQuick">SVG</button></div>
+</header>
+<div class="workspace">
+<aside class="plot-controls" id="controls">
+<div class="tabs" role="tablist">
+<button type="button" data-tab="plot" aria-selected="true">Plot</button><button type="button" data-tab="layers">Layers</button><button type="button" data-tab="data">Data</button><button type="button" data-tab="spec">Spec</button><button type="button" data-tab="export">Export</button>
+</div>
+<section class="panel active" id="tab-plot">
+<fieldset class="control-group"><legend>Axis range</legend>
+<div class="split"><div class="field"><label for="xMin">x min</label><input id="xMin" inputmode="decimal"></div><div class="field"><label for="xMax">x max</label><input id="xMax" inputmode="decimal"></div></div>
+<div class="split"><div class="field"><label for="yMin">y min</label><input id="yMin" inputmode="decimal"></div><div class="field"><label for="yMax">y max</label><input id="yMax" inputmode="decimal"></div></div>
+</fieldset>
+<fieldset class="control-group"><legend>Axis labels</legend><div class="field"><label for="xLabel">x label</label><input id="xLabel"></div><div class="field"><label for="yLabel">y label</label><input id="yLabel"></div></fieldset>
+<fieldset class="control-group"><legend>Canvas</legend>
+<div class="split"><div class="field"><label for="styleWidth">width</label><input id="styleWidth" type="number" min="120" step="10" placeholder="fit"></div><div class="field"><label for="styleHeight">height</label><input id="styleHeight" type="number" min="120" step="10" placeholder="auto"></div></div>
+<div class="field"><label for="fontFamily">font</label><select id="fontFamily"><option value="">Default</option><option value="Arial">Arial</option><option value="Calibri">Calibri</option><option value="Segoe UI">Segoe UI</option><option value="Times New Roman">Times New Roman</option></select></div>
+</fieldset>
+<fieldset class="control-group"><legend>Marks</legend>
+<div class="field"><label for="lineWidth">line</label><input id="lineWidth" type="range" min="0.25" max="3" step="0.25" value="1"></div>
+<div class="field"><label for="pointSize">points</label><input id="pointSize" type="range" min="0.5" max="4" step="0.25" value="1"></div>
+<div class="field"><label for="opacity">opacity</label><input id="opacity" type="range" min="0.05" max="1" step="0.05" value="1"></div>
+<div class="field"><label for="plotTitle">title</label><input id="plotTitle"></div>
+</fieldset>
+<div class="buttons"><button type="button" class="primary" id="applyControls">Apply</button><button type="button" id="resetControls">Reset controls</button></div>
+</section>
+<section class="panel" id="tab-layers"><fieldset class="control-group"><legend>Semantic layers</legend><p class="status" id="layerStatus"></p><div id="layerControls"></div></fieldset></section>
+<section class="panel" id="tab-data"><fieldset class="control-group"><legend>Data <span class="export-kind data">data only</span></legend><div class="field"><label for="datasetSelect">dataset</label><select id="datasetSelect"></select></div><div class="table-tools"><input id="dataFilter" placeholder="filter rows"><div class="buttons"><button type="button" id="resetDataset">Reset dataset</button><button type="button" id="resetAllData">Reset all</button><button type="button" id="downloadDataset">CSV</button></div></div><p class="status" id="dataStatus"></p><p class="subtle" id="datasetSummary"></p><div id="dataTable"></div></fieldset></section>
+<section class="panel" id="tab-spec"><fieldset class="control-group"><legend>Spec <span class="export-kind full">plot spec + hydrated data</span></legend><p class="subtle">Generated render/export JSON with hydrated data arrays. Not a settings-only profile.</p><textarea id="specEditor" spellcheck="false"></textarea><div class="buttons"><button type="button" id="formatSpec">Format</button><button type="button" id="validateSpec">Validate</button><button type="button" id="applySpec">Apply JSON</button><button type="button" id="resetSpec">Reset generated</button><button type="button" id="downloadSpec">Full JSON</button></div><p class="status" id="specStatus"></p></fieldset></section>
+<section class="panel" id="tab-export"><fieldset class="control-group"><legend>Export</legend>
+<div class="export-grid">
+<div class="export-card"><span class="export-kind settings">settings only</span><h3>Plot style profile</h3><p>Reusable view, design and layer settings. No plot rows.</p><p class="code-name">*.settings_only.plot_profile.json</p><div class="buttons"><button type="button" id="downloadProfile">Download profile</button><label class="file-input">Import profile <input id="importProfile" type="file" accept=".json,application/json"></label></div></div>
+<div class="export-card"><span class="export-kind data">data only</span><h3>Selected dataset CSV</h3><p>Current working rows for the selected dataset.</p><p class="code-name">*.{dataset_id}.data_only.csv</p><div class="buttons"><button type="button" id="downloadDatasetExport">Download CSV</button></div></div>
+<div class="export-card"><span class="export-kind full">plot image</span><h3>Rendered figure</h3><p>Current visible plot as static output.</p><p class="code-name">*.svg / *.png</p><div class="buttons"><button type="button" id="downloadSvg">SVG</button><button type="button" id="downloadPng">PNG</button></div></div>
+<div class="export-card"><span class="export-kind full">plot spec + hydrated data</span><h3>Vega-Lite JSON</h3><p>Current render/export spec with hydrated data arrays.</p><p class="code-name">*.full_vegalite_spec_with_data.vl.json</p><div class="buttons"><button type="button" id="downloadSpecExport">Download JSON</button></div></div>
+<div class="export-card"><span class="export-kind full">compact plot package + data</span><h3>Compact package</h3><p>Current working package plus editable data rows.</p><p class="code-name">*.full_plot_package_with_data.json</p><div class="buttons"><button type="button" id="downloadPackage">Download package</button></div></div>
+</div>
+</fieldset></section>
+<div class="status" id="plotStatus"></div>
+</aside>
+<section class="chart-shell"><div class="chart-toolbar"><span id="activeSummary" class="subtle">Preparing plot...</span><div class="buttons"><button type="button" id="toggleAllLayers">Toggle layers</button><button type="button" id="refreshPlot">Refresh</button></div></div><div id="plot" class="chart"></div></section>
+</div>
+</main>
+<script>
+{% include "scripts/plots/compact_plot_wrapper_bootstrap.js.j2" %}
+</script>
+</body></html>

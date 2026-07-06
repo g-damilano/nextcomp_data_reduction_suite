@@ -1,0 +1,217 @@
+const packagePath = "{{ page.package_path_html }}";
+let originalPackage = null;
+let workingPackage = null;
+let templateSpec = null;
+let originalDatasets = {};
+let workingDatasets = {};
+let currentSpec = null;
+let rendered = null;
+let editTimer = null;
+const state = {visibleLayers:{}, layerOrder:[]};
+const controls = {
+  xMin: byId("xMin"), xMax: byId("xMax"), yMin: byId("yMin"), yMax: byId("yMax"),
+  xLabel: byId("xLabel"), yLabel: byId("yLabel"), lineWidth: byId("lineWidth"),
+  opacity: byId("opacity"), pointSize: byId("pointSize"), styleWidth: byId("styleWidth"),
+  styleHeight: byId("styleHeight"), fontFamily: byId("fontFamily"),
+  plotTitle: byId("plotTitle"), datasetSelect: byId("datasetSelect"), dataFilter: byId("dataFilter")
+};
+function byId(id){return document.getElementById(id);}
+function clone(value){return JSON.parse(JSON.stringify(value));}
+function setStatus(text, level){const node=byId("plotStatus"); node.textContent=text || ""; node.className=`status ${level || ""}`.trim();}
+function setNodeStatus(id,text,level){const node=byId(id); node.textContent=text || ""; node.className=`status ${level || ""}`.trim();}
+async function loadJson(path){const response = await fetch(path); if(!response.ok) throw new Error(`${path}: ${response.status}`); return response.json();}
+async function loadText(path){const response = await fetch(path); if(!response.ok) throw new Error(`${path}: ${response.status}`); return response.text();}
+class ArchiveTableStore {
+  constructor(baseUrl=".", checksumIndex=null){this.baseUrl=baseUrl; this.cache=new Map(); this.checksumIndex=checksumIndex;}
+  async csv(member){if(this.cache.has(member)) return this.cache.get(member); const rows=parseCsv(await loadText(this.resolveMemberUrl(member))); this.cache.set(member, rows); return rows;}
+  resolveMemberUrl(member){return member.startsWith("../") || member.startsWith("./") ? member : relativeFromPackage(member);}
+}
+function relativeFromPackage(member){
+  const baseMember=(originalPackage && originalPackage.html_member) ? originalPackage.html_member : packagePath;
+  const base=baseMember.split("/").slice(0,-1);
+  const target=member.split("/");
+  let common=0;
+  while(common<base.length && common<target.length && base[common]===target[common]) common++;
+  return [...Array(base.length-common).fill(".."), ...target.slice(common)].join("/") || target[target.length-1];
+}
+async function loadPackageDatasets(pkg){
+  const loaded = {};
+  if(Array.isArray(pkg.embedded_datasets) && pkg.embedded_datasets.length){
+    for(const dataset of pkg.embedded_datasets) loaded[dataset.dataset_id]=clone(dataset.rows || []);
+    return loaded;
+  }
+  const views = new Map((pkg.plot_data_views || []).map(view => [view.dataset_id, view]));
+  const store = new ArchiveTableStore(".");
+  for (const dataset of pkg.datasets || []) {
+    const view = views.get(dataset.dataset_id) || (dataset.view_ref ? views.get(dataset.view_ref) : null);
+    if(view) loaded[dataset.dataset_id] = await resolvePlotDataView(view, store);
+    else if(dataset.path) loaded[dataset.dataset_id] = parseCsv(await loadText(dataset.path));
+    else loaded[dataset.dataset_id] = [];
+  }
+  return loaded;
+}
+async function resolvePlotDataView(view, store){
+  const memberRows = {};
+  for(const member of view.source_members || []) memberRows[member] = await store.csv(member);
+  const id = view.transform_id;
+  if(id === "run.front_rear_strain_envelope.v1") return runEnvelope(firstSourceRows(view, memberRows));
+  if(id === "run.front_rear_strain_traces.v1") return runTraces(firstSourceRows(view, memberRows));
+  if(id === "run.bounded_average_curve.v1") return runAverage(firstSourceRows(view, memberRows));
+  if(id === "run.empty_chord_line.v1" || id === "run.empty_chord_points.v1") return [];
+  if(id === "run.analysis_markers.v1") return runMarkers(firstSourceRows(view, memberRows));
+  if(id === "aggregate.all_runs_resampled_curve_family.v1") return aggregateCurveFamily(view.source_members || [], memberRows);
+  if(id === "aggregate.stress_band_from_run_grid.v1") return aggregateStressBand(view.source_members || [], memberRows);
+  if(id === "aggregate.bending_summary_passthrough.v1") return (view.source_members || []).flatMap(member => clone(memberRows[member] || []));
+  if(id === "aggregate.fmax_distribution.v1") return aggregateFmax(view.source_members || [], memberRows);
+  throw new Error(`Unsupported plot data view transform: ${id}`);
+}
+function firstSourceRows(view, memberRows){const member=(view.source_members || [])[0]; return memberRows[member] || [];}
+function n(value){if(value === null || value === undefined || value === "") return null; const out=Number(value); return Number.isFinite(out) ? out : null;}
+function firstNum(row, keys){for(const key of keys){const value=n(row[key]); if(value !== null) return value;} return null;}
+function runEnvelope(rows){return rows.map(row => {const stress=n(row.stress_MPa), front=firstNum(row,["front_strain_abs","front_strain"]), rear=firstNum(row,["rear_strain_abs","rear_strain"]); if(stress===null||front===null||rear===null) return null; return {strain_min:Math.min(front,rear)*100,strain_max:Math.max(front,rear)*100,stress,point_index:n(row.point_index),series:"front/rear strain agreement envelope"};}).filter(Boolean);}
+function runTraces(rows){const out=[]; for(const row of rows){const stress=n(row.stress_MPa), front=firstNum(row,["front_strain_abs","front_strain"]), rear=firstNum(row,["rear_strain_abs","rear_strain"]), point_index=n(row.point_index); if(stress===null) continue; if(front!==null) out.push({gauge_strain:front*100,stress,point_index,series:"front strain"}); if(rear!==null) out.push({gauge_strain:rear*100,stress,point_index,series:"rear strain"});} return out;}
+function runAverage(rows){return rows.map(row => {const strain=firstNum(row,["mean_strain","strain_mm_per_mm"]), stress=n(row.stress_MPa); if(strain===null||stress===null) return null; return {strain:strain*100,stress,point_index:n(row.point_index),series:"average strain curve"};}).filter(Boolean);}
+function runMarkers(rows){if(!rows.length) return []; return [["start marker",rows[0]],["end marker (max point / failure strain)",rows[rows.length-1]]].map(([marker,row]) => {const strain=firstNum(row,["mean_strain","strain_mm_per_mm"]), stress=n(row.stress_MPa); if(strain===null||stress===null) return null; return {marker,strain:strain*100,stress,point_index:n(row.point_index)};}).filter(Boolean);}
+function progressPoints(rows){const last=Math.max(rows.length-1,1); return rows.map((row,index) => {const stress=n(row.stress_MPa); if(stress===null) return null; let x=firstNum(row,["experiment_progress","analysis_progress","x_common","x_normalized"]); if(x===null) x=index/last; if(x>1.5) x=x/100; return [Math.max(0,Math.min(1,x)), stress];}).filter(Boolean).sort((a,b)=>a[0]-b[0]);}
+function interp(points,target){if(!points.length) return 0; if(target<=points[0][0]) return points[0][1]; for(let i=1;i<points.length;i++){const [x0,y0]=points[i-1], [x1,y1]=points[i]; if(target<=x1){if(Math.abs(x1-x0)<=1e-15) return y1; return y0+(y1-y0)*((target-x0)/(x1-x0));}} return points[points.length-1][1];}
+function runIdFromMember(member, rows){for(const row of rows){if(row.run_id) return String(row.run_id);} const file=member.split("/").pop() || ""; return file.startsWith("run_") ? file.split("_").slice(0,2).join("_") : file.replace(/\.csv$/,"");}
+function meanStd(values){const mean=values.reduce((a,b)=>a+b,0)/Math.max(values.length,1); if(values.length<=1) return [mean,0]; const variance=values.reduce((sum,value)=>sum+(value-mean)*(value-mean),0)/(values.length-1); return [mean,Math.sqrt(variance)];}
+function aggregateCurveFamily(sourceMembers, memberRows){const grid=Array.from({length:250},(_,i)=>i/249); const byRun=[]; const grouped=new Map(); for(const member of sourceMembers){const rows=memberRows[member] || []; const run_id=runIdFromMember(member, rows); const points=progressPoints(rows); const runRows=grid.map(x_common => ({run_id,x_common,y_observed:interp(points,x_common)})); byRun.push(runRows); for(const row of runRows){const key=String(row.x_common); if(!grouped.has(key)) grouped.set(key,[]); grouped.get(key).push(row.y_observed);}} const stats=new Map([...grouped.entries()].map(([key,values]) => [key,meanStd(values)])); const out=[]; for(const runRows of byRun){for(const row of runRows){const [mean,std]=stats.get(String(row.x_common)); out.push({run_id:row.run_id,cohort_id:"whole_comparable_dataset",x_common:row.x_common,y_observed:row.y_observed,y_reference:mean,y_variability:std,standardized_residual:std ? (row.y_observed-mean)/std : 0,diagnostic_classification:"CURVE_SHAPE_NOT_ASSESSED"});}} return out;}
+function aggregateStressBand(sourceMembers, memberRows){const family=aggregateCurveFamily(sourceMembers, memberRows); const grouped=new Map(); for(const row of family){if(Math.abs(row.x_common)<=1e-15) continue; const key=String(row.x_common); if(!grouped.has(key)) grouped.set(key,[]); grouped.get(key).push(row.y_observed);} return [...grouped.entries()].sort((a,b)=>Number(a[0])-Number(b[0])).map(([key,values]) => {const [mean,std]=meanStd(values); return {x_common:Number(key),mean_stress_MPa:mean,min_stress_MPa:Math.min(...values),max_stress_MPa:Math.max(...values),std_stress_MPa:std,lo_stress_MPa:mean-std,hi_stress_MPa:mean+std,run_count:values.length};});}
+function percentile(ordered,p){if(ordered.length===1) return ordered[0]; const pos=(ordered.length-1)*p/100; const lo=Math.floor(pos), hi=Math.min(lo+1,ordered.length-1), f=pos-lo; return ordered[lo]+(ordered[hi]-ordered[lo])*f;}
+function aggregateFmax(sourceMembers, memberRows){const strengths=sourceMembers.flatMap(member => (memberRows[member] || []).map(row => firstNum(row,["compressive_strength_MPa","max_stress_MPa"])).filter(value => value !== null)).sort((a,b)=>a-b); if(!strengths.length) return []; const [mean,std]=meanStd(strengths); return [{x_position:100,label:"Fmax",min_strength_MPa:strengths[0],q1_strength_MPa:percentile(strengths,25),median_strength_MPa:percentile(strengths,50),q3_strength_MPa:percentile(strengths,75),max_strength_MPa:strengths[strengths.length-1],mean_strength_MPa:mean,std_strength_MPa:std,run_count:strengths.length}];}
+async function bootstrap(){
+  try {
+    originalPackage = await loadJson(packagePath);
+    templateSpec = await loadJson(originalPackage.template_path);
+    originalDatasets = await loadPackageDatasets(originalPackage);
+    workingPackage = clone(originalPackage);
+    workingDatasets = clone(originalDatasets);
+    initControls();
+    renderDataTable();
+    updatePackageSummary();
+    await render();
+  } catch (error) {
+    setStatus(`Could not load compact package data. Open this MTDA through a local/static viewer if file loading is blocked. ${error.message || error}`, "error");
+    byId("activeSummary").textContent = "Package load failed.";
+  }
+}
+function parseCsv(text){
+  const rows = text.trim() ? text.trim().split(/\r?\n/) : [];
+  if (!rows.length) return [];
+  const headers = splitCsv(rows[0]);
+  return rows.slice(1).map(line => Object.fromEntries(splitCsv(line).map((value,index) => [headers[index] || `field_${index+1}`, coerce(value)])));
+}
+function splitCsv(line){const values=[]; let value="", quoted=false; for(let i=0;i<line.length;i++){const char=line[i]; if(char === '"' && line[i+1] === '"'){value += '"'; i++;} else if(char === '"'){quoted=!quoted;} else if(char === "," && !quoted){values.push(value); value="";} else value += char;} values.push(value); return values;}
+function csvEscape(value){const text = String(value ?? ""); return /[",\n\r]/.test(text) ? `"${text.replace(/"/g,'""')}"` : text;}
+function coerce(value){const text = String(value ?? ""); if(text.trim() === "") return ""; const number = Number(text); return Number.isFinite(number) ? number : text;}
+function datasetCsv(datasetId){const rows = workingDatasets[datasetId] || []; const fields = (workingPackage.datasets || []).find(item => item.dataset_id === datasetId)?.fields || Object.keys(rows[0] || {}); return [fields.join(","), ...rows.map(row => fields.map(field => csvEscape(row[field])).join(","))].join("\n");}
+function hydrate(node){if(Array.isArray(node)) return node.map(hydrate); if(!node || typeof node !== "object") return node; if(node.__compact_dataset_ref__) return {values: clone(workingDatasets[node.__compact_dataset_ref__] || [])}; const next={}; for(const [key,value] of Object.entries(node)) next[key]=hydrate(value); return next;}
+function layerList(source){return Array.isArray(source.layer) ? source.layer : [source];}
+function layerName(layer,index){return layer.name || layer.usermeta?.layer_id || `layer ${index+1}`;}
+function layerMark(layer){const mark=markObject(layer.mark); return mark.type || "layer";}
+function layerDatasetRef(layer){return layer.data?.__compact_dataset_ref__ || "";}
+function datasetMeta(datasetId){return (workingPackage.datasets || []).find(item => item.dataset_id === datasetId) || {};}
+function initControls(){
+  state.visibleLayers = {};
+  state.layerOrder = [];
+  controls.plotTitle.value = originalPackage.title || byId("pageTitle").textContent;
+  const firstEncoding = firstXYEncoding(templateSpec);
+  controls.xLabel.value = firstEncoding?.x?.title || "";
+  controls.yLabel.value = firstEncoding?.y?.title || "";
+  controls.xMin.value = ""; controls.xMax.value = ""; controls.yMin.value = ""; controls.yMax.value = "";
+  controls.lineWidth.value = 1; controls.opacity.value = 1; controls.pointSize.value = 1;
+  controls.styleWidth.value = ""; controls.styleHeight.value = ""; controls.fontFamily.value = "";
+  renderLayerControls();
+  controls.datasetSelect.innerHTML = "";
+  for (const dataset of workingPackage.datasets || []) {
+    const option = document.createElement("option"); option.value = dataset.dataset_id; option.textContent = `${dataset.dataset_id} - ${dataset.role || "plot data"} (${dataset.row_count ?? (workingDatasets[dataset.dataset_id] || []).length} rows)`;
+    controls.datasetSelect.appendChild(option);
+  }
+  updateLayerStatus();
+}
+function renderLayerControls(){
+  const target = byId("layerControls");
+  target.innerHTML = "";
+  layerList(templateSpec).forEach((layer,index) => {
+    const id = `layer_${index}`; const name = layerName(layer,index); const datasetId = layerDatasetRef(layer);
+    state.visibleLayers[name] = true; state.layerOrder.push(name);
+    const meta = datasetMeta(datasetId);
+    const card = document.createElement("div"); card.className = "layer-card";
+    card.innerHTML = `<div class="layer-head"><div><div class="layer-title">${escapeHtml(name)}</div><div class="layer-meta"><span class="mode-chip full">${escapeHtml(layerMark(layer))}</span>${datasetId ? `<span class="mode-chip data">${escapeHtml(datasetId)}</span>` : ""}${meta.role ? `<span class="mode-chip settings">${escapeHtml(meta.role)}</span>` : ""}</div><div class="layer-note">${escapeHtml(layer.encoding?.x?.field || "")}${layer.encoding?.y?.field ? " / " + escapeHtml(layer.encoding.y.field) : ""}</div></div><div class="layer-actions"><input type="checkbox" id="${id}" checked aria-label="Show ${escapeHtml(name)}"></div></div>`;
+    card.querySelector("input").addEventListener("change", event => {state.visibleLayers[name] = event.target.checked; updateLayerStatus(); render();});
+    target.appendChild(card);
+  });
+}
+function firstXYEncoding(source){if(source.encoding?.x || source.encoding?.y) return source.encoding; for(const layer of layerList(source)) if(layer.encoding?.x || layer.encoding?.y) return layer.encoding; return {};}
+function renderSpec(){
+  const next = hydrate(clone(templateSpec));
+  const title = controls.plotTitle.value.trim(); if(title) next.title = title;
+  const width = parseNumber(controls.styleWidth.value), height = parseNumber(controls.styleHeight.value);
+  next.width = width || "container"; if(height) next.height = height;
+  next.autosize = {type:"fit-x", contains:"padding"};
+  if(controls.fontFamily.value){next.config = {...(next.config || {}), font: controls.fontFamily.value, axis:{...(next.config?.axis || {}), labelFont:controls.fontFamily.value, titleFont:controls.fontFamily.value}, legend:{...(next.config?.legend || {}), labelFont:controls.fontFamily.value, titleFont:controls.fontFamily.value}, title:{...(next.config?.title || {}), font:controls.fontFamily.value}};}
+  if(Array.isArray(next.layer)) next.layer = next.layer.filter((layer,index) => state.visibleLayers[layerName(layer,index)] !== false);
+  applyRecursive(next, layer => { if(!layer.encoding) return; applyAxis(layer.encoding.x, controls.xLabel.value, controls.xMin.value, controls.xMax.value); applyAxis(layer.encoding.y, controls.yLabel.value, controls.yMin.value, controls.yMax.value); });
+  applyStyle(next); return next;
+}
+function applyAxis(axis,title,minValue,maxValue){if(!axis) return; if(title) axis.title = title; const min=parseNumber(minValue), max=parseNumber(maxValue); if(min !== null && max !== null){axis.scale={...(axis.scale || {}), domain:[min,max]};}}
+function applyStyle(source){const lineScale=Number(controls.lineWidth.value || 1); const opacityScale=Number(controls.opacity.value || 1); const pointScale=Number(controls.pointSize.value || 1); applyRecursive(source, layer => {const mark=markObject(layer.mark); if(["line","rule","area","trail"].includes(mark.type)) mark.strokeWidth=baseNumber(mark.strokeWidth,2)*lineScale; if(["point","circle","square"].includes(mark.type)){mark.size=baseNumber(mark.size,42)*pointScale; mark.filled = mark.filled ?? true;} if(mark.type !== "rect" && mark.type !== "text") mark.opacity=Math.max(0.01,Math.min(1,baseNumber(mark.opacity,1)*opacityScale)); layer.mark=mark;});}
+function applyRecursive(node,fn){if(!node || typeof node !== "object") return; if(node.mark || node.encoding) fn(node); for(const key of ["layer","hconcat","vconcat","concat"]) if(Array.isArray(node[key])) node[key].forEach(item => applyRecursive(item, fn));}
+function markObject(mark){return typeof mark === "string" ? {type:mark} : {...(mark || {type:"line"})};}
+function baseNumber(value,fallback){const number=Number(value); return Number.isFinite(number) ? number : fallback;}
+function parseNumber(value){if(value === "") return null; const number=Number(value); return Number.isFinite(number) ? number : null;}
+function queueRender(){clearTimeout(editTimer); editTimer=setTimeout(render,180);}
+async function render(){currentSpec = renderSpec(); byId("specEditor").value = JSON.stringify(currentSpec, null, 2); byId("pageTitle").textContent = controls.plotTitle.value || "{{ page.title_html }}"; try{rendered = await window.vegaEmbed("#plot", currentSpec, {actions:true, renderer:"canvas"}); setStatus("", "success"); updateActiveSummary();}catch(error){setStatus(`Plot render failed: ${error.message || error}`, "error");}}
+function renderDataTable(){
+  const datasetId = controls.datasetSelect.value; const rows = workingDatasets[datasetId] || []; const meta = (workingPackage.datasets || []).find(item => item.dataset_id === datasetId) || {}; const fields = meta.fields || Object.keys(rows[0] || {});
+  const filter = controls.dataFilter.value.trim().toLowerCase();
+  const indexedRows = rows.map((row,index) => ({row,index})).filter(item => !filter || fields.some(field => String(item.row[field] ?? "").toLowerCase().includes(filter)));
+  const shown = indexedRows.slice(0,100);
+  byId("datasetSummary").textContent = `${rows.length} rows / ${fields.length} fields / ${meta.path || meta.member || datasetId}${filter ? ` / ${indexedRows.length} matching` : ""}`;
+  byId("dataTable").innerHTML = `<div class="table-wrap"><table class="data-table"><thead><tr>${fields.map(field => `<th title="${escapeHtml(field)}">${escapeHtml(field)}</th>`).join("")}</tr></thead><tbody>${shown.map(item => `<tr>${fields.map(field => `<td contenteditable data-row="${item.index}" data-field="${escapeHtml(field)}">${escapeHtml(item.row[field] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  byId("dataTable").querySelectorAll("td[contenteditable]").forEach(cell => cell.addEventListener("input", () => updateCell(cell)));
+  setNodeStatus("dataStatus", shown.length < indexedRows.length ? `Showing ${shown.length} of ${indexedRows.length} matching rows.` : "", "warn");
+}
+function updateCell(cell){const datasetId=controls.datasetSelect.value; const row=Number(cell.dataset.row); const field=cell.dataset.field; const value=cell.textContent || ""; const original=originalDatasets[datasetId]?.[row]?.[field]; const invalid=value.includes("\t") || value.includes("\n") || (typeof original === "number" && value.trim() !== "" && !Number.isFinite(Number(value))); cell.classList.toggle("invalid", invalid); if(invalid){setNodeStatus("dataStatus", "Invalid cell value. Fix highlighted cells before export/render.", "error"); return;} workingDatasets[datasetId][row][field]=coerce(value); updatePackageSummary(); queueRender();}
+function settingsProfile(){return {profile_type:"vega-workbench-plot-profile", schema_version:"0.3", source_plot_id:workingPackage.plot_id, viewControls:{title:controls.plotTitle.value,xLabel:controls.xLabel.value,yLabel:controls.yLabel.value,xMin:controls.xMin.value,xMax:controls.xMax.value,yMin:controls.yMin.value,yMax:controls.yMax.value,width:controls.styleWidth.value,height:controls.styleHeight.value,fontFamily:controls.fontFamily.value}, styleSettings:{lineWidth:controls.lineWidth.value,pointSize:controls.pointSize.value,opacity:controls.opacity.value}, hiddenLayers:Object.entries(state.visibleLayers).filter(([,visible]) => !visible).map(([layer]) => layer)};}
+function packageWithData(){const payload=clone(workingPackage); payload.data_mode="embedded_rows"; payload.datasets=(payload.datasets || []).map(dataset => ({...dataset, rows:clone(workingDatasets[dataset.dataset_id] || [])})); return payload;}
+function resetAll(){workingPackage=clone(originalPackage); workingDatasets=clone(originalDatasets); initControls(); renderDataTable(); updatePackageSummary(); render();}
+function resetDataset(){const id=controls.datasetSelect.value; workingDatasets[id]=clone(originalDatasets[id] || []); renderDataTable(); updatePackageSummary(); render();}
+function resetControls(){const datasets=clone(workingDatasets); initControls(); workingDatasets=datasets; renderDataTable(); render();}
+function downloadBlob(name,type,content){const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob); const link=document.createElement("a"); link.href=url; link.download=name; link.click(); URL.revokeObjectURL(url);}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g, char => char === "&" ? "&amp;" : char === "<" ? "&lt;" : char === ">" ? "&gt;" : char === '"' ? "&quot;" : "&#39;");}
+function updatePackageSummary(){const datasetCount=(workingPackage?.datasets || []).length; const rows=Object.values(workingDatasets).reduce((sum,dataset) => sum + (dataset || []).length, 0); byId("packageSummary").textContent = `${datasetCount} datasets / ${rows} rows / MTDA package mode`; updateActiveSummary();}
+function updateLayerStatus(){const active=Object.values(state.visibleLayers).filter(Boolean).length; const total=state.layerOrder.length; setNodeStatus("layerStatus", `${active} of ${total} layers visible.`, active ? "success" : "warn"); updateActiveSummary();}
+function updateActiveSummary(){if(!workingPackage) return; const visible=Object.values(state.visibleLayers).filter(Boolean).length; const total=state.layerOrder.length; const datasetId=controls.datasetSelect.value || (workingPackage.datasets || [])[0]?.dataset_id || ""; const rows=(workingDatasets[datasetId] || []).length; byId("activeSummary").textContent = `${visible}/${total || 0} layers visible / ${datasetId || "no dataset"} / ${rows} rows`;}
+function selectedDatasetDownload(){downloadBlob(`${workingPackage.plot_id}.${controls.datasetSelect.value}.data_only.csv`, "text/csv", datasetCsv(controls.datasetSelect.value));}
+function specDownload(){downloadBlob(`${workingPackage.plot_id}.full_vegalite_spec_with_data.vl.json`, "application/json", JSON.stringify(currentSpec || renderSpec(), null, 2));}
+function profileDownload(){downloadBlob(`${workingPackage.plot_id}.settings_only.plot_profile.json`, "application/json", JSON.stringify(settingsProfile(), null, 2));}
+function applyProfile(profile){if(!profile || typeof profile !== "object") throw new Error("Profile must be a JSON object."); const view=profile.viewControls || {}; const style=profile.styleSettings || {}; controls.plotTitle.value=view.title ?? controls.plotTitle.value; controls.xLabel.value=view.xLabel ?? controls.xLabel.value; controls.yLabel.value=view.yLabel ?? controls.yLabel.value; controls.xMin.value=view.xMin ?? controls.xMin.value; controls.xMax.value=view.xMax ?? controls.xMax.value; controls.yMin.value=view.yMin ?? controls.yMin.value; controls.yMax.value=view.yMax ?? controls.yMax.value; controls.styleWidth.value=view.width ?? controls.styleWidth.value; controls.styleHeight.value=view.height ?? controls.styleHeight.value; controls.fontFamily.value=view.fontFamily ?? controls.fontFamily.value; controls.lineWidth.value=style.lineWidth ?? controls.lineWidth.value; controls.pointSize.value=style.pointSize ?? controls.pointSize.value; controls.opacity.value=style.opacity ?? controls.opacity.value; const hidden=new Set(profile.hiddenLayers || []); for(const layer of state.layerOrder) state.visibleLayers[layer]=!hidden.has(layer); byId("layerControls").querySelectorAll("input[type=checkbox]").forEach(input => {const name=state.layerOrder[Number(input.id.replace("layer_",""))]; input.checked=state.visibleLayers[name] !== false;}); updateLayerStatus(); render();}
+document.querySelectorAll(".tabs button").forEach(button => button.addEventListener("click", () => {document.querySelectorAll(".tabs button").forEach(item => item.setAttribute("aria-selected","false")); document.querySelectorAll(".panel").forEach(item => item.classList.remove("active")); button.setAttribute("aria-selected","true"); byId(`tab-${button.dataset.tab}`).classList.add("active");}));
+["xMin","xMax","yMin","yMax","xLabel","yLabel","lineWidth","pointSize","opacity","plotTitle","styleWidth","styleHeight","fontFamily"].forEach(key => controls[key].addEventListener("change", render));
+byId("applyControls").addEventListener("click", render);
+byId("resetControls").addEventListener("click", resetControls);
+byId("resetPage").addEventListener("click", resetAll);
+byId("refreshPlot").addEventListener("click", render);
+byId("toggleAllLayers").addEventListener("click", () => {const anyVisible=Object.values(state.visibleLayers).some(Boolean); state.layerOrder.forEach(layer => state.visibleLayers[layer]=!anyVisible); byId("layerControls").querySelectorAll("input[type=checkbox]").forEach(input => input.checked=!anyVisible); updateLayerStatus(); render();});
+byId("datasetSelect").addEventListener("change", () => {renderDataTable(); updateActiveSummary();});
+byId("dataFilter").addEventListener("input", renderDataTable);
+byId("resetDataset").addEventListener("click", resetDataset);
+byId("resetAllData").addEventListener("click", resetAll);
+byId("downloadDataset").addEventListener("click", selectedDatasetDownload);
+byId("downloadDatasetExport").addEventListener("click", selectedDatasetDownload);
+byId("downloadProfile").addEventListener("click", profileDownload);
+byId("downloadSpec").addEventListener("click", specDownload);
+byId("downloadSpecExport").addEventListener("click", specDownload);
+byId("downloadSpecQuick").addEventListener("click", specDownload);
+byId("downloadPackage").addEventListener("click", () => downloadBlob(`${workingPackage.plot_id}.full_plot_package_with_data.json`, "application/json", JSON.stringify(packageWithData(), null, 2)));
+byId("formatSpec").addEventListener("click", () => {try{byId("specEditor").value = JSON.stringify(JSON.parse(byId("specEditor").value), null, 2); setNodeStatus("specStatus", "Spec formatted.", "success");}catch(error){setNodeStatus("specStatus", `Spec JSON is invalid: ${error.message || error}`, "error");}});
+byId("validateSpec").addEventListener("click", () => {try{JSON.parse(byId("specEditor").value); setNodeStatus("specStatus", "Spec JSON is valid.", "success");}catch(error){setNodeStatus("specStatus", `Spec JSON is invalid: ${error.message || error}`, "error");}});
+byId("applySpec").addEventListener("click", async () => {try{currentSpec=JSON.parse(byId("specEditor").value); rendered = await window.vegaEmbed("#plot", currentSpec, {actions:true, renderer:"canvas"}); setNodeStatus("specStatus", "Spec applied to view.", "success"); setStatus("");}catch(error){setNodeStatus("specStatus", `Spec apply failed: ${error.message || error}`, "error");}});
+byId("resetSpec").addEventListener("click", render);
+byId("importProfile").addEventListener("change", async event => {const file=event.target.files?.[0]; if(!file) return; try{applyProfile(JSON.parse(await file.text())); setStatus("Profile imported.", "success");}catch(error){setStatus(`Profile import failed: ${error.message || error}`, "error");} finally {event.target.value="";}});
+byId("downloadSvg").addEventListener("click", async () => {if(rendered) downloadBlob(`${workingPackage.plot_id}.svg`, "image/svg+xml", await rendered.view.toSVG());});
+byId("downloadSvgQuick").addEventListener("click", async () => {if(rendered) downloadBlob(`${workingPackage.plot_id}.svg`, "image/svg+xml", await rendered.view.toSVG());});
+byId("downloadPng").addEventListener("click", async () => {if(!rendered) return; const canvas=await rendered.view.toCanvas(); canvas.toBlob(blob => {if(blob) downloadBlob(`${workingPackage.plot_id}.png`, "image/png", blob);});});
+bootstrap();

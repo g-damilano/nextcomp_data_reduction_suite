@@ -1,0 +1,75 @@
+projection_id: curve_shape_distance_ranking
+golden_id: golden_curve_shape_distance_ranking
+version: 0.1.0
+schema_version: plot_projection_recipe.v0_1
+plot_type: curve_shape_distance_ranking
+production_state: production
+surface_profiles:
+  - surface: audit_report
+    role: curve-shape distance ranking and threshold evidence
+    renderer: Vega-Lite
+  - surface: wizard
+    role: acceptance cockpit curve-shape evidence
+    renderer: Vega-Lite via React
+data_contract:
+  source_tables:
+    - acceptance/curve_family/curve_diagnostic_scores.csv
+  required_fields:
+    - run_id
+    - distance_rms
+  optional_fields:
+    - distance_rank
+    - threshold_method
+    - Qexp
+    - Qcrit_95
+    - mad_upper_z
+    - robust_z
+    - diagnostic_classification
+  forbidden_transforms:
+    - threshold_method_relabeling
+transform_ids:
+  - curve_shape.distance_rank_rows.v1
+semantic_contract:
+  layers:
+    - layer_id: distance_rms_by_run
+      semantic_role: distance ranking marks
+      required: false
+    - layer_id: mad_upper_tail_score_by_run
+      semantic_role: upper-tail MAD score ranking marks
+      required: false
+    - layer_id: mad_upper_tail_threshold
+      semantic_role: upper-tail MAD cutoff reference
+      required: false
+    - layer_id: mad_masking_companion_screen
+      semantic_role: small-cohort MAD masking companion evidence
+      required: false
+    - layer_id: dixon_q_test_against_critical_threshold
+      semantic_role: Dixon Q threshold comparison
+      required: false
+    - layer_id: dixon_gap_denominator_geometry
+      semantic_role: Dixon gap and denominator geometry
+      required: false
+    - layer_id: outlier_candidate_marker
+      semantic_role: outlier candidate marker
+      required: false
+    - layer_id: threshold_method_annotation
+      semantic_role: threshold method annotation
+      required: false
+quality_contract:
+  requires_data: true
+  requires_axis_labels: true
+  requires_tooltips: true
+staleness_contract:
+  status_source: acceptance/curve_family/curve_diagnostic_policy.json
+  stale_if_threshold_method_missing: warning
+artifact_contract:
+  primary_artifacts:
+    - Vega-Lite spec
+  export_formats:
+    - html
+    - json
+migration_metadata:
+  current_builder: plotting.plots.distance_ranking.build_curve_shape_distance_ranking
+  current_router: plotting.registry.create_default_registry
+  migration_status: recipe documented; production routing unchanged
+  parity_reference: tests/plotting/test_modular_plotting.py

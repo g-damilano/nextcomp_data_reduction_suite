@@ -1,0 +1,13 @@
+sample_id: CAG-CF-Modied-ULV20-E3
+user: "David Anthony"
+date: "16/07/2014"
+location: "DFF lab, Mechanical Engineering, Imperial College London"
+specimen:
+  length_mm: 20
+  width_mm: 9.85
+  thickness_mm: 2.20
+test_setup:
+  machine: "Instron 5969"
+  load_cell_kN: 50
+  test_speed_mm_min: 2
+valid: 1

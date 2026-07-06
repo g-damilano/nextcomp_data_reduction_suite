@@ -1,0 +1,50 @@
+projection_id: audit_stress_strain_family
+golden_id: golden_audit_stress_strain_family
+version: 0.1.0
+schema_version: plot_projection_recipe.v0_1
+plot_type: audit_stress_strain_family_spec
+production_state: production
+surface_profiles:
+  - surface: audit_report
+    role: audit stress-strain family overview
+    renderer: audit report embedded Vega-Lite helper
+data_contract:
+  source_tables:
+    - audit curve rows
+  required_fields:
+    - run_id
+    - strain_mm_per_mm
+    - stress_MPa
+  optional_fields:
+    - load_N
+  forbidden_transforms:
+    - boundary_reselection
+    - stress_recalculation
+transform_ids:
+  - audit.stress_strain_family_passthrough.v1
+semantic_contract:
+  layers:
+    - layer_id: run_stress_strain_family
+      semantic_role: stress-strain line for each audit run
+      required: true
+    - layer_id: run_legend_selector
+      semantic_role: run selector bound to the Vega-Lite legend
+      required: true
+quality_contract:
+  requires_data: true
+  requires_axis_labels: true
+  requires_tooltips: true
+staleness_contract:
+  status_source: audit builder curve rows
+  stale_if_curve_rows_missing: true
+artifact_contract:
+  primary_artifacts:
+    - audit/audit_report.html embedded Vega spec
+  export_formats:
+    - html
+    - json
+migration_metadata:
+  current_builder: audit.vega_specs.stress_strain_family_spec
+  current_router: audit.audit_report_builder._render_chart_component
+  migration_status: audit-specific recipe declared; production rendering route preserved
+  parity_reference: tests/golden/plots/test_golden_plot_contracts.py

@@ -1,0 +1,48 @@
+curve_family_acceptance:
+  id: iso14126_curve_family_acceptance_v0_1
+  applies_to: iso14126_2023
+
+  curve_families:
+    - id: stress_strain_family
+      source: method_outputs.curves.stress_strain_family
+      run_id_column: run_id
+      x: mean_strain
+      y: stress_MPa
+      selection_context: user_valid_runs
+
+      alignment:
+        mode: experiment_progress
+        source_boundaries: method_resolve.experiment_boundaries
+        start_anchor: analysis_interval.start_index
+        end_anchor: analysis_interval.end_index
+        x_common_points: 250
+
+      reference:
+        method: pointwise_median
+        include_runs: selection_context
+
+      metrics:
+        - normalized_rmse
+        - normalized_mae
+        - integrated_absolute_residual
+        - max_absolute_residual
+        - curve_correlation
+        - derivative_rmse
+        - leave_one_out_mean_shift
+
+      classification:
+        review_if:
+          normalized_rmse_gt: 2.5
+          derivative_rmse_gt: 2.5
+          leave_one_out_mean_shift_gt: 0.10
+        propose_remove_if:
+          normalized_rmse_gt: 4.0
+          curve_correlation_lt: 0.90
+          multi_metric_review_count_gte: 3
+
+      outputs:
+        scores_csv: acceptance/curve_family/curve_family_scores.csv
+        flags_csv: acceptance/curve_family/curve_family_flags.csv
+        reference_csv: acceptance/curve_family/reference_curves.csv
+        aligned_curves_csv: acceptance/curve_family/aligned_curve_family.csv
+        residuals_csv: acceptance/curve_family/residuals_long.csv

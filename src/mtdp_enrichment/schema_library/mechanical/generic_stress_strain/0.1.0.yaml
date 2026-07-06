@@ -1,0 +1,178 @@
+schema_id: mechanical.generic_stress_strain
+schema_version: 0.1.0
+label: Generic stress-strain
+status: active
+
+test:
+  family: mechanical
+  mode: generic_stress_strain
+
+package:
+  granularity: dataset_with_runs
+  raw_folder: raw
+  normalized_folder: normalized
+  normalized_extension: .csv
+  run_id_pattern: run_{index:03d}
+
+unit_system: mechanical_metric_mm_N
+
+ui:
+  groups:
+    - Dataset
+    - Run analysis inputs
+    - Run acquisition provenance
+    - Review / validity
+
+dataset_grouping:
+  enabled: true
+  grouping_field: sample_type
+  source_priority: [sidecar_field, parsed_token, filename_pattern, folder_name, manual]
+  parsed_tokens: [Sample type, Material condition, Treatment, Batch condition]
+  filename_grouping:
+    delimiter_pattern: "[-_ ]+"
+    remove_tokens: [Comp, Compression, Tensile, Tension, Flex, Flexural]
+    replicate_patterns: ["E\\d+$", "R\\d+$", "Run\\d+$", "Specimen\\d+$", "Sample\\d+$"]
+  canonicalization:
+    casefold: true
+    replace_separators_with_space: true
+    collapse_whitespace: true
+    preserve_display_name: true
+  matching:
+    fuzzy_suggestions: true
+    auto_merge_threshold: 0.98
+    suggest_merge_threshold: 0.86
+
+sidecar_import:
+  enabled: true
+  same_stem: true
+  accepted_extensions: [.yaml, .yml]
+  canonical_versions: ["0.1.0"]
+  unknown_keys: prompt_mapping
+  conflict_policy: prefer_sidecar
+  mapping_profile:
+    enabled: true
+    apply_to_same_signature: true
+
+image_evidence:
+  enabled: true
+  required: false
+  accepted_formats: [.jpg, .jpeg, .png, .tif, .tiff]
+  views:
+    - {id: front, label: Front image, required: false, purpose: [audit, future_metrology]}
+    - {id: side, label: Side image, required: false, purpose: [audit, future_metrology]}
+    - {id: top, label: Top image, required: false, purpose: [audit, future_metrology]}
+    - {id: failure, label: Failure image, required: false, purpose: [audit, failure_documentation]}
+    - {id: scale_reference, label: Scale reference, required: false, purpose: [calibration, future_metrology]}
+    - {id: other, label: Other image, required: false, purpose: [audit]}
+
+supplemental_files:
+  enabled: true
+  accepted_scopes: [dataset, run, schema_mapping, calibration, equipment_evidence, other]
+  preserve_in_package: true
+
+dataset_fields:
+  - field_id: sample_type
+    label: Sample type
+    role: dataset_identity
+    required: false
+    type: string
+    ui_group: Dataset
+    import_aliases: [Sample type, sample_type, material_condition, condition]
+    storage:
+      location: dataset_json
+      path: sample_type
+
+run_fields:
+  - field_id: specimen_name
+    label: Specimen name
+    role: specimen_identity
+    required: true
+    type: string
+    ui_group: Run analysis inputs
+    import_aliases: [Specimen name, specimen_name, specimen, sample_name]
+    storage:
+      location: token_preamble
+      token: Specimen name
+  - field_id: operator
+    label: Operator
+    role: acquisition_provenance
+    required: false
+    type: string
+    ui_group: Run acquisition provenance
+    import_aliases: [Operator, operator]
+    storage:
+      location: provenance
+      path: runs.{run_id}.acquisition_context.operator
+  - field_id: failure_mode
+    label: Failure mode / detail
+    role: review_validity
+    required: false
+    type: string
+    ui_group: Review / validity
+    import_aliases: [Failure mode, failure_mode, failure_detail]
+    storage:
+      location: token_preamble
+      token: Failure mode
+  - field_id: validity
+    label: Validity
+    role: review_validity
+    required: false
+    type: enum
+    allowed_values: [accepted, rejected, requires_review, unknown]
+    default: accepted
+    ui_group: Review / validity
+    import_aliases: [validity, valid]
+    value_map:
+      "1": accepted
+      "0": rejected
+      "true": accepted
+      "false": rejected
+      valid: accepted
+      invalid: rejected
+    storage:
+      location: token_preamble
+      token: Validity
+
+data_table:
+  format: tokenized_csv
+  unit_row: true
+  columns:
+    - family: load
+      label: Load
+      required: false
+      repeatable: false
+      accepted_units: [N, kN]
+      standard_unit: N
+      unit_dimension: force
+    - family: stress
+      label: Stress
+      required: false
+      repeatable: true
+      accepted_units: [MPa, N/mm2, N/mm^2]
+      standard_unit: MPa
+      unit_dimension: stress
+    - family: strain
+      label: Strain
+      required: false
+      repeatable: true
+      accepted_units: [usn, microstrain, mm/mm]
+      standard_unit: mm/mm
+      unit_dimension: strain
+    - family: time
+      label: Time
+      required: false
+      repeatable: false
+      accepted_units: [s]
+      standard_unit: s
+      unit_dimension: time
+
+unit_conversion_rules:
+  kN->N: 1000
+  N->kN: 0.001
+  usn->mm/mm: 0.000001
+  microstrain->mm/mm: 0.000001
+  N/mm2->MPa: 1
+  N/mm^2->MPa: 1
+
+migration:
+  compatible_prior_versions: []

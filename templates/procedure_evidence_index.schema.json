@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProcedureEvidenceIndex",
+  "type": "object",
+  "required": ["schema_version", "method_id", "runs"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "method_id": {"type": "string"},
+    "method_version": {"type": ["string", "null"]},
+    "runs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["step_id", "operation_type", "operation_result_ref"],
+          "properties": {
+            "step_id": {"type": "string"},
+            "phase": {"type": "string"},
+            "operation_type": {"type": "string"},
+            "evidence_role": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "audit_block_id": {"type": ["string", "null"]},
+            "audit_view_type": {"type": ["string", "null"]},
+            "report_role": {"type": ["string", "null"]},
+            "operation_result_ref": {"type": "string"},
+            "workbench_ref": {"type": ["string", "null"]},
+            "artifact_refs": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "warnings": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "dataset_level_steps": {
+      "type": "array",
+      "items": {"type": "object"}
+    }
+  }
+}

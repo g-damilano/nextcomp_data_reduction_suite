@@ -1,0 +1,30 @@
+from_schema_version: 0.1.0
+to_schema_version: 0.2.0
+schema_id: mechanical.compression
+status: active
+notes:
+  - Adds dataset-level fields.
+  - Acquisition provenance moves from token preamble to provenance for new packages.
+operations:
+  - operation: map_enum_value
+    source_field: failure_mode
+    target_field: validity
+    source_token: Failure mode
+    target_token: Validity
+    storage: token_preamble
+    value_map:
+      Valid: accepted
+      Invalid: rejected
+      Requires review: requires_review
+      Unknown: unknown
+  - operation: rename_token
+    source_field: machine
+    target_field: instrument_model
+    source_token: Machine
+    target_token: Instrument model
+    storage: token_preamble
+  - operation: require_user_value
+    target_field: sample_type
+    storage: dataset_json
+    requires_user: true
+    note: Legacy single-run packages did not carry dataset-level sample_type explicitly.

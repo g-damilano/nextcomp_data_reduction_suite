@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.page_title }}</title>
+  <style>
+    :root { --ink: #18252e; --muted: #536472; --line: #d8e0e6; --soft: #f6f8fa; --brand: #22566f; --ok: #217346; --warn: #9a6700; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; color: var(--ink); background: #f6f7f8; }
+    header { background: #26343b; color: white; padding: 28px 36px; }
+    main { max-width: 1080px; margin: 0 auto; padding: 26px; }
+    h1, h2 { margin: 0 0 10px; }
+    .meta { color: #d6e1e7; margin: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+    .card { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+    .card p { color: var(--muted); min-height: 40px; }
+    .handoff { background: white; border: 1px solid var(--line); border-left: 6px solid var(--brand); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+    .handoff p { margin: 4px 0 0; color: var(--muted); }
+    .journey { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 8px; margin: 14px 0; }
+    .step { background: var(--soft); border: 1px solid var(--line); border-radius: 999px; padding: 8px 10px; font-size: 13px; font-weight: 700; color: var(--brand); text-align: center; }
+    .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 0; }
+    .fact { background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+    .fact small { display: block; color: var(--muted); font-weight: 700; }
+    .fact strong { display: block; margin-top: 3px; font-size: 18px; }
+    .fact.warn strong { color: var(--warn); }
+    a.button { display: inline-block; border: 1px solid var(--brand); border-radius: 6px; padding: 8px 10px; color: var(--brand); text-decoration: none; font-weight: 700; }
+    .secondary { border-color: var(--line); color: var(--ink); }
+    .note { margin-top: 18px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MTDA Export Bundle</h1>
+    <p class="meta">Profile: {{ page.profile_label }}. This folder is a shareable view of an existing MTDA; method calculations were not rerun.</p>
+  </header>
+  <main>
+    <section class="handoff" aria-label="Export closure summary">
+      <h2>Export handoff</h2>
+      <p>This is the distribution copy of the method-run MTDA. Use it to review formal results, verify the process, inspect evidence, and share selected tables without reopening the analysis workflow. Final approval is shown separately as the archive state.</p>
+      <div class="journey" aria-label="Operator journey state">
+        <span class="step">Loaded</span>
+        <span class="step">Mapped</span>
+        <span class="step">Checked</span>
+        <span class="step">Accepted</span>
+        <span class="step">Completed</span>
+        <span class="step">Exported</span>
+      </div>
+      <div class="facts">
+        <div class="fact"><small>Final report runs</small><strong>{{ page.selected_count }}</strong></div>
+        <div class="fact"><small>Selection source</small><strong>{{ page.selection_source }}</strong></div>
+        <div class="fact"><small>Report completion</small><strong>{{ page.completion_status }}</strong></div>
+        <div class="fact"><small>Archive state</small><strong>{{ page.finalization_state }}</strong></div>
+        <div class="fact"><small>Selection set</small><strong>{{ page.selection_set }}</strong></div>
+        <div class="fact warn"><small>Export warnings</small><strong>{{ page.warning_count }}</strong></div>
+      </div>
+    </section>
+    <section class="grid" aria-label="Export handoff links">
+      <article class="card">
+        <h2>Test Report</h2>
+        <p>Formal method results, completion status, final report runs, and aggregate evidence.</p>
+        <a class="button" href="reports/test_report.html">Open Test Report</a>
+      </article>
+      <article class="card">
+        <h2>Audit Report</h2>
+        <p>Process-verification evidence for source, method, readiness, validation, acceptance, and finalization.</p>
+        <a class="button secondary" href="reports/audit_report.html">Open Audit Report</a>
+      </article>
+      <article class="card">
+        <h2>Aggregate Figure</h2>
+        <p>Standalone stress-strain evidence figure with individual replicates, mean, range, and variability.</p>
+        <a class="button secondary" href="figures/aggregate_stress_strain.html">Open Figure</a>
+      </article>
+      <article class="card">
+        <h2>Tables and Manifest</h2>
+        <p>CSV tables, export provenance, checksums, and a manifest of every exported artifact.</p>
+        <a class="button secondary" href="tables/individual_results.csv">Individual Results</a>
+        <a class="button secondary" href="export_manifest.json">Export Manifest</a>
+      </article>
+    </section>
+    <p class="note">Raw MTDA evidence remains in the source archive. This export is read-only and does not mutate the MTDP or MTDA.</p>
+  </main>
+</body>
+</html>

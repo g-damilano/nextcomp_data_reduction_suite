@@ -1,0 +1,1672 @@
+schema_id: mechanical.compression
+schema_version: 0.3.0
+label: Compression
+status: active
+test:
+  family: mechanical
+  mode: compression
+package:
+  granularity: dataset_with_runs
+  raw_folder: raw
+  normalized_folder: normalized
+  normalized_extension: .csv
+  run_id_pattern: run_{index:03d}
+ui:
+  groups:
+  - Overview
+  - Test Identification
+  - Material Identification
+  - Specimen Preparation
+  - Loading Fixture
+  - Test Conditions
+  - Measurement Method
+  - Deviations / Remarks
+  - Specimen Geometry
+  - Run Acquisition Inputs
+  - Channel / Preamble Summary
+  - User Validity / Failure Observation
+dataset_grouping:
+  enabled: true
+  grouping_field: sample_type
+  source_priority:
+  - sidecar_field
+  - parsed_token
+  - filename_pattern
+  - folder_name
+  - manual
+  parsed_tokens:
+  - Sample type
+  - Material condition
+  - Treatment
+  - Batch condition
+  filename_grouping:
+    delimiter_pattern: '[-_ ]+'
+    remove_tokens:
+    - Comp
+    - Compression
+    - Tensile
+    - Tension
+    - Flex
+    - Flexural
+    replicate_patterns:
+    - E\d+$
+    - R\d+$
+    - Run\d+$
+    - Specimen\d+$
+    - Sample\d+$
+  canonicalization:
+    casefold: true
+    replace_separators_with_space: true
+    collapse_whitespace: true
+    preserve_display_name: true
+  matching:
+    fuzzy_suggestions: true
+    auto_merge_threshold: 0.98
+    suggest_merge_threshold: 0.86
+sidecar_import:
+  enabled: true
+  same_stem: true
+  accepted_extensions:
+  - .yaml
+  - .yml
+  canonical_versions:
+  - 0.1.0
+  unknown_keys: prompt_mapping
+  conflict_policy: prefer_sidecar
+  mapping_profile:
+    enabled: true
+    apply_to_same_signature: true
+image_evidence:
+  enabled: true
+  required: false
+  accepted_formats:
+  - .jpg
+  - .jpeg
+  - .png
+  - .tif
+  - .tiff
+  views:
+  - id: front
+    label: Front image
+    required: false
+    purpose:
+    - audit
+    - future_metrology
+  - id: side
+    label: Side image
+    required: false
+    purpose:
+    - audit
+    - future_metrology
+  - id: top
+    label: Top image
+    required: false
+    purpose:
+    - audit
+    - future_metrology
+  - id: failure
+    label: Failure image
+    required: false
+    purpose:
+    - audit
+    - failure_documentation
+  - id: scale_reference
+    label: Scale reference
+    required: false
+    purpose:
+    - calibration
+    - future_metrology
+  - id: other
+    label: Other image
+    required: false
+    purpose:
+    - audit
+supplemental_files:
+  enabled: true
+  accepted_scopes:
+  - dataset
+  - run
+  - schema_mapping
+  - calibration
+  - equipment_evidence
+  - other
+  preserve_in_package: true
+unit_system: mechanical_metric_mm_N
+unit_systems:
+  mechanical_metric_mm_N:
+    dimensions:
+      length:
+        standard_unit: mm
+        accepted_units:
+        - m
+        - cm
+        - mm
+        - um
+      force:
+        standard_unit: N
+        accepted_units:
+        - N
+        - kN
+      area:
+        standard_unit: mm^2
+        accepted_units:
+        - m^2
+        - cm^2
+        - mm^2
+      speed:
+        standard_unit: mm/min
+        accepted_units:
+        - mm/min
+        - m/s
+      strain:
+        standard_unit: mm/mm
+        accepted_units:
+        - mm/mm
+        - usn
+        - microstrain
+      stress:
+        standard_unit: MPa
+        accepted_units:
+        - Pa
+        - kPa
+        - MPa
+        - N/mm^2
+dataset_fields:
+- field_id: sample_type
+  label: Sample type
+  role: dataset_identity
+  required: true
+  type: string
+  ui_group: Overview
+  storage:
+    location: dataset_json
+    path: sample_type
+  validation:
+    pattern: '[\w .,+/()#-]+'
+  import_aliases:
+  - dataset.sample_type
+  - Sample type
+  - sample_type
+  - material_condition
+  - material condition
+  - condition
+  report_role: sample_type
+  report_importance: required
+  description: Dataset/sample family name used to identify the tested group.
+- field_id: treatment
+  label: Treatment
+  role: dataset_identity
+  required: false
+  type: string
+  ui_group: Overview
+  storage:
+    location: dataset_json
+    path: treatment
+  import_aliases:
+  - dataset.treatment
+  - Treatment
+  report_role: treatment
+  report_importance: recommended
+  description: Material treatment, condition, or environmental ageing state.
+- field_id: material_label
+  label: Material label
+  role: dataset_identity
+  required: false
+  type: string
+  ui_group: Overview
+  storage:
+    location: dataset_json
+    path: material_label
+  import_aliases:
+  - dataset.material_label
+  - Material label
+  - material_label
+  - material
+  report_role: material_name
+  report_importance: recommended
+  description: Operator-facing material label used in the formal report.
+- field_id: test_id
+  label: Test ID
+  role: test_id
+  required: false
+  type: string
+  ui_group: Test Identification
+  storage:
+    location: dataset_json
+    path: report.test_identification.test_id
+  import_aliases:
+  - dataset.test_id
+  - test_id
+  - Test ID
+  - job_number
+  - request_id
+  report_role: test_id
+  report_importance: recommended
+  description: Laboratory test identifier or request number.
+- field_id: report_operator
+  label: Dataset operator
+  role: operator
+  required: false
+  type: string
+  ui_group: Test Identification
+  storage:
+    location: dataset_json
+    path: report.test_identification.operator
+  import_aliases:
+  - dataset.operator
+  - report.operator
+  - report_operator
+  report_role: operator
+  report_importance: recommended
+  description: Person responsible for the test series.
+- field_id: loading_method
+  label: Loading method
+  role: loading_method
+  required: false
+  type: enum
+  ui_group: Test Identification
+  storage:
+    location: dataset_json
+    path: report.test_identification.loading_method
+  allowed_values:
+  - method_1_shear_loading
+  - method_2_combined_loading
+  - other_specified
+  display_labels:
+    method_1_shear_loading: Shear loading (Method 1)
+    method_2_combined_loading: Combined loading (Method 2)
+    other_specified: Other specified
+  iso_compliant_values:
+  - method_1_shear_loading
+  - method_2_combined_loading
+  deviation_values:
+  - other_specified
+  import_aliases:
+  - loading_method
+  - Loading method
+  - compression loading method
+  value_map:
+    method_1_shear_loading: method_1_shear_loading
+    Method 1: method_1_shear_loading
+    method 1: method_1_shear_loading
+    shear loading: method_1_shear_loading
+    Shear loading: method_1_shear_loading
+    Shear loading (Method 1): method_1_shear_loading
+    method_2_combined_loading: method_2_combined_loading
+    Method 2: method_2_combined_loading
+    method 2: method_2_combined_loading
+    combined loading: method_2_combined_loading
+    Combined loading: method_2_combined_loading
+    Combined loading (Method 2): method_2_combined_loading
+    other_specified: other_specified
+    Other specified: other_specified
+  report_role: loading_method
+  report_importance: required
+- field_id: loading_method_other
+  label: Other loading method
+  role: loading_method
+  required: false
+  type: string
+  ui_group: Test Identification
+  storage:
+    location: dataset_json
+    path: report.test_identification.loading_method_other
+  import_aliases:
+  - loading_method_other
+  - Other loading method
+  - custom_loading_method
+  report_role: loading_method_other
+  report_importance: optional
+  visible_when:
+    field: loading_method
+    equals: other_specified
+  required_when:
+    field: loading_method
+    equals: other_specified
+  description: Required when Loading method is Other specified; reported as an ISO deviation.
+- field_id: specimen_type
+  label: Specimen type
+  role: specimen_type
+  required: false
+  type: enum
+  ui_group: Test Identification
+  storage:
+    location: dataset_json
+    path: report.test_identification.specimen_type
+  allowed_values:
+  - type_a
+  - type_b1
+  - type_b2
+  - other_specified
+  display_labels:
+    type_a: Type A
+    type_b1: Type B1
+    type_b2: Type B2
+    other_specified: Other specified
+  iso_compliant_values:
+  - type_a
+  - type_b1
+  - type_b2
+  deviation_values:
+  - other_specified
+  import_aliases:
+  - specimen_type
+  - Specimen type
+  value_map:
+    type_a: type_a
+    Type A: type_a
+    type A: type_a
+    A: type_a
+    type_b1: type_b1
+    Type B1: type_b1
+    type B1: type_b1
+    B1: type_b1
+    type_b2: type_b2
+    Type B2: type_b2
+    type B2: type_b2
+    B2: type_b2
+    other_specified: other_specified
+    Other specified: other_specified
+  report_role: specimen_type
+  report_importance: required
+- field_id: specimen_type_other
+  label: Other specimen type
+  role: specimen_type
+  required: false
+  type: string
+  ui_group: Test Identification
+  storage:
+    location: dataset_json
+    path: report.test_identification.specimen_type_other
+  import_aliases:
+  - specimen_type_other
+  - Other specimen type
+  - custom_specimen_type
+  report_role: specimen_type_other
+  report_importance: optional
+  visible_when:
+    field: specimen_type
+    equals: other_specified
+  required_when:
+    field: specimen_type
+    equals: other_specified
+  description: Required when Specimen type is Other specified; reported as an ISO deviation.
+- field_id: material_type
+  label: Material type
+  role: material_type
+  required: false
+  type: string
+  ui_group: Material Identification
+  storage:
+    location: dataset_json
+    path: report.material.material_type
+  report_role: material_type
+  report_importance: recommended
+- field_id: matrix_type
+  label: Matrix type
+  role: matrix_type
+  required: false
+  type: string
+  ui_group: Material Identification
+  storage:
+    location: dataset_json
+    path: report.material.matrix_type
+  report_role: matrix_type
+  report_importance: recommended
+- field_id: reinforcement_type
+  label: Reinforcement type
+  role: reinforcement_type
+  required: false
+  type: string
+  ui_group: Material Identification
+  storage:
+    location: dataset_json
+    path: report.material.reinforcement_type
+  report_role: reinforcement_type
+  report_importance: recommended
+- field_id: manufacturer
+  label: Manufacturer
+  role: manufacturer
+  required: false
+  type: string
+  ui_group: Material Identification
+  storage:
+    location: dataset_json
+    path: report.material.manufacturer
+  report_role: manufacturer
+  report_importance: recommended
+- field_id: manufacturer_code
+  label: Manufacturer code
+  role: manufacturer_code
+  required: false
+  type: string
+  ui_group: Material Identification
+  storage:
+    location: dataset_json
+    path: report.material.manufacturer_code
+  report_role: manufacturer_code
+  report_importance: optional
+- field_id: material_source
+  label: Source
+  role: source
+  required: false
+  type: string
+  ui_group: Material Identification
+  storage:
+    location: dataset_json
+    path: report.material.source
+  report_role: source
+  report_importance: recommended
+- field_id: material_form
+  label: Form
+  role: form
+  required: false
+  type: string
+  ui_group: Material Identification
+  storage:
+    location: dataset_json
+    path: report.material.form
+  report_role: form
+  report_importance: recommended
+- field_id: previous_history
+  label: Previous history
+  role: previous_history
+  required: false
+  type: string
+  ui_group: Material Identification
+  storage:
+    location: dataset_json
+    path: report.material.previous_history
+  report_role: previous_history
+  report_importance: recommended
+- field_id: cutting_direction
+  label: Cutting direction
+  role: cutting_direction
+  required: false
+  type: string
+  ui_group: Specimen Preparation
+  storage:
+    location: dataset_json
+    path: report.specimen_preparation.cutting_direction
+  report_role: cutting_direction
+  report_importance: recommended
+- field_id: fibre_orientation
+  label: Fibre orientation
+  role: fibre_orientation
+  required: false
+  type: string
+  ui_group: Specimen Preparation
+  storage:
+    location: dataset_json
+    path: report.specimen_preparation.fibre_orientation
+  report_role: fibre_orientation
+  report_importance: recommended
+- field_id: layup
+  label: Layup
+  role: layup
+  required: false
+  type: string
+  ui_group: Specimen Preparation
+  storage:
+    location: dataset_json
+    path: report.specimen_preparation.layup
+  report_role: layup
+  report_importance: recommended
+- field_id: preparation_method
+  label: Preparation method
+  role: preparation_method
+  required: false
+  type: string
+  ui_group: Specimen Preparation
+  storage:
+    location: dataset_json
+    path: report.specimen_preparation.preparation_method
+  report_role: preparation_method
+  report_importance: recommended
+- field_id: end_tabs
+  label: End tabs
+  role: end_tabs
+  required: false
+  type: string
+  ui_group: Specimen Preparation
+  storage:
+    location: dataset_json
+    path: report.specimen_preparation.end_tabs
+  report_role: end_tabs
+  report_importance: optional
+- field_id: surface_preparation
+  label: Surface preparation
+  role: surface_preparation
+  required: false
+  type: string
+  ui_group: Specimen Preparation
+  storage:
+    location: dataset_json
+    path: report.specimen_preparation.surface_preparation
+  report_role: surface_preparation
+  report_importance: optional
+- field_id: specimen_preparation_notes
+  label: Notes
+  role: specimen_preparation_notes
+  required: false
+  type: string
+  ui_group: Specimen Preparation
+  storage:
+    location: dataset_json
+    path: report.specimen_preparation.notes
+  report_role: specimen_preparation_notes
+  report_importance: optional
+- field_id: fixture_type
+  label: Fixture type
+  role: fixture_type
+  required: false
+  type: string
+  ui_group: Loading Fixture
+  storage:
+    location: dataset_json
+    path: report.fixture.fixture_type
+  report_role: fixture_type
+  report_importance: recommended
+- field_id: fixture_standard_reference
+  label: Fixture standard reference
+  role: fixture_standard_reference
+  required: false
+  type: string
+  ui_group: Loading Fixture
+  storage:
+    location: dataset_json
+    path: report.fixture.standard_reference
+  report_role: fixture_standard_reference
+  report_importance: optional
+- field_id: fixture_manufacturer_design
+  label: Manufacturer/design
+  role: fixture_manufacturer_design
+  required: false
+  type: string
+  ui_group: Loading Fixture
+  storage:
+    location: dataset_json
+    path: report.fixture.manufacturer_design
+  report_role: fixture_manufacturer_design
+  report_importance: recommended
+- field_id: alignment_procedure
+  label: Alignment procedure
+  role: alignment_procedure
+  required: false
+  type: string
+  ui_group: Loading Fixture
+  storage:
+    location: dataset_json
+    path: report.fixture.alignment_procedure
+  report_role: alignment_procedure
+  report_importance: recommended
+- field_id: fixture_notes
+  label: Notes
+  role: fixture_notes
+  required: false
+  type: string
+  ui_group: Loading Fixture
+  storage:
+    location: dataset_json
+    path: report.fixture.notes
+  report_role: fixture_notes
+  report_importance: optional
+- field_id: conditioning_standard
+  label: Conditioning standard
+  role: conditioning_standard
+  required: false
+  type: string
+  ui_group: Test Conditions
+  storage:
+    location: dataset_json
+    path: report.test_conditions.conditioning_standard
+  report_role: conditioning_standard
+  report_importance: recommended
+- field_id: temperature
+  label: Temperature
+  role: temperature
+  required: false
+  type: string
+  ui_group: Test Conditions
+  storage:
+    location: dataset_json
+    path: report.test_conditions.temperature
+  report_role: temperature
+  report_importance: recommended
+- field_id: humidity
+  label: Humidity
+  role: humidity
+  required: false
+  type: string
+  ui_group: Test Conditions
+  storage:
+    location: dataset_json
+    path: report.test_conditions.humidity
+  report_role: humidity
+  report_importance: recommended
+- field_id: conditioning_time
+  label: Conditioning time
+  role: conditioning_time
+  required: false
+  type: string
+  ui_group: Test Conditions
+  storage:
+    location: dataset_json
+    path: report.test_conditions.conditioning_time
+  report_role: conditioning_time
+  report_importance: recommended
+- field_id: test_environment
+  label: Test environment
+  role: test_environment
+  required: false
+  type: string
+  ui_group: Test Conditions
+  storage:
+    location: dataset_json
+    path: report.test_conditions.environment
+  report_role: test_environment
+  report_importance: recommended
+- field_id: speed_of_testing
+  label: Speed of testing
+  role: speed_of_testing
+  required: false
+  type: string
+  ui_group: Test Conditions
+  storage:
+    location: dataset_json
+    path: report.test_conditions.speed_of_testing
+  report_role: speed_of_testing
+  report_importance: recommended
+- field_id: strain_measurement_method
+  label: Strain measurement method
+  role: strain_measurement_method
+  required: false
+  type: string
+  ui_group: Measurement Method
+  storage:
+    location: dataset_json
+    path: report.measurement.strain_measurement_method
+  report_role: strain_measurement_method
+  report_importance: required
+- field_id: measurement_location
+  label: Measurement location
+  role: measurement_location
+  required: false
+  type: string
+  ui_group: Measurement Method
+  storage:
+    location: dataset_json
+    path: report.measurement.measurement_location
+  report_role: measurement_location
+  report_importance: recommended
+- field_id: acquisition_system
+  label: Acquisition system
+  role: acquisition_system
+  required: false
+  type: string
+  ui_group: Measurement Method
+  storage:
+    location: dataset_json
+    path: report.measurement.acquisition_system
+  report_role: acquisition_system
+  report_importance: recommended
+- field_id: sampling_rate
+  label: Sampling rate
+  role: sampling_rate
+  required: false
+  type: string
+  ui_group: Measurement Method
+  storage:
+    location: dataset_json
+    path: report.measurement.sampling_rate
+  report_role: sampling_rate
+  report_importance: recommended
+- field_id: measurement_notes
+  label: Notes
+  role: measurement_notes
+  required: false
+  type: string
+  ui_group: Measurement Method
+  storage:
+    location: dataset_json
+    path: report.measurement.notes
+  report_role: measurement_notes
+  report_importance: optional
+- field_id: deviations_from_standard
+  label: Deviations from standard
+  role: deviations_from_standard
+  required: false
+  type: string
+  ui_group: Deviations / Remarks
+  storage:
+    location: dataset_json
+    path: report.deviations_from_standard
+  report_role: deviations_from_standard
+  report_importance: optional
+- field_id: remarks
+  label: Remarks
+  role: remarks
+  required: false
+  type: string
+  ui_group: Deviations / Remarks
+  storage:
+    location: dataset_json
+    path: report.remarks
+  report_role: remarks
+  report_importance: optional
+run_fields:
+- field_id: specimen_name
+  label: Specimen name
+  role: specimen_identity
+  required: true
+  type: string
+  ui_group: Specimen Geometry
+  storage:
+    location: token_preamble
+    token: Specimen name
+  validation:
+    pattern: '[\w .,+/()#-]+'
+  suggestion_key: specimen_name
+  import_aliases:
+  - run.specimen_name
+  - Specimen name
+  - specimen_name
+  - specimen
+  - sample_name
+  report_importance: required
+- field_id: sample_id
+  label: Sample ID
+  role: specimen_identity
+  required: false
+  type: string
+  ui_group: Specimen Geometry
+  storage:
+    location: token_preamble
+    token: Sample ID
+  suggestion_key: sample_id
+  import_aliases:
+  - run.sample_id
+  - Sample ID
+  - sample_id
+  - sample
+  report_importance: optional
+- field_id: width
+  label: Width
+  role: specimen_metrology
+  required: true
+  type: float
+  ui_group: Specimen Geometry
+  storage:
+    location: token_preamble
+    token: Width
+  accepted_units:
+  - mm
+  - cm
+  - m
+  standard_unit: mm
+  validation:
+    min: 0
+  import_aliases:
+  - run.metrology.width
+  - metrology.width
+  - Width
+  - specimen_width
+  - sample_width
+  unit_dimension: length
+  report_importance: required
+- field_id: thickness
+  label: Thickness
+  role: specimen_metrology
+  required: true
+  type: float
+  ui_group: Specimen Geometry
+  storage:
+    location: token_preamble
+    token: Thickness
+  accepted_units:
+  - mm
+  - cm
+  - m
+  standard_unit: mm
+  validation:
+    min: 0
+  import_aliases:
+  - run.metrology.thickness
+  - metrology.thickness
+  - Thickness
+  - specimen_thickness
+  - sample_thickness
+  unit_dimension: length
+  report_importance: required
+- field_id: gauge_length
+  label: Strain-measurement gauge length
+  role: specimen_metrology
+  required: false
+  description: Required for methods that derive strain from extension or crosshead displacement; recommended when direct front/rear strain channels are present.
+  type: float
+  ui_group: Specimen Geometry
+  storage:
+    location: token_preamble
+    token: Gauge length
+  accepted_units:
+  - mm
+  - cm
+  - m
+  standard_unit: mm
+  validation:
+    min: 0
+  import_aliases:
+  - run.metrology.gauge_length
+  - metrology.gauge_length
+  - Gauge length
+  - gauge_length
+  - length
+  unit_dimension: length
+  report_role: gauge_length
+  report_importance: recommended
+- field_id: distance_between_end_tabs
+  label: Distance between end tabs / unsupported length
+  role: specimen_metrology
+  required: false
+  type: float
+  ui_group: Specimen Geometry
+  storage:
+    location: token_preamble
+    token: Distance between end tabs
+  accepted_units:
+  - mm
+  - cm
+  - m
+  standard_unit: mm
+  validation:
+    min: 0
+  import_aliases:
+  - run.metrology.distance_between_end_tabs
+  - metrology.distance_between_end_tabs
+  - Distance between end tabs
+  - unsupported_length
+  - unsupported gauge length
+  - distance_between_end_tabs
+  unit_dimension: length
+  report_role: distance_between_end_tabs
+  report_importance: optional
+- field_id: tab_length
+  label: Tab length
+  role: specimen_metrology
+  required: false
+  type: float
+  ui_group: Specimen Geometry
+  storage:
+    location: token_preamble
+    token: Tab length
+  accepted_units:
+  - mm
+  - cm
+  - m
+  standard_unit: mm
+  validation:
+    min: 0
+  import_aliases:
+  - run.metrology.tab_length
+  - metrology.tab_length
+  - Tab length
+  - tab_length
+  unit_dimension: length
+  report_role: tab_length
+  report_importance: optional
+- field_id: tab_thickness
+  label: Tab thickness
+  role: specimen_metrology
+  required: false
+  type: float
+  ui_group: Specimen Geometry
+  storage:
+    location: token_preamble
+    token: Tab thickness
+  accepted_units:
+  - mm
+  - cm
+  - m
+  standard_unit: mm
+  validation:
+    min: 0
+  import_aliases:
+  - run.metrology.tab_thickness
+  - metrology.tab_thickness
+  - Tab thickness
+  - tab_thickness
+  unit_dimension: length
+  report_role: tab_thickness
+  report_importance: optional
+- field_id: operator
+  label: Operator
+  role: acquisition_provenance
+  required: false
+  type: string
+  ui_group: Run Acquisition Inputs
+  storage:
+    location: provenance
+    path: runs.{run_id}.acquisition_context.operator
+  suggestion_key: operator
+  import_aliases:
+  - run.acquisition.operator
+  - acquisition.operator
+  - Operator
+  - tester
+  - user
+  report_role: operator
+  report_importance: recommended
+- field_id: instrument_model
+  label: Instrument model
+  role: acquisition_provenance
+  required: false
+  type: string
+  ui_group: Run Acquisition Inputs
+  storage:
+    location: provenance
+    path: runs.{run_id}.acquisition_context.instrument_model
+  suggestion_key: machine
+  import_aliases:
+    canonical_paths:
+    - run.acquisition.instrument
+    - run.acquisition.instrument_model
+    local_paths:
+    - acquisition.instrument
+    - acquisition.instrument_model
+    source_specific_keys:
+    - test_setup.machine
+    weak_keys:
+    - machine
+    - instrument
+    legacy_keys:
+    - testing_machine
+  report_role: machine_model
+  report_importance: optional
+- field_id: instrument_id
+  label: Instrument ID / serial number
+  role: acquisition_provenance
+  required: false
+  type: string
+  ui_group: Run Acquisition Inputs
+  storage:
+    location: provenance
+    path: runs.{run_id}.acquisition_context.instrument_id
+  import_aliases:
+  - run.acquisition.instrument_id
+  - acquisition.instrument_id
+  - instrument_id
+  - serial_number
+  - serial
+  - asset_id
+  report_role: machine_id
+  report_importance: recommended
+- field_id: instrument_location
+  label: Instrument location
+  role: acquisition_provenance
+  required: false
+  type: string
+  ui_group: Run Acquisition Inputs
+  storage:
+    location: provenance
+    path: runs.{run_id}.acquisition_context.instrument_location
+  import_aliases:
+    canonical_paths:
+    - run.acquisition.instrument_location
+    local_paths:
+    - acquisition.instrument_location
+    field_ids:
+    - instrument_location
+    weak_keys:
+    - location
+    legacy_keys:
+    - lab
+  report_role: instrument_location
+  report_importance: optional
+- field_id: load_cell
+  label: Load cell
+  role: acquisition_provenance
+  required: false
+  type: float
+  ui_group: Run Acquisition Inputs
+  storage:
+    location: provenance
+    path: runs.{run_id}.acquisition_context.load_cell
+  accepted_units:
+  - N
+  - kN
+  standard_unit: kN
+  validation:
+    min: 0
+  suggestion_key: load_cell
+  import_aliases:
+  - run.acquisition.load_cell
+  - acquisition.load_cell
+  - test_setup.load_cell
+  - Load cell
+  - load_cell
+  - loadcell
+  - LC
+  unit_dimension: force
+  report_role: load_cell
+  report_importance: optional
+- field_id: test_speed
+  label: Test speed
+  role: acquisition_provenance
+  required: false
+  type: float
+  ui_group: Run Acquisition Inputs
+  storage:
+    location: provenance
+    path: runs.{run_id}.acquisition_context.test_speed
+  accepted_units:
+  - mm/min
+  standard_unit: mm/min
+  validation:
+    min: 0
+  suggestion_key: test_speed
+  import_aliases:
+  - run.acquisition.test_speed
+  - acquisition.test_speed
+  - test_setup.test_speed
+  - Test speed
+  - test_speed
+  - speed
+  - crosshead_speed
+  unit_dimension: speed
+  report_role: speed_of_testing
+  report_importance: recommended
+- field_id: test_date
+  label: Test date
+  role: acquisition_provenance
+  required: false
+  type: date
+  ui_group: Run Acquisition Inputs
+  storage:
+    location: provenance
+    path: runs.{run_id}.acquisition_context.test_date
+  import_aliases:
+  - run.acquisition.test_date
+  - acquisition.test_date
+  - Test date
+  - test_date
+  - date
+  date_formats:
+    accepted:
+    - yyyy-MM-dd
+    - dd/MM/yyyy
+    - d/M/yyyy
+    - dd-MM-yyyy
+    - d-M-yyyy
+    - dd.MM.yyyy
+    - d.M.yyyy
+    canonical: yyyy-MM-dd
+    default_interpretation: en_GB
+  report_role: date_of_measurement
+  report_importance: recommended
+- field_id: source_software
+  label: Source software
+  role: acquisition_provenance
+  required: false
+  type: string
+  ui_group: Run Acquisition Inputs
+  storage:
+    location: provenance
+    path: runs.{run_id}.acquisition_context.source_software
+  import_aliases:
+  - run.acquisition.source_software
+  - acquisition.source_software
+  - Source software
+  - source_software
+  - software
+  report_role: acquisition_system
+  report_importance: recommended
+- field_id: failure_mode
+  label: Failure mode / detail
+  role: review_validity
+  required: false
+  type: string
+  ui_group: User Validity / Failure Observation
+  storage:
+    location: token_preamble
+    token: Failure mode
+  import_aliases:
+  - run.review.failure_mode
+  - review.failure_mode
+  - Failure mode
+  - failure_mode
+  - failure_detail
+  report_role: failure_mode
+  report_importance: recommended
+- field_id: primary_failure_mode
+  label: Primary failure mode
+  role: review_validity
+  required: false
+  type: enum
+  ui_group: User Validity / Failure Observation
+  storage:
+    location: token_preamble
+    token: Primary failure mode
+  allowed_values:
+  - in_plane_shear
+  - complex
+  - through_thickness_shear
+  - splitting
+  - delamination
+  - not_recorded
+  display_labels:
+    in_plane_shear: In-plane shear
+    complex: Complex
+    through_thickness_shear: Through-thickness shear
+    splitting: Splitting
+    delamination: Delamination
+    not_recorded: Not recorded
+  default: not_recorded
+  import_aliases:
+  - run.review.primary_failure_mode
+  - review.primary_failure_mode
+  - Primary failure mode
+  - primary_failure_mode
+  - iso_failure_mode
+  report_role: failure_mode
+  report_importance: required_for_accepted_runs
+- field_id: failure_location
+  label: Failure location
+  role: review_validity
+  required: false
+  type: enum
+  ui_group: User Validity / Failure Observation
+  storage:
+    location: token_preamble
+    token: Failure location
+  allowed_values:
+  - within_gauge_length
+  - at_gauge_length_end
+  - fixture_edge_or_tab_edge
+  - grip_end_block
+  - end_tab
+  - specimen_end
+  - outside_gauge_length
+  - unknown
+  - not_recorded
+  display_labels:
+    within_gauge_length: Within gauge length
+    at_gauge_length_end: At gauge length end
+    fixture_edge_or_tab_edge: Fixture edge or tab edge
+    grip_end_block: Grip/end block
+    end_tab: End tab
+    specimen_end: Specimen end
+    outside_gauge_length: Outside gauge length
+    unknown: Unknown
+    not_recorded: Not recorded
+  default: not_recorded
+  import_aliases:
+  - run.review.failure_location
+  - review.failure_location
+  - Failure location
+  - failure_location
+  report_role: failure_location
+  report_importance: required_for_accepted_runs
+- field_id: failure_observed
+  label: Failure observed
+  role: review_validity
+  required: false
+  type: bool
+  ui_group: User Validity / Failure Observation
+  storage:
+    location: token_preamble
+    token: Failure observed
+  import_aliases:
+  - run.review.failure_observed
+  - review.failure_observed
+  - Failure observed
+  - failure_observed
+  report_role: failure_observed
+  report_importance: recommended
+- field_id: invalid_specimen_reason
+  label: Invalid specimen reason
+  role: review_validity
+  required: false
+  type: enum
+  ui_group: User Validity / Failure Observation
+  storage:
+    location: token_preamble
+    token: Invalid specimen reason
+  allowed_values:
+  - none
+  - bending_non_compliance
+  - grip_end_block_failure
+  - end_tab_failure
+  - specimen_end_failure
+  - operator_marked_invalid
+  - data_quality_issue
+  - other
+  display_labels:
+    none: None
+    bending_non_compliance: Bending non-compliance
+    grip_end_block_failure: Grip/end block failure
+    end_tab_failure: End tab failure
+    specimen_end_failure: Specimen end failure
+    operator_marked_invalid: Operator marked invalid
+    data_quality_issue: Data quality issue
+    other: Other
+  default: none
+  import_aliases:
+  - run.review.invalid_specimen_reason
+  - review.invalid_specimen_reason
+  - Invalid specimen reason
+  - invalid_specimen_reason
+  report_role: invalid_specimen_reason
+  report_importance: optional
+- field_id: invalid_specimen_reason_other
+  label: Other invalid specimen reason
+  role: review_validity
+  required: false
+  type: string
+  ui_group: User Validity / Failure Observation
+  storage:
+    location: token_preamble
+    token: Other invalid specimen reason
+  import_aliases:
+  - run.review.invalid_specimen_reason_other
+  - review.invalid_specimen_reason_other
+  - Other invalid specimen reason
+  - invalid_specimen_reason_other
+  report_role: invalid_specimen_reason_other
+  report_importance: optional
+  visible_when:
+    field: invalid_specimen_reason
+    equals: other
+  required_when:
+    field: invalid_specimen_reason
+    equals: other
+  description: Required when Invalid specimen reason is Other.
+- field_id: failure_analysis_notes
+  label: Failure analysis notes
+  role: review_validity
+  required: false
+  type: string
+  ui_group: User Validity / Failure Observation
+  storage:
+    location: token_preamble
+    token: Failure analysis notes
+  import_aliases:
+  - run.review.failure_analysis_notes
+  - review.failure_analysis_notes
+  - Failure analysis notes
+  - failure_analysis_notes
+  - failure_notes
+  report_role: failure_analysis_notes
+  report_importance: optional
+- field_id: visible_buckling_or_bending_observation
+  label: Visible buckling / bending observation
+  role: review_validity
+  required: false
+  type: enum
+  ui_group: User Validity / Failure Observation
+  storage:
+    location: token_preamble
+    token: Visible buckling / bending observation
+  allowed_values:
+  - none_observed
+  - visible_bending
+  - suspected_euler_buckling
+  - specimen_slip_or_fixture_issue
+  - other
+  - not_recorded
+  display_labels:
+    none_observed: None observed
+    visible_bending: Visible bending
+    suspected_euler_buckling: Suspected Euler buckling
+    specimen_slip_or_fixture_issue: Specimen slip or fixture issue
+    other: Other
+    not_recorded: Not recorded
+  default: not_recorded
+  import_aliases:
+  - run.review.visible_buckling_or_bending_observation
+  - review.visible_buckling_or_bending_observation
+  - Visible buckling / bending observation
+  - visible_buckling_or_bending_observation
+  - bending_observation
+  report_role: visible_buckling_or_bending_observation
+  report_importance: optional
+- field_id: visible_buckling_or_bending_observation_other
+  label: Other buckling / bending observation
+  role: review_validity
+  required: false
+  type: string
+  ui_group: User Validity / Failure Observation
+  storage:
+    location: token_preamble
+    token: Other buckling / bending observation
+  import_aliases:
+  - run.review.visible_buckling_or_bending_observation_other
+  - review.visible_buckling_or_bending_observation_other
+  - Other buckling / bending observation
+  - visible_buckling_or_bending_observation_other
+  report_role: visible_buckling_or_bending_observation_other
+  report_importance: optional
+  visible_when:
+    field: visible_buckling_or_bending_observation
+    equals: other
+  required_when:
+    field: visible_buckling_or_bending_observation
+    equals: other
+  description: Required when Visible buckling / bending observation is Other.
+- field_id: failure_image_reference
+  label: Failure image reference
+  role: review_validity
+  required: false
+  type: string
+  ui_group: User Validity / Failure Observation
+  storage:
+    location: token_preamble
+    token: Failure image reference
+  note: Should link to the existing image_evidence failure view where available.
+  import_aliases:
+  - run.review.failure_image_reference
+  - review.failure_image_reference
+  - image_evidence.failure
+  - Failure image reference
+  - failure_image_reference
+  report_role: failure_image_reference
+  report_importance: optional
+- field_id: validity
+  label: Validity
+  role: review_validity
+  required: false
+  type: enum
+  ui_group: User Validity / Failure Observation
+  storage:
+    location: token_preamble
+    token: Validity
+  allowed_values:
+  - accepted
+  - rejected
+  - requires_review
+  - unknown
+  default: accepted
+  import_aliases:
+    canonical_paths:
+    - run.review.validity
+    local_paths:
+    - review.validity
+    field_ids:
+    - validity
+    weak_keys:
+    - valid
+  value_map:
+    '1': accepted
+    '0': rejected
+    'true': accepted
+    'false': rejected
+    valid: accepted
+    invalid: rejected
+    accepted: accepted
+    rejected: rejected
+  report_role: validity
+  report_importance: recommended
+- field_id: requires_review
+  label: Requires review
+  role: review_validity
+  required: false
+  type: bool
+  ui_group: User Validity / Failure Observation
+  storage:
+    location: token_preamble
+    token: Requires review
+  import_aliases:
+  - run.review.requires_review
+  - review.requires_review
+  - Requires review
+  - requires_review
+  - review
+  report_role: requires_review
+  report_importance: optional
+- field_id: rejection_reason
+  label: Rejection reason
+  role: review_validity
+  required: false
+  type: string
+  ui_group: User Validity / Failure Observation
+  storage:
+    location: token_preamble
+    token: Rejection reason
+  import_aliases:
+  - run.review.rejection_reason
+  - review.rejection_reason
+  - Rejection reason
+  - rejection_reason
+  - reject_reason
+  report_role: rejection_reason
+  report_importance: optional
+- field_id: run_notes
+  label: Run notes
+  role: run_notes
+  required: false
+  type: string
+  ui_group: Channel / Preamble Summary
+  storage:
+    location: provenance
+    path: runs.{run_id}.report_notes.run_notes
+  report_role: run_notes
+  report_importance: optional
+metadata_sections:
+- id: overview
+  label: Overview
+  scope: dataset
+  ui_group: Overview
+  fields:
+  - field_ref: sample_type
+  - field_ref: treatment
+  - field_ref: material_label
+  report_section: test_identification
+- id: test_identification
+  label: Test Identification
+  scope: dataset
+  ui_group: Test Identification
+  fields:
+  - field_ref: test_id
+  - field_ref: report_operator
+  - field_ref: loading_method
+  - field_ref: loading_method_other
+  - field_ref: specimen_type
+  - field_ref: specimen_type_other
+  report_section: test_identification
+- id: material_identification
+  label: Material Identification
+  scope: dataset
+  ui_group: Material Identification
+  fields:
+  - field_ref: material_type
+  - field_ref: matrix_type
+  - field_ref: reinforcement_type
+  - field_ref: manufacturer
+  - field_ref: manufacturer_code
+  - field_ref: material_source
+  - field_ref: material_form
+  - field_ref: previous_history
+  report_section: material_identification
+- id: specimen_preparation
+  label: Specimen Preparation
+  scope: dataset
+  ui_group: Specimen Preparation
+  fields:
+  - field_ref: cutting_direction
+  - field_ref: fibre_orientation
+  - field_ref: layup
+  - field_ref: preparation_method
+  - field_ref: end_tabs
+  - field_ref: surface_preparation
+  - field_ref: specimen_preparation_notes
+  report_section: specimen_preparation
+- id: loading_fixture
+  label: Loading Fixture
+  scope: dataset
+  ui_group: Loading Fixture
+  fields:
+  - field_ref: fixture_type
+  - field_ref: fixture_standard_reference
+  - field_ref: fixture_manufacturer_design
+  - field_ref: alignment_procedure
+  - field_ref: fixture_notes
+  report_section: loading_fixture
+- id: test_conditions
+  label: Test Conditions
+  scope: dataset
+  ui_group: Test Conditions
+  fields:
+  - field_ref: conditioning_standard
+  - field_ref: temperature
+  - field_ref: humidity
+  - field_ref: conditioning_time
+  - field_ref: test_environment
+  - field_ref: speed_of_testing
+  report_section: test_conditions
+- id: measurement_method
+  label: Measurement Method
+  scope: dataset
+  ui_group: Measurement Method
+  fields:
+  - field_ref: strain_measurement_method
+  - field_ref: measurement_location
+  - field_ref: acquisition_system
+  - field_ref: sampling_rate
+  - field_ref: measurement_notes
+  report_section: measurement_method
+- id: deviations_remarks
+  label: Deviations / Remarks
+  scope: dataset
+  ui_group: Deviations / Remarks
+  fields:
+  - field_ref: deviations_from_standard
+  - field_ref: remarks
+  report_section: remarks
+- id: specimen_geometry
+  label: Specimen Geometry
+  scope: run
+  ui_group: Specimen Geometry
+  fields:
+  - field_ref: specimen_name
+  - field_ref: sample_id
+  - field_ref: width
+  - field_ref: thickness
+  - field_ref: gauge_length
+  - field_ref: distance_between_end_tabs
+  - field_ref: tab_length
+  - field_ref: tab_thickness
+  report_section: specimen_geometry
+- id: run_acquisition_inputs
+  label: Run Acquisition Inputs
+  scope: run
+  ui_group: Run Acquisition Inputs
+  fields:
+  - field_ref: operator
+  - field_ref: instrument_model
+  - field_ref: instrument_id
+  - field_ref: instrument_location
+  - field_ref: load_cell
+  - field_ref: test_speed
+  - field_ref: test_date
+  - field_ref: source_software
+  report_section: test_conditions
+- id: channel_preamble_summary
+  label: Channel / Preamble Summary
+  scope: run
+  ui_group: Channel / Preamble Summary
+  fields:
+  - field_ref: run_notes
+  report_section: measurement_method
+- id: user_validity_failure_observation
+  label: User Validity / Failure Observation
+  scope: run
+  ui_group: User Validity / Failure Observation
+  fields:
+  - field_ref: primary_failure_mode
+  - field_ref: failure_location
+  - field_ref: invalid_specimen_reason
+  - field_ref: invalid_specimen_reason_other
+  - field_ref: visible_buckling_or_bending_observation
+  - field_ref: visible_buckling_or_bending_observation_other
+  - field_ref: failure_analysis_notes
+  - field_ref: failure_image_reference
+  - field_ref: validity
+  - field_ref: requires_review
+  - field_ref: rejection_reason
+  report_section: failure_analysis
+data_table:
+  format: tokenized_csv
+  unit_row: true
+  columns:
+  - family: load
+    label: Load
+    required: true
+    repeatable: false
+    accepted_units:
+    - N
+    - kN
+    standard_unit: N
+    unit_dimension: force
+  - family: extension
+    label: Extension
+    required: false
+    repeatable: false
+    accepted_units:
+    - mm
+    - cm
+    - m
+    standard_unit: mm
+    unit_dimension: length
+  - family: displacement
+    label: Displacement
+    required: false
+    repeatable: false
+    accepted_units:
+    - mm
+    - cm
+    - m
+    standard_unit: mm
+    unit_dimension: length
+  - family: strain
+    label: Strain
+    required: false
+    repeatable: true
+    accepted_units:
+    - usn
+    - microstrain
+    - mm/mm
+    standard_unit: mm/mm
+    unit_dimension: strain
+  - family: stress
+    label: Stress
+    required: false
+    repeatable: true
+    accepted_units:
+    - MPa
+    - N/mm2
+    - N/mm^2
+    standard_unit: MPa
+    unit_dimension: stress
+  - family: time
+    label: Time
+    required: false
+    repeatable: false
+    accepted_units:
+    - s
+    - ms
+    - us
+    standard_unit: s
+    unit_dimension: time
+unit_conversion_rules:
+  kN->N: 1000
+  N->kN: 0.001
+  cm->mm: 10
+  m->mm: 1000
+  usn->mm/mm: 1.0e-06
+  microstrain->mm/mm: 1.0e-06
+  N/mm2->MPa: 1
+  N/mm^2->MPa: 1
+  ms->s: 0.001
+  us->s: 1.0e-06
+migration:
+  compatible_prior_versions:
+  - 0.1.0

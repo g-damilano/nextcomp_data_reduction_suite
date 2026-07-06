@@ -1,0 +1,90 @@
+projection_id: bending_evidence
+golden_id: golden_bending_evidence
+version: 0.1.0
+schema_version: plot_projection_recipe.v0_1
+plot_type: bending_evidence
+production_state: production
+surface_profiles:
+  - surface: wizard
+    role: acceptance cockpit run decision evidence
+    renderer: Vega-Lite via React
+  - surface: audit_report
+    role: bending diagnostic evidence
+    renderer: Vega-Lite
+  - surface: mtda_export
+    role: run bending evidence package
+    renderer: compact-vegalite-workbench
+data_contract:
+  source_tables:
+    - method_outputs/curves/stress_strain_family_bounded.csv
+    - reduce_summary.runs.{run_id}.diagnostics.bending_diagnostic
+  required_fields:
+    - load_N
+    - front_strain_abs
+    - rear_strain_abs
+  optional_fields:
+    - front_strain
+    - rear_strain
+    - point_index
+    - stress_MPa
+  forbidden_transforms:
+    - threshold_recalculation
+    - window_reselection
+transform_ids:
+  - run.front_rear_strain_traces.v1
+semantic_contract:
+  layers:
+    - layer_id: bending_percent_series
+      semantic_role: assessed bending percentage over load
+      required: true
+    - layer_id: context_bending_series
+      semantic_role: non-assessed context bending trace
+      required: false
+    - layer_id: threshold_line
+      semantic_role: configured ISO bending threshold
+      required: true
+    - layer_id: threshold_annotation
+      semantic_role: threshold label
+      required: false
+    - layer_id: assessment_window_10_90_fmax
+      semantic_role: 10-90 percent Fmax assessment window
+      required: true
+    - layer_id: assessment_window_10_percent_boundary
+      semantic_role: lower assessment boundary
+      required: false
+    - layer_id: assessment_window_90_percent_boundary
+      semantic_role: upper assessment boundary
+      required: false
+    - layer_id: exceedance_points
+      semantic_role: points above configured bending threshold
+      required: false
+    - layer_id: exceedance_segments
+      semantic_role: sustained or transient exceedance regions
+      required: false
+    - layer_id: classification_marker
+      semantic_role: bending diagnostic classification
+      required: false
+quality_contract:
+  requires_data: true
+  requires_axis_labels: true
+  requires_tooltips: true
+  significant_digits_policy: display at three significant digits where formatted outside Vega
+staleness_contract:
+  status_source: reduce_summary.runs.{run_id}.diagnostics.bending_diagnostic
+  stale_if_threshold_missing: true
+  stale_if_assessment_window_missing: warning
+artifact_contract:
+  primary_artifacts:
+    - Vega-Lite spec
+    - acceptance cockpit evidence plot
+    - compact plot package JSON
+  export_formats:
+    - html
+    - json
+    - svg
+    - png
+migration_metadata:
+  current_builder: plotting.plots.bending_evidence.build_bending_evidence
+  current_router: plotting.registry.create_default_registry
+  migration_status: recipe documented; production routing unchanged
+  parity_reference: legacy Method Analysis acceptance cockpit bending panels

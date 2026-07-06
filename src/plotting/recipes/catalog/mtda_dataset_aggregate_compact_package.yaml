@@ -1,0 +1,69 @@
+projection_id: mtda_dataset_aggregate_compact_package
+golden_id: golden_mtda_dataset_aggregate_compact_package
+version: 0.1.0
+schema_version: plot_projection_recipe.v0_1
+plot_type: dataset_aggregate_stress_strain
+production_state: production
+surface_profiles:
+  - surface: mtda_archive
+    role: dataset aggregate compact plot package
+    renderer: compact-vegalite-workbench
+data_contract:
+  source_tables:
+    - aggregate/stress_strain_aligned.csv
+    - aggregate/bending_summary_table.csv
+    - aggregate/results_table.csv
+  required_fields:
+    - run_id
+    - y_observed
+  optional_fields:
+    - x_common
+    - mean_stress_MPa
+    - min_stress_MPa
+    - max_stress_MPa
+    - bending_pattern
+    - compressive_strength_MPa
+  forbidden_transforms:
+    - cohort_reselection
+transform_ids:
+  - aggregate.all_runs_resampled_curve_family.v1
+  - aggregate.stress_band_from_run_grid.v1
+  - aggregate.bending_summary_passthrough.v1
+  - aggregate.fmax_distribution.v1
+semantic_contract:
+  layers:
+    - layer_id: all_runs_resampled_curve_family
+      semantic_role: all runs resampled stress-strain curve family
+      required: true
+    - layer_id: stress_aggregate_band
+      semantic_role: aggregate stress band from run grid
+      required: false
+    - layer_id: bending_summary
+      semantic_role: aggregate bending summary companion dataset
+      required: false
+    - layer_id: fmax_distribution
+      semantic_role: final strength distribution companion dataset
+      required: false
+quality_contract:
+  requires_compact_package: true
+  requires_plot_data_views: true
+  requires_source_refs: true
+staleness_contract:
+  status_source: compact package plot_data_views source checksums
+  stale_if_source_checksum_mismatch: true
+artifact_contract:
+  primary_artifacts:
+    - aggregate/dataset_plot.plot_package.json
+    - aggregate/dataset_plot.template.json
+    - aggregate/dataset_plot.html
+  export_formats:
+    - html
+    - json
+    - csv
+    - svg
+    - png
+migration_metadata:
+  current_builder: archives.mtda.writer._compact_plot_package_files
+  current_router: archives.mtda.writer._aligned_plot_files
+  migration_status: recipe metadata embedded in compact package and surfaced in MTDA surface manifest; rendering route preserved
+  parity_reference: tests/archives/test_mtda_plot_data_views.py

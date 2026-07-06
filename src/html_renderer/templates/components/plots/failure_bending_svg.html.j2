@@ -1,0 +1,12 @@
+<svg viewBox="0 0 {{ page.width }} {{ page.height }}" width="100%" height="{{ page.height }}" role="img" aria-label="Bending distribution preview">
+  <rect x="0" y="0" width="{{ page.width }}" height="{{ page.height }}" fill="#ffffff"/>
+  <rect x="{{ page.left }}" y="{{ page.top }}" width="{{ page.plot_width }}" height="{{ page.threshold_fill_height }}" fill="#f7dfdd" opacity="0.36"/>
+  <line x1="{{ page.left }}" y1="{{ page.bottom }}" x2="{{ page.right }}" y2="{{ page.bottom }}" stroke="#5b6775" stroke-width="1"/>
+  <line x1="{{ page.left }}" y1="{{ page.bottom }}" x2="{{ page.left }}" y2="{{ page.top }}" stroke="#5b6775" stroke-width="1"/>
+  <line x1="{{ page.left }}" y1="{{ page.threshold_y }}" x2="{{ page.right }}" y2="{{ page.threshold_y }}" stroke="#d9786d" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="{{ page.threshold_label_x }}" y="{{ page.threshold_label_y }}" font-size="12" fill="#b85f56">10% threshold</text>
+  {{ page.boxes_html }}
+  {{ page.labels_html }}
+  <text x="350" y="274" text-anchor="middle" font-size="12">Run</text>
+  <text x="18" y="138" transform="rotate(-90 18 138)" text-anchor="middle" font-size="12">Bending / %</text>
+</svg>

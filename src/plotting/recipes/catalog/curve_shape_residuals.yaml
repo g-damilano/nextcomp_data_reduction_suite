@@ -1,0 +1,60 @@
+projection_id: curve_shape_residuals
+golden_id: golden_curve_shape_residuals
+version: 0.1.0
+schema_version: plot_projection_recipe.v0_1
+plot_type: curve_shape_residuals
+production_state: production
+surface_profiles:
+  - surface: audit_report
+    role: curve-shape residual detail evidence
+    renderer: Vega-Lite
+  - surface: wizard
+    role: acceptance cockpit curve-shape detail evidence
+    renderer: Vega-Lite via React
+data_contract:
+  source_tables:
+    - acceptance/curve_family/curve_diagnostic_residuals.csv
+    - acceptance/curve_family/curve_diagnostic_scores.csv
+  required_fields:
+    - run_id
+    - standardized_residual
+  optional_fields:
+    - x_common
+    - analysis_progress_percent
+    - diagnostic_classification
+  forbidden_transforms:
+    - residual_recalculation
+transform_ids:
+  - curve_shape.residual_rows.v1
+semantic_contract:
+  layers:
+    - layer_id: residual_curves
+      semantic_role: standardized residual curves
+      required: true
+    - layer_id: zero_line
+      semantic_role: zero residual guide
+      required: true
+    - layer_id: highlighted_outlier_residuals
+      semantic_role: outlier residual highlighting
+      required: false
+    - layer_id: threshold_guide_bands
+      semantic_role: residual threshold guide bands
+      required: false
+quality_contract:
+  requires_data: true
+  requires_axis_labels: true
+  requires_tooltips: true
+staleness_contract:
+  status_source: acceptance/curve_family/curve_diagnostic_policy.json
+  stale_if_residual_source_missing: true
+artifact_contract:
+  primary_artifacts:
+    - Vega-Lite spec
+  export_formats:
+    - html
+    - json
+migration_metadata:
+  current_builder: plotting.plots.curve_residuals.build_curve_shape_residuals
+  current_router: plotting.registry.create_default_registry
+  migration_status: recipe documented; production routing unchanged
+  parity_reference: tests/plotting/test_modular_plotting.py

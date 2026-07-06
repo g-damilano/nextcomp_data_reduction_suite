@@ -1,0 +1,35 @@
+{
+  "manifest": {
+    "package_format": "mtdp",
+    "format_version": "0.2.0",
+    "schema_id": "mechanical.compression",
+    "schema_version": "0.2.0"
+  },
+  "dataset": {
+    "sample_type": "Golden untreated compression",
+    "sample_type_key": "golden untreated compression",
+    "run_order": ["run_001", "run_002"]
+  },
+  "required_members": [
+    "manifest.json",
+    "schema.json",
+    "dataset.json",
+    "provenance.json",
+    "checksums.json",
+    "raw/run_001.csv",
+    "raw/run_002.csv",
+    "normalized/run_001.csv",
+    "normalized/run_002.csv",
+    "supplemental/run_001.yaml",
+    "supplemental/run_002.yaml",
+    "images/run_001_front.jpg"
+  ],
+  "expected_events": [
+    "package_created",
+    "grouping_confirmed",
+    "raw_file_imported",
+    "yaml_sidecar_imported",
+    "unit_normalized",
+    "image_evidence_added"
+  ]
+}

@@ -1,0 +1,222 @@
+reduce:
+  - id: reduce.derive_stress_full
+    label: Derive full compressive stress series for audit
+    op: derive_series_by_scalar
+    numerator: load_N
+    denominator: area_mm2
+    output: stress_MPa_full
+    unit: MPa
+    inspect_with_x: mean_strain
+    audit_view: full_stress_construction
+    evidence:
+      evidence_role: supporting_evidence
+      default_audit_block: run_stress_strain_reduction
+      audit_view: stress_curve_overlay
+      workbench_view: stress_derivation_view
+      required_artifacts:
+        - full_stress_strain_curve
+        - stress_formula
+    report:
+      include: false
+      roles: []
+      destinations: []
+    surface_policy:
+      audit_report: context
+      test_report: hidden
+      workbench: detailed
+
+  - id: reduce.derive_stress
+    label: Derive bounded compressive stress series
+    op: derive_series_by_scalar
+    numerator: load_N_bounded
+    denominator: area_mm2
+    output: stress_MPa
+    unit: MPa
+    inspect_with_x: mean_strain_bounded
+    audit_view: stress_construction
+    evidence:
+      evidence_role: supporting_evidence
+      default_audit_block: run_stress_strain_reduction
+      audit_view: stress_curve_overlay
+      workbench_view: stress_derivation_view
+      required_artifacts:
+        - bounded_stress_strain_curve
+        - stress_formula
+    report:
+      include: false
+      roles: []
+      destinations: []
+    surface_policy:
+      audit_report: supporting
+      test_report: hidden
+      workbench: detailed
+
+  - id: reduce.max_load
+    label: Read accepted failure-peak load at resolved boundary endpoint
+    op: accepted_peak_point
+    y: load_N_bounded
+    output_value: max_load_N
+    output_index: max_load_index
+    index_from: accepted_failure_peak_index
+    index_series: point_index_bounded
+    mode: absolute_max
+    audit_view: max_point_marker
+    evidence:
+      evidence_role: supporting_evidence
+      default_audit_block: run_stress_strain_reduction
+      audit_view: max_point_marker
+      workbench_view: max_point_view
+      required_artifacts:
+        - bounded_load_curve
+        - max_load_marker
+    report:
+      include: true
+      roles:
+        - max_load
+      destinations:
+        - individual_results
+        - aggregate_results
+    surface_policy:
+      audit_report: supporting
+      test_report: formal_result
+      workbench: detailed
+
+  - id: reduce.max_stress
+    label: Read compressive strength at accepted failure peak
+    op: accepted_peak_point
+    y: stress_MPa
+    output_value: compressive_strength_MPa
+    output_index: max_stress_index
+    index_from: reported_strength_index
+    index_series: point_index_bounded
+    mode: max
+    audit_view: max_point_marker
+    evidence:
+      evidence_role: supporting_evidence
+      default_audit_block: run_stress_strain_reduction
+      audit_view: max_point_marker
+      workbench_view: max_point_view
+      required_artifacts:
+        - bounded_stress_strain_curve
+        - strength_marker
+    report:
+      include: true
+      roles:
+        - compressive_strength
+      destinations:
+        - individual_results
+        - aggregate_results
+    surface_policy:
+      audit_report: supporting
+      test_report: formal_result
+      workbench: detailed
+
+  - id: reduce.failure_strain
+    label: Get failure strain at maximum stress
+    op: value_at_index
+    series: mean_strain_bounded
+    index_from: max_stress_index
+    output: compressive_failure_strain
+    audit_view: failure_strain_marker
+    evidence:
+      evidence_role: supporting_evidence
+      default_audit_block: run_stress_strain_reduction
+      audit_view: failure_strain_marker
+      workbench_view: value_at_point_view
+      required_artifacts:
+        - bounded_stress_strain_curve
+        - failure_strain_marker
+    report:
+      include: true
+      roles:
+        - compressive_failure_strain
+      destinations:
+        - individual_results
+        - aggregate_results
+    surface_policy:
+      audit_report: supporting
+      test_report: formal_result
+      workbench: detailed
+
+  - id: reduce.chord_modulus
+    label: Compute chord modulus between 0.0005 and 0.0025 strain
+    op: chord_slope
+    x: mean_strain_bounded
+    y: stress_MPa
+    x1: 0.0005
+    x2: 0.0025
+    output: compressive_modulus_MPa
+    unit: MPa
+    audit_view: modulus_window_overlay
+    evidence:
+      evidence_role: supporting_evidence
+      default_audit_block: run_stress_strain_reduction
+      audit_view: chord_slope_overlay
+      workbench_view: chord_slope_view
+      required_artifacts:
+        - bounded_stress_strain_curve
+        - chord_anchor_points
+        - chord_line
+        - modulus_value
+    report:
+      include: true
+      roles:
+        - compressive_modulus
+      destinations:
+        - individual_results
+        - aggregate_results
+    surface_policy:
+      audit_report: supporting
+      test_report: formal_result
+      workbench: detailed
+
+  - id: reduce.bending_diagnostic
+    label: Compute opposite-face bending diagnostic
+    op: bending_diagnostic
+    strain_a: front_strain_abs_bounded
+    strain_b: rear_strain_abs_bounded
+    load: load_N_bounded
+    window_percent_of_max_load:
+      - 10
+      - 90
+    threshold_percent: 10.0
+    bending_assessment_policy:
+      id: iso14126_default_persistence_v1
+      threshold_percent: 10.0
+      segment_detection:
+        contiguous_by: point_index
+        allow_gap_points: 0
+        classify_single_point_as_spike: true
+      classification:
+        pass_with_spikes:
+          max_longest_segment_points: 2
+          max_total_exceedance_fraction: 0.02
+        warn_transient:
+          max_longest_segment_fraction: 0.05
+          max_total_exceedance_fraction: 0.10
+        fail_sustained:
+          longest_segment_fraction_above: 0.05
+          total_exceedance_fraction_above: 0.10
+    output: bending_diagnostic
+    audit_view: bending_pattern_assessment
+    evidence:
+      evidence_role: primary_audit_block
+      default_audit_block: run_bending_evidence
+      audit_view: bending_window_threshold_overlay
+      workbench_view: bending_diagnostic_view
+      required_artifacts:
+        - bounded_bending_curve
+        - threshold_line
+        - assessment_window_10_90_fmax
+        - exceedance_segments
+        - classification
+    report:
+      include: true
+      roles:
+        - bending_diagnostic
+      destinations:
+        - individual_results
+    surface_policy:
+      audit_report: primary
+      test_report: formal_result
+      workbench: detailed

@@ -1,0 +1,71 @@
+acceptance:
+  recipe_id: iso14126_acceptance_v0_1
+  default_selection_set: auto_recommended_runs
+  flags:
+    - id: user_validity_invalid
+      source: specimen_results
+      field: failure_mode
+      condition: equals_zero_or_invalid
+      severity: exclude
+      category: user_validity
+      message: Run is marked invalid by user/operator failure-mode metadata.
+    - id: bending_exceeds_review_threshold
+      source: specimen_results
+      field: bending_pattern
+      condition: equals
+      value: FAIL_SUSTAINED_BENDING
+      severity: review
+      category: method_diagnostic
+      message: Bending diagnostic indicates sustained bending above the persistence threshold.
+    - id: bending_transient_review
+      source: specimen_results
+      field: bending_pattern
+      condition: equals
+      value: WARN_TRANSIENT_BENDING
+      severity: review
+      category: method_diagnostic
+      message: Bending diagnostic indicates transient bending clusters requiring review.
+    - id: bending_threshold_exceedance_evidence
+      source: specimen_results
+      field: bending_points_above_threshold
+      condition: greater_than
+      threshold: 0
+      severity: info
+      category: method_diagnostic
+      message: Strict bending threshold exceedance evidence was detected.
+    - id: signal_window_requires_review
+      source: specimen_results
+      field: experiment_signal_gate_report_routing_severity
+      condition: equals
+      value: review
+      severity: review
+      category: method_diagnostic
+      message: Signal-window gate evidence requires scientist review before default reporting.
+    - id: signal_window_load_scale_review
+      source: specimen_results
+      field: signal_window_load_scale_routing_severity
+      condition: equals
+      value: review
+      severity: review
+      category: method_diagnostic
+      message: Signal-window boundary scale guard detected a raw-vs-windowed load-scale conflict.
+    - id: validation_failed
+      source: validation_report
+      condition: check_status_equals_fail
+      severity: review
+      category: validation
+      message: One or more validation checks failed.
+  selection_sets:
+    - id: all_runs
+      include: all
+    - id: user_valid_runs
+      include_if_not_flagged_by:
+        - user_validity_invalid
+    - id: auto_recommended_runs
+      include_if_max_severity_below: review
+    - id: review_required_runs
+      include_if_max_severity_equals: review
+    - id: excluded_runs
+      include_if_max_severity_equals: exclude
+    - id: human_curated_runs
+      include: none

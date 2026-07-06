@@ -1,0 +1,4 @@
+{% for section in page.sections %}<section class="{{ section.section_class }}" id="section-{{ section.section_id_html }}"><header><h2>{{ section.number }}. {{ section.title_html }}</h2>{{ section.pill_html }}</header>
+{{ section.body_html }}
+</section>{% if not loop.last %}
+{% endif %}{% endfor %}

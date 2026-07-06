@@ -1,0 +1,39 @@
+curve_aggregation:
+  selection_set: selected
+  x_axis: mean_strain
+  y_axis: stress_MPa
+  alignment_policy: experiment_progress
+  x_grid_points: 500
+  include_post_failure: false
+  interpolation: linear
+  alignment:
+    domain: experiment_progress
+    source_boundaries: method_resolve.experiment_boundaries
+    start: analysis_interval.start_index
+    end: analysis_interval.end_index
+    include_endpoint: true
+    resample_points: 500
+  preserve:
+    full_curve: true
+    bounded_curve: true
+  outputs:
+    include_boundary_columns: true
+    boundary_columns:
+      - boundary_start_index
+      - boundary_end_index
+      - boundary_start_policy
+      - boundary_end_policy
+      - alignment_domain
+  statistics:
+    - mean
+    - std
+    - stderr
+    - min
+    - max
+    - observations
+  output_tables:
+    - aligned_curves.csv
+    - aggregate_curve_statistics.csv
+  output_views:
+    - individual_replicates
+    - mean_curve_with_variability

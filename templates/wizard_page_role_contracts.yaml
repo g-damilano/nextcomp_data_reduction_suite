@@ -1,0 +1,69 @@
+# Wizard Page Role Contracts
+# Purpose: convert wizard pages from passive status pages into action/decision/repair surfaces.
+
+wizard_pages:
+  package:
+    role: select_and_verify_input_authority
+    operator_decision: Is this the correct MTDP package and is it sufficiently complete to proceed?
+    editable_items: [selected_package]
+    primary_actions: [browse_package, reload_package, open_metadata_editor]
+    primary_evidence: [package_id, schema_id, run_count, channel_summary, report_completion_summary]
+    blocking_states: [package_missing, package_unreadable]
+
+  method:
+    role: choose_analytical_contract
+    operator_decision: Which method should be run on this package?
+    editable_items: [selected_method]
+    primary_actions: [select_method, view_method_details]
+    primary_evidence: [method_id, standard_reference, required_inputs, produced_outputs, process_summary]
+
+  mapping:
+    role: bind_package_data_to_method_inputs
+    operator_decision: Are method inputs correctly mapped to package fields?
+    editable_items: [mapping_profile]
+    primary_actions: [load_mapping, edit_mapping, save_mapping_profile]
+    primary_evidence: [input_to_field_table, example_values, units, mapping_status]
+    blocking_states: [required_mapping_missing]
+
+  readiness:
+    role: fix_run_blocking_gaps
+    operator_decision: Can the selected package/method/mapping run now?
+    editable_items: [report_only_metadata_overrides]
+    primary_actions: [run_readiness, fix_mapping, fill_report_metadata, continue_with_warnings]
+    primary_evidence: [execution_critical_status, report_completion_status, warning_summary]
+    blocking_states: [not_ready]
+
+  execution:
+    role: confirm_and_start_method_run
+    operator_decision: Start execution with this run plan?
+    editable_items: [output_path]
+    primary_actions: [run, cancel]
+    primary_evidence: [run_plan, readiness_status, selected_package, selected_method, selected_mapping]
+
+  validation:
+    role: review_numerical_validation
+    operator_decision: Are validation failures acceptable or do they require investigation/rerun?
+    editable_items: []
+    primary_actions: [open_failed_check_evidence, open_workbench, rerun_after_fix]
+    primary_evidence: [pass_count, fail_count, warning_count, deviation_table]
+
+  acceptance:
+    role: confirm_final_report_population
+    operator_decision: Which runs enter final reporting?
+    editable_items: [human_decisions]
+    primary_actions: [accept_machine_selection, keep_run, remove_run, restore_run, record_reason]
+    primary_evidence: [machine_selection, final_selection_preview, discharge_reasons, override_ledger]
+
+  report_metadata:
+    role: complete_formal_report_metadata
+    operator_decision: Which report-only metadata should be filled before report finalization?
+    editable_items: [report_overrides]
+    primary_actions: [fill_field, save_overrides, continue_incomplete]
+    primary_evidence: [missing_required_count, missing_recommended_count, section_completion]
+
+  output:
+    role: artifact_handoff_and_finalization
+    operator_decision: Which output surface or next action is needed?
+    editable_items: []
+    primary_actions: [open_test_report, open_audit_report, open_workbench, open_export, open_folder, copy_path, finalize]
+    primary_evidence: [mtda_path, surface_manifest_status, report_quality_gate, final_selection_summary]

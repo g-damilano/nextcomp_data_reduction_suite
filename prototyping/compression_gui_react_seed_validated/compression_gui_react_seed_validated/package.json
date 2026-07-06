@@ -1,0 +1,25 @@
+{
+  "name": "compression-gui-react-seed",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "vitest run --environment jsdom",
+    "validate": "npm run build && npm run test"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "6.0.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "vite": "8.0.16"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
+    "jsdom": "^29.1.1",
+    "vitest": "^4.1.9"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "mapping_id": "iso14126_manual_cag_cf_modied_ulv20_v0_1",
+  "method_id": "iso14126_2023",
+  "channels": {
+    "load": "Load",
+    "extension": "Extension",
+    "front_strain": "Front Strain",
+    "rear_strain": "Rear Strain",
+    "time": "Time"
+  },
+  "fields": {
+    "specimen_name": "Specimen name",
+    "sample_id": "Sample ID",
+    "width": "Width",
+    "thickness": "Thickness",
+    "gauge_length": "Gauge length",
+    "failure_mode": "Failure mode",
+    "validity": "Validity",
+    "requires_review": "Requires review"
+  },
+  "validation": {
+    "reference_values_path": "tests/fixtures/iso14126/reference_values_run006.csv"
+  }
+}

@@ -1,0 +1,1 @@
+{% macro report_raw_evidence_note(title_html, row_count, artifact_scope_html, row_suffix_html, tail_html, paragraph_class="muted") %}<p{% if paragraph_class %} class="{{ paragraph_class }}"{% endif %}>{{ title_html }} is preserved in the {{ artifact_scope_html }} ({{ row_count }} rows{{ row_suffix_html }}){{ tail_html }}</p>{% endmacro %}

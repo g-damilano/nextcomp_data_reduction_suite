@@ -1,0 +1,1 @@
+{% macro report_table(table) %}<div class="table-wrap"><table{% if table.table_class %} class="{{ table.table_class }}"{% endif %}><thead><tr>{% for header in table.headers %}<th>{{ header.html }}</th>{% endfor %}</tr></thead><tbody>{% for row in table.rows %}<tr>{% for cell in row.cells %}<td>{{ cell.html }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div>{% endmacro %}

@@ -1,0 +1,26 @@
+{
+  "channels": {
+    "extension": "Extension",
+    "front_strain": "Uniaxial Gage 1 on S1-Ch2 microstrain",
+    "load": "Load",
+    "rear_strain": "Uniaxial Gage 2 on S1-Ch1 microstrain",
+    "time": "Time"
+  },
+  "fields": {
+    "failure_mode": "Failure mode",
+    "gauge_length": "Gauge length",
+    "requires_review": "Requires review",
+    "sample_id": "Sample ID",
+    "specimen_name": "Specimen name",
+    "thickness": "Thickness",
+    "validity": "Validity",
+    "width": "Width"
+  },
+  "mapping_id": "iso14126_manual_cag_cf_modied_ulv20_v0_1_wizard_edit",
+  "method_id": "iso14126_2023",
+  "schema_id": "method.mapping_profile.v0_2",
+  "validation": {
+    "reference_values_path": "tests/fixtures/iso14126/reference_values_run006.csv"
+  },
+  "version": "0.2"
+}

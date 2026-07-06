@@ -1,0 +1,1 @@
+{% from "macros/tables.html.j2" import report_table %}<section id="evidence_navigation_run_index">{{ page.section_heading_html }}<div class="run-index-table">{% if page.table %}{{ report_table(page.table) }}{% else %}{{ page.empty_message_html }}{% endif %}</div></section>

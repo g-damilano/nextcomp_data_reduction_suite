@@ -1,0 +1,174 @@
+schema_id: mechanical.compression
+schema_version: 0.1.0
+label: Compression
+status: deprecated
+
+test:
+  family: mechanical
+  mode: compression
+
+package:
+  granularity: dataset_with_runs
+  raw_folder: raw
+  normalized_folder: normalized
+  normalized_extension: .csv
+  run_id_pattern: run_{index:03d}
+
+ui:
+  groups:
+    - Dataset / analysis inputs
+    - Test provenance
+    - Review / validity
+
+fields:
+  - field_id: specimen_name
+    label: Specimen name
+    role: specimen_identity
+    required: true
+    type: string
+    ui_group: Dataset / analysis inputs
+    validation:
+      pattern: "[\\w .,+/()#-]+"
+    storage:
+      location: token_preamble
+      token: Specimen name
+  - field_id: width
+    label: Width
+    role: specimen_metrology
+    required: true
+    type: float
+    accepted_units: [mm, cm, m]
+    standard_unit: mm
+    ui_group: Dataset / analysis inputs
+    validation:
+      min: 0
+    storage:
+      location: token_preamble
+      token: Width
+  - field_id: thickness
+    label: Thickness
+    role: specimen_metrology
+    required: true
+    type: float
+    accepted_units: [mm, cm, m]
+    standard_unit: mm
+    ui_group: Dataset / analysis inputs
+    validation:
+      min: 0
+    storage:
+      location: token_preamble
+      token: Thickness
+  - field_id: operator
+    label: Operator
+    role: test_provenance
+    required: false
+    type: string
+    ui_group: Test provenance
+    storage:
+      location: token_preamble
+      token: Operator
+  - field_id: machine
+    label: Machine
+    role: test_provenance
+    required: false
+    type: string
+    ui_group: Test provenance
+    storage:
+      location: token_preamble
+      token: Machine
+  - field_id: load_cell
+    label: Load cell
+    role: test_provenance
+    required: false
+    type: float
+    accepted_units: [N, kN]
+    standard_unit: kN
+    ui_group: Test provenance
+    validation:
+      min: 0
+    storage:
+      location: token_preamble
+      token: Load cell
+  - field_id: test_date
+    label: Test date
+    role: test_provenance
+    required: false
+    type: date
+    ui_group: Test provenance
+    storage:
+      location: token_preamble
+      token: Test date
+  - field_id: failure_mode
+    label: Failure mode
+    role: review_validity
+    required: false
+    type: enum
+    allowed_values: [Valid, Invalid, Requires review, Unknown]
+    default: Valid
+    ui_group: Review / validity
+    storage:
+      location: token_preamble
+      token: Failure mode
+
+data_table:
+  format: tokenized_csv
+  unit_row: true
+  columns:
+    - family: load
+      label: Load
+      required: true
+      repeatable: false
+      accepted_units: [N, kN]
+      standard_unit: N
+    - family: extension
+      label: Extension
+      required: false
+      repeatable: false
+      accepted_units: [mm, cm, m]
+      standard_unit: mm
+    - family: strain
+      label: Strain
+      required: false
+      repeatable: true
+      accepted_units: [usn, microstrain, mm/mm]
+      standard_unit: mm/mm
+    - family: time
+      label: Time
+      required: false
+      repeatable: false
+      accepted_units: [s]
+      standard_unit: s
+
+unit_conversion_rules:
+  kN->N: 1000
+  N->kN: 0.001
+  cm->mm: 10
+  m->mm: 1000
+  usn->mm/mm: 0.000001
+  microstrain->mm/mm: 0.000001
+
+migration:
+  compatible_prior_versions: []
+
+sidecar_import:
+  enabled: true
+  same_stem: true
+  accepted_extensions: [.yaml, .yml]
+  canonical_versions: ["0.1.0"]
+  unknown_keys: prompt_mapping
+  conflict_policy: prefer_sidecar
+  mapping_profile:
+    enabled: true
+    apply_to_same_signature: true
+
+image_evidence:
+  enabled: true
+  required: false
+  accepted_formats: [.jpg, .jpeg, .png, .tif, .tiff]
+  views:
+    - {id: front, label: Front image, required: false, purpose: [audit, future_metrology]}
+    - {id: side, label: Side image, required: false, purpose: [audit, future_metrology]}
+    - {id: top, label: Top image, required: false, purpose: [audit, future_metrology]}
+    - {id: failure, label: Failure image, required: false, purpose: [audit, failure_documentation]}
+    - {id: scale_reference, label: Scale reference, required: false, purpose: [calibration, future_metrology]}
+    - {id: other, label: Other image, required: false, purpose: [audit]}

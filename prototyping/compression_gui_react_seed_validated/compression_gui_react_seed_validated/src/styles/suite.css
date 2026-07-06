@@ -1,0 +1,715 @@
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  overflow: hidden;
+  background: transparent;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+}
+
+.suite-root {
+  --suite-chrome-surface: #ffffff;
+  --suite-chrome-border: #e1e4e8;
+  --suite-chrome-hover: #eef0f3;
+  --suite-chrome-ink: #1b1e23;
+  --suite-chrome-muted: #5a626c;
+  --suite-status-blue: #0f6cbd;
+  --suite-danger: #c4392a;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: transparent;
+  color: #1b2230;
+  font-family: 'IBM Plex Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+}
+
+.suite-root img,
+.suite-root svg {
+  image-rendering: auto;
+}
+
+.suite-screen,
+.suite-screen > *,
+.dc-runtime-host,
+.dc-runtime-host > .sc-host {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.suite-screen {
+  position: relative;
+  overflow: hidden;
+}
+
+.launcher-hit-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 120;
+  pointer-events: none;
+}
+.launcher-hit-layer button {
+  font: inherit;
+}
+.launcher-menu-hit,
+.launcher-row-hit,
+.launcher-menu-scrim {
+  position: absolute;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+.launcher-menu-hit,
+.launcher-row-hit {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.launcher-menu-hit--file {
+  left: 222px;
+  top: 0;
+  width: 48px;
+  height: 30px;
+}
+.launcher-menu-hit--help {
+  left: 270px;
+  top: 0;
+  width: 58px;
+  height: 30px;
+}
+.launcher-menu-scrim {
+  inset: 0;
+  pointer-events: auto;
+  cursor: default;
+}
+.launcher-menu-pop {
+  position: absolute;
+  top: 30px;
+  z-index: 122;
+  min-width: 252px;
+  padding: 5px;
+  border: 1px solid #cbd0d6;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(20, 24, 31, .16), 0 2px 8px rgba(20, 24, 31, .10);
+  pointer-events: auto;
+}
+.launcher-file-menu {
+  left: 220px;
+}
+.launcher-help-menu {
+  left: 268px;
+  min-width: 262px;
+}
+.launcher-menu-pop button {
+  width: 100%;
+  min-height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 0;
+  border-radius: 4px;
+  padding: 7px 9px;
+  background: transparent;
+  color: #1b1e23;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.launcher-menu-pop button:hover:not(:disabled) {
+  background: #e7f1fb;
+  color: #0a4d8c;
+}
+.launcher-menu-pop button:disabled {
+  color: #aab0b9;
+  cursor: default;
+}
+.launcher-menu-pop button span + span {
+  color: #8b929c;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.launcher-menu-pop i {
+  display: block;
+  height: 1px;
+  margin: 5px 4px;
+  background: #e1e4e8;
+}
+.launcher-modal-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 124;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 22, 38, .42);
+  pointer-events: auto;
+}
+.launcher-modal {
+  width: min(600px, 100%);
+  max-height: min(90vh, 780px);
+  overflow: auto;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 26px 80px rgba(15, 22, 38, .40);
+  color: #1b2230;
+}
+.launcher-modal--shortcuts {
+  width: min(460px, 100%);
+}
+.launcher-modal-chrome {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 14px;
+  border-bottom: 1px solid #e2e5ea;
+  border-radius: 12px 12px 0 0;
+  background: #f7f8fa;
+}
+.launcher-modal-title-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: none;
+  background: #b3123c;
+  box-shadow: inset 0 0 0 2px #fff;
+}
+.launcher-modal-chrome h2 {
+  flex: 1;
+  margin: 0;
+  min-width: 0;
+  color: #1b2230;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.launcher-modal-close {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #79818f;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.launcher-modal-close:hover {
+  background: #eef1f5;
+  color: #1b2230;
+}
+.launcher-modal-body {
+  padding: 16px;
+}
+.launcher-brand-panel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  overflow: hidden;
+  border-radius: 10px;
+  padding: 22px 24px;
+  background: linear-gradient(135deg, #1a5c33 0%, #123f24 100%);
+}
+.launcher-brand-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .55;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, .10) 1.4px, transparent 1.6px);
+  background-size: 20px 20px;
+}
+.launcher-brand-panel > * {
+  position: relative;
+}
+.launcher-brand-panel img {
+  width: 58px;
+  height: auto;
+  flex: none;
+}
+.launcher-brand-eyebrow {
+  color: rgba(255, 255, 255, .72);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.launcher-brand-title {
+  margin-top: 7px;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+}
+.launcher-brand-subtitle {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, .82);
+  font-size: 12.5px;
+}
+.launcher-about-grid {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 16px 18px;
+  border: 1px solid #e4e7ec;
+  border-radius: 9px;
+  background: #fff;
+}
+.launcher-about-grid dt {
+  margin: 0;
+  color: #79818f;
+  font-size: 12.5px;
+  text-align: right;
+}
+.launcher-about-grid dd {
+  margin: 0;
+  min-width: 0;
+  color: #1b2230;
+  font-size: 12.5px;
+}
+.launcher-link-text,
+.launcher-link-button {
+  color: #2f6bd8 !important;
+}
+.launcher-funding-text,
+.launcher-license-copy p {
+  color: #79818f;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.launcher-funding-text {
+  margin: 14px 2px 0;
+}
+.launcher-license-copy {
+  margin-top: 14px;
+  padding: 16px 18px;
+  border: 1px solid #e4e7ec;
+  border-radius: 9px;
+  background: #fff;
+}
+.launcher-license-copy p {
+  margin: 0;
+}
+.launcher-license-copy p + p {
+  margin-top: 8px;
+}
+.launcher-guide-copy {
+  margin-top: 14px;
+  padding: 16px 18px;
+  border: 1px solid #e4e7ec;
+  border-radius: 9px;
+  background: #fff;
+  color: #1b2230;
+}
+.launcher-guide-copy section + section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #eef1f5;
+}
+.launcher-guide-copy h3 {
+  margin: 0 0 8px;
+  color: #9aa2b0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.launcher-guide-copy ol {
+  margin: 0;
+  padding-left: 20px;
+}
+.launcher-guide-copy li,
+.launcher-guide-copy p {
+  color: #48505f;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.launcher-guide-copy li + li {
+  margin-top: 5px;
+}
+.launcher-guide-copy p {
+  margin: 0;
+}
+.launcher-guide-note {
+  margin-top: 14px !important;
+  color: #79818f !important;
+}
+.launcher-guide-note span {
+  color: #1b2230;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 11px;
+}
+.launcher-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+}
+.launcher-modal-actions--end {
+  justify-content: flex-end;
+}
+.launcher-link-button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.launcher-primary-button {
+  border: 0;
+  border-radius: 7px;
+  padding: 9px 22px;
+  background: #2f6bd8;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.launcher-primary-button:hover {
+  background: #255bbf;
+}
+.launcher-shortcut-group h3 {
+  margin: 16px 0 4px;
+  color: #9aa2b0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.launcher-shortcut-group:first-child h3 {
+  margin-top: 0;
+}
+.launcher-shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 9px 0;
+  border-bottom: 1px solid #f0f2f5;
+}
+.launcher-shortcut-row:last-child {
+  border-bottom: 0;
+}
+.launcher-shortcut-row span {
+  color: #1b2230;
+  font-size: 13px;
+}
+.launcher-shortcut-row kbd {
+  flex: none;
+  border: 1px solid #e0e3e9;
+  border-radius: 5px;
+  padding: 2px 8px;
+  background: #eff1f4;
+  color: #48505f;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+.launcher-row-hit {
+  left: 0;
+  right: 0;
+}
+.launcher-row-hit:hover {
+  background: rgba(15, 108, 189, .045);
+}
+.launcher-row-hit--dataset {
+  top: 258px;
+  height: 210px;
+}
+.launcher-row-hit--method {
+  top: 468px;
+  height: 170px;
+}
+.launcher-row-hit--analysis {
+  top: 638px;
+  bottom: 26px;
+}
+
+/* Keep the packaging screen using the previous desktop layout. */
+.suite-root[data-screen="packaging"] .stage,
+.suite-root[data-screen="packaging"] .stage--desktop {
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  overflow: hidden;
+}
+.suite-root[data-screen="packaging"] .appwin {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Keep the method wizard filling the same viewport without its original page gutter. */
+.suite-root[data-screen="analysis"] .app-shell,
+.suite-root[data-screen="analysis"] .wizard,
+.suite-root[data-screen="analysis"] .app {
+  min-height: 100%;
+}
+
+.dc-host-loading,
+.dc-host-error {
+  height: 100%;
+  display: grid;
+  place-content: center;
+  background: #eef0f2;
+  color: #1b2230;
+  padding: 28px;
+}
+.dc-host-error pre {
+  max-width: 90vw;
+  max-height: 70vh;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+/* The launcher source is a browser-preview mockup with an outer grey page and
+   centered card. In the desktop shell, the card is the window. */
+.suite-root[data-screen="home"] .suite-screen {
+  overflow: hidden;
+}
+.suite-root[data-screen="home"] .dc-runtime-host,
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  background: transparent !important;
+  overflow: hidden !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child {
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:nth-child(6) {
+  display: none !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:nth-child(7) {
+  height: 26px !important;
+  min-height: 26px !important;
+  margin-top: auto !important;
+  padding: 0 14px 0 12px !important;
+  background: var(--suite-status-blue) !important;
+  border-top: 0 !important;
+  color: #ffffff !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  flex: 0 0 auto !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+  overflow: hidden !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:nth-child(7) span {
+  color: #ffffff !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:nth-child(7) span[style*="border-radius:50%"] {
+  background: rgba(255, 255, 255, .9) !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:first-child,
+.suite-root[data-screen="method-editor"] .dc-runtime-host > .sc-host > div:first-child > div:first-child {
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 0 0 10px !important;
+  gap: 8px !important;
+  background: var(--suite-chrome-surface) !important;
+  border-bottom: 1px solid var(--suite-chrome-border) !important;
+  color: var(--suite-chrome-ink) !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:first-child {
+  position: relative !important;
+  z-index: 74 !important;
+  justify-content: space-between !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:first-child > div:first-child > div:first-child {
+  display: none !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:nth-child(2) {
+  position: absolute !important;
+  top: 0 !important;
+  left: 214px !important;
+  right: 133px !important;
+  z-index: 78 !important;
+  height: 30px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-bottom: 0 !important;
+  justify-content: space-between !important;
+  pointer-events: auto !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:nth-child(2) > div:first-child {
+  height: 100% !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:nth-child(2) > div:first-child > div {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+  color: var(--suite-chrome-muted) !important;
+  border-radius: 4px !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:nth-child(2) > div:first-child > div:hover {
+  background: var(--suite-chrome-hover) !important;
+  color: var(--suite-chrome-ink) !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:nth-child(2) > div:nth-child(2) {
+  display: none !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:first-child span,
+.suite-root[data-screen="method-editor"] .dc-runtime-host > .sc-host > div:first-child > div:first-child span {
+  letter-spacing: 0 !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:first-child > div:first-child,
+.suite-root[data-screen="method-editor"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > span:nth-of-type(2) {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--suite-chrome-ink) !important;
+}
+.suite-root[data-screen="method-editor"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > span:first-of-type {
+  display: none !important;
+}
+.suite-root[data-screen="method-editor"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:nth-of-type(1) {
+  height: 100% !important;
+  align-items: center !important;
+}
+.suite-root[data-screen="method-editor"] [data-window-controls="true"] {
+  height: 30px !important;
+  min-height: 30px !important;
+  align-self: stretch !important;
+  align-items: stretch !important;
+}
+.suite-root[data-screen="method-editor"] [data-window-control] {
+  height: 30px !important;
+  min-height: 30px !important;
+}
+.suite-root[data-screen="home"] [data-window-controls="true"],
+.suite-root[data-screen="method-editor"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:last-child > div:last-child {
+  height: 100% !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+  border-left: 1px solid var(--suite-chrome-border) !important;
+}
+.suite-root[data-screen="home"] [data-window-control],
+.suite-root[data-screen="method-editor"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:last-child > div:last-child > span {
+  width: 44px !important;
+  height: 100% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  color: var(--suite-chrome-muted) !important;
+  font-size: 12px !important;
+  border-radius: 0 !important;
+}
+.suite-root[data-screen="home"] [data-window-control="maximize"] {
+  border: 0 !important;
+}
+.suite-root[data-screen="home"] [data-window-control="maximize"]::before {
+  content: "▢";
+}
+.suite-root[data-screen="home"] [data-window-control]:hover,
+.suite-root[data-screen="method-editor"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:last-child > div:last-child > span:hover {
+  background: var(--suite-chrome-hover) !important;
+  color: var(--suite-chrome-ink) !important;
+}
+.suite-root[data-screen="home"] [data-window-control="close"]:hover,
+.suite-root[data-screen="method-editor"] .dc-runtime-host > .sc-host > div:first-child > div:first-child > div:last-child > div:last-child > span:last-child:hover {
+  background: var(--suite-danger) !important;
+  color: #ffffff !important;
+}
+
+.suite-root[data-screen="home"] .dc-runtime-host div[style*="height:30px"][style*="border-top"],
+.suite-root[data-screen="home"] .dc-runtime-host div[style*="height: 30px"][style*="border-top"],
+.suite-root[data-screen="method-editor"] .dc-runtime-host div[style*="height:30px"][style*="border-top"],
+.suite-root[data-screen="method-editor"] .dc-runtime-host div[style*="height: 30px"][style*="border-top"] {
+  height: 26px !important;
+  min-height: 26px !important;
+  margin-top: 0 !important;
+  padding: 0 14px 0 12px !important;
+  background: var(--suite-status-blue) !important;
+  border-top: 0 !important;
+  color: #ffffff !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+  overflow: hidden !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host div[style*="height:30px"][style*="border-top"] span,
+.suite-root[data-screen="home"] .dc-runtime-host div[style*="height: 30px"][style*="border-top"] span,
+.suite-root[data-screen="method-editor"] .dc-runtime-host div[style*="height:30px"][style*="border-top"] span,
+.suite-root[data-screen="method-editor"] .dc-runtime-host div[style*="height: 30px"][style*="border-top"] span {
+  color: #ffffff !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+}
+.suite-root[data-screen="home"] .dc-runtime-host div[style*="height:30px"][style*="border-top"] span[style*="border-radius:50%"],
+.suite-root[data-screen="home"] .dc-runtime-host div[style*="height: 30px"][style*="border-top"] span[style*="border-radius:50%"],
+.suite-root[data-screen="method-editor"] .dc-runtime-host div[style*="height:30px"][style*="border-top"] span[style*="border-radius:50%"],
+.suite-root[data-screen="method-editor"] .dc-runtime-host div[style*="height: 30px"][style*="border-top"] span[style*="border-radius:50%"] {
+  background: rgba(255, 255, 255, .9) !important;
+}
+
+/* Titlebar/window controls are part of the app chrome, not drag targets. */
+[data-window-control],
+[data-window-action],
+.window-control,
+.window-control * {
+  -webkit-user-select: none;
+  user-select: none;
+}
+[data-window-control],
+[data-window-action],
+.window-control {
+  cursor: pointer;
+}

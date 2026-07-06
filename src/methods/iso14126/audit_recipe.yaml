@@ -1,0 +1,98 @@
+audit_report:
+  title: ISO 14126 Method Run Audit
+  surface_role: evidence_traceability
+  procedure_audit_blocks:
+    run_blocks:
+      - run_identity_and_status
+      - run_stress_strain_reduction
+      - run_bending_evidence
+      - run_validation_evidence
+      - run_selection_consequence
+    aggregate_blocks:
+      - aggregate_run_set_summary
+      - aggregate_curve_family
+      - aggregate_selection_and_override_trace
+  surface_policy:
+    audit_report: grouped_runwise_then_aggregate
+    test_report: formal_results_only
+    workbench: operation_level_debug
+    wizard: action_decision_repair
+  views:
+    - id: result_view
+      title: Results
+      components:
+        - type: table
+          id: specimen_results
+          title: Specimen Results
+          source: method_outputs/specimen_results.csv
+        - type: dataset_summary
+          id: dataset_summary
+          title: Dataset Summary
+          source: method_outputs/dataset_summary.csv
+        - type: readiness_summary
+          id: readiness_summary
+          title: Package Readiness
+          source: readiness/readiness_summary.csv
+        - type: validation_summary
+          id: validation_summary
+          title: Validation Summary
+          source: validation/validation_summary.csv
+        - type: curve_family_plot
+          id: stress_strain_family
+          title: Stress-Strain Family
+          source: method_outputs/curves/stress_strain_family.csv
+          x: mean_strain
+          y: stress_MPa
+          group: run_id
+
+    - id: dataset_acceptance
+      title: Dataset Acceptance
+      components:
+        - type: acceptance_summary
+          id: acceptance_summary
+          title: Acceptance Summary
+          source: acceptance/acceptance_summary.csv
+        - type: table
+          id: dataset_summary_by_selection
+          title: Dataset Summary By Selection
+          source: method_outputs/dataset_summary_by_selection.csv
+        - type: selection_set_table
+          id: selection_membership
+          title: Selection Membership
+          source: acceptance/selection_membership.csv
+        - type: discharge_report
+          id: discharge_report
+          title: Discharge Report
+          source: acceptance/discharged_runs.csv
+
+    - id: reduction_evidence
+      title: Reduction Evidence
+      components:
+        - type: operation_log
+          id: operation_log
+          title: Operation Log
+          source: audit/operation_log.json
+        - type: inspection_log
+          id: inspections
+          title: Curve Inspections
+          source: audit/inspections.json
+        - type: operation_overlay
+          id: mean_absolute_strain
+          title: Mean Absolute Strain
+          operation_type: construct_mean_series
+        - type: operation_overlay
+          id: experiment_boundary_resolution
+          title: Experiment Boundary Resolution
+          operation_type: resolve_experiment_boundaries
+        - type: operation_overlay
+          id: modulus_window
+          title: Modulus Chord Window
+          operation_type: chord_slope
+        - type: operation_overlay
+          id: max_point
+          title: Maximum / Failure Point
+          operation_type: max_point
+        - type: operation_overlay
+          id: bending_diagnostic
+          title: Bending Diagnostic
+          operation_type: bending_diagnostic

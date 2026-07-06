@@ -1,0 +1,25 @@
+schema_id: method.export_recipe.v0_1
+method_id: iso14126_2023
+profiles:
+  minimal:
+    description: Test Report HTML, key CSV tables, manifest, provenance, and checksums.
+    reports:
+      - report/test_report.html
+    tables:
+      - acceptance/final_report_runs.csv
+      - report/individual_results.csv
+      - report/aggregate_statistics.csv
+      - report/report_values_used.csv
+      - report/missing_report_fields.csv
+  figures:
+    extends: minimal
+    figures:
+      - aggregate_stress_strain
+  full_html:
+    extends: figures
+    reports:
+      - audit/audit_report.html
+      - workbench/index.html
+deferred_formats:
+  - pdf
+  - docx

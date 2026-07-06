@@ -1,0 +1,21 @@
+    document.addEventListener("DOMContentLoaded", function () {
+      if (!window.vegaEmbed) { return; }
+      document.querySelectorAll("[data-vega-block]").forEach(function (block) {
+        var target = block.querySelector(".vega-chart");
+        var script = block.querySelector("script[type='application/json']");
+        if (!target || !script) { return; }
+        try {
+          var spec = JSON.parse(script.textContent);
+          window.vegaEmbed(target, spec, {actions: false, renderer: "svg"}).then(function () {
+            var fallback = block.querySelector(".vega-fallback");
+            var graphic = target.querySelector("svg, canvas");
+            var bounds = graphic ? graphic.getBoundingClientRect() : null;
+            if (fallback && bounds && bounds.width > 10 && bounds.height > 10) {
+              fallback.style.display = "none";
+            }
+          });
+        } catch (error) {
+          console.warn("Could not render Vega block", error);
+        }
+      });
+    });

@@ -1,0 +1,92 @@
+projection_id: stress_strain_reduction
+golden_id: golden_stress_strain_reduction
+version: 0.1.0
+schema_version: plot_projection_recipe.v0_1
+plot_type: stress_strain_reduction
+production_state: production
+surface_profiles:
+  - surface: audit_report
+    role: run stress-strain reduction evidence
+    renderer: Vega-Lite
+  - surface: mtda_export
+    role: compact run stress-strain evidence package
+    renderer: compact-vegalite-workbench
+data_contract:
+  source_tables:
+    - method_outputs/curves/stress_strain_family_bounded.csv
+    - processed/runs/{run_label}_stress_strain_experiment_bound.csv
+  required_fields:
+    - run_id
+    - point_index
+    - stress_MPa
+    - mean_strain
+  optional_fields:
+    - front_strain_abs
+    - rear_strain_abs
+    - strain_mm_per_mm
+    - load_N
+  forbidden_transforms:
+    - boundary_reselection
+    - max_point_recalculation
+    - failure_marker_recalculation
+    - smoothing
+transform_ids:
+  - run.bounded_average_curve.v1
+  - run.front_rear_strain_traces.v1
+  - run.front_rear_strain_envelope.v1
+  - run.analysis_markers.v1
+semantic_contract:
+  layers:
+    - layer_id: bounded_analysis_curve
+      semantic_role: bounded reduced stress-strain curve
+      required: true
+    - layer_id: average_strain_curve
+      semantic_role: average strain reduction curve
+      required: true
+    - layer_id: front_strain_trace
+      semantic_role: front gauge strain trace
+      required: false
+    - layer_id: rear_strain_trace
+      semantic_role: rear gauge strain trace
+      required: false
+    - layer_id: strain_agreement_envelope
+      semantic_role: front/rear strain agreement envelope
+      required: false
+    - layer_id: post_peak_audit_trace
+      semantic_role: faint post-peak audit continuation
+      required: false
+    - layer_id: experiment_start_marker
+      semantic_role: resolved experiment start marker
+      required: false
+    - layer_id: experiment_end_marker
+      semantic_role: resolved experiment end marker
+      required: false
+    - layer_id: max_or_failure_marker
+      semantic_role: maximum stress or failure strain marker
+      required: false
+    - layer_id: modulus_chord_line
+      semantic_role: modulus chord line
+      required: false
+quality_contract:
+  requires_data: true
+  requires_axis_labels: true
+  requires_tooltips: true
+  quality_evaluator: plotting.quality.evaluate_spec
+staleness_contract:
+  status_source: plot_result.quality_report
+  stale_if_missing_boundary_rows: true
+  policy: uses caller supplied bounded rows; does not resolve boundaries
+artifact_contract:
+  primary_artifacts:
+    - Vega-Lite spec
+    - compact plot package JSON
+  export_formats:
+    - html
+    - json
+    - svg
+    - png
+migration_metadata:
+  current_builder: plotting.plots.stress_strain_reduction.build_stress_strain_reduction
+  current_router: plotting.registry.create_default_registry
+  migration_status: recipe documented; production routing unchanged
+  parity_reference: tests/plotting/test_modular_plotting.py

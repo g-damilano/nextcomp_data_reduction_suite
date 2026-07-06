@@ -1,0 +1,59 @@
+projection_id: audit_bending_trace
+golden_id: golden_audit_bending_trace
+version: 0.1.0
+schema_version: plot_projection_recipe.v0_1
+plot_type: audit_bending_spec
+production_state: production
+surface_profiles:
+  - surface: audit_report
+    role: audit bending threshold evidence
+    renderer: audit report embedded Vega-Lite helper
+data_contract:
+  source_tables:
+    - audit curve rows with front/rear strain
+  required_fields:
+    - run_id
+    - load_N
+    - front_strain_abs
+    - rear_strain_abs
+  optional_fields:
+    - front_strain
+    - rear_strain
+  forbidden_transforms:
+    - threshold_recalculation
+    - window_reselection
+transform_ids:
+  - audit.bending_percent_from_front_rear_strain.v1
+semantic_contract:
+  layers:
+    - layer_id: bending_percent_series
+      semantic_role: bending percentage over load
+      required: true
+    - layer_id: threshold_exceedance_points
+      semantic_role: points above configured bending threshold
+      required: true
+    - layer_id: threshold_rule
+      semantic_role: configured bending threshold
+      required: true
+    - layer_id: run_legend_selector
+      semantic_role: run selector bound to the Vega-Lite legend
+      required: true
+quality_contract:
+  requires_data: true
+  requires_axis_labels: true
+  requires_tooltips: true
+staleness_contract:
+  status_source: audit builder threshold and curve rows
+  stale_if_threshold_missing: true
+  stale_if_curve_rows_missing: true
+artifact_contract:
+  primary_artifacts:
+    - audit/audit_report.html embedded Vega spec
+  export_formats:
+    - html
+    - json
+migration_metadata:
+  current_builder: audit.vega_specs.bending_spec
+  current_router: audit.audit_report_builder._render_chart_component
+  migration_status: audit-specific recipe declared; production rendering route preserved
+  parity_reference: tests/golden/plots/test_golden_plot_contracts.py

@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>{{ page.page_title }}</title>
+<style>body{font-family:Arial,sans-serif;margin:28px;line-height:1.45}{% if page.table_body_html is not none %}table{border-collapse:collapse}td,th{border:1px solid #ddd;padding:6px 9px}{% endif %}</style></head>
+<body><p>{{ page.nav_html }}</p>
+<h1>{{ page.heading }}</h1>
+{{ page.body_html }}
+{% if page.table_body_html is not none -%}
+<table><tbody>{{ page.table_body_html }}</tbody></table>
+{% endif -%}
+</body></html>

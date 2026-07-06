@@ -1,0 +1,40 @@
+    const specs = {{ page.vega_specs_json }};
+    const renderedSpecs = new Set();
+
+    function auditPlotVisible(target) {
+      return Boolean(target && (target.offsetWidth || target.offsetHeight || target.getClientRects().length));
+    }
+
+    function renderAuditPlot(id) {
+      const target = document.getElementById(id);
+      const spec = specs[id];
+      if (!target || !spec || renderedSpecs.has(id) || !auditPlotVisible(target)) {
+        return;
+      }
+      window.vegaEmbed("#" + id, spec, {actions: false, renderer: "svg"})
+        .then(function () {
+          renderedSpecs.add(id);
+        })
+        .catch(function (error) {
+          console.warn("Could not render audit plot", id, error);
+          target.innerHTML = '<div class="plot-unavailable">Plot unavailable: could not render chart. Review the archived analysis evidence.</div>';
+        });
+    }
+
+    function renderVisibleAuditPlots() {
+      if (!window.vegaEmbed) {
+        return;
+      }
+      Object.keys(specs).forEach(renderAuditPlot);
+    }
+
+    function initializeAuditPlots() {
+      renderVisibleAuditPlots();
+      window.addEventListener("resize", renderVisibleAuditPlots);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initializeAuditPlots);
+    } else {
+      initializeAuditPlots();
+    }

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>{{ page.title_html }}</title>
+<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+<style>
+{% include "styles/plots/plot_wrapper.css.j2" %}
+</style></head>
+<body><main>
+<div class="topbar"><p><a href="{{ page.home_path_html }}">Back to home</a></p><p class="hint"><a href="{{ page.spec_path_html }}">Canonical Vega-Lite JSON</a></p></div>
+<h1 id="pageTitle">{{ page.title_html }}</h1>
+<div class="workspace">
+<aside class="plot-controls" id="controls">
+<fieldset class="control-group"><legend>View</legend><div id="layerControls"></div></fieldset>
+<fieldset class="control-group"><legend>Axis range</legend>
+<div class="split"><div class="field"><label for="xMin">x min</label><input id="xMin" inputmode="decimal"></div><div class="field"><label for="xMax">x max</label><input id="xMax" inputmode="decimal"></div></div>
+<div class="split"><div class="field"><label for="yMin">y min</label><input id="yMin" inputmode="decimal"></div><div class="field"><label for="yMax">y max</label><input id="yMax" inputmode="decimal"></div></div>
+</fieldset>
+<fieldset class="control-group"><legend>Axis labels</legend>
+<div class="field"><label for="xLabel">x label</label><input id="xLabel"></div>
+<div class="field"><label for="yLabel">y label</label><input id="yLabel"></div>
+</fieldset>
+<fieldset class="control-group"><legend>Style</legend>
+<div class="field"><label for="lineWidth">line</label><input id="lineWidth" type="range" min="0.25" max="3" step="0.25" value="1"></div>
+<div class="field"><label for="opacity">opacity</label><input id="opacity" type="range" min="0.05" max="1" step="0.05" value="1"></div>
+<div class="field"><label for="pointSize">point</label><input id="pointSize" type="range" min="0.5" max="3" step="0.25" value="1"></div>
+</fieldset>
+<fieldset class="control-group"><legend>Bending</legend>
+<div class="field"><label for="bendingMode">display</label><select id="bendingMode"><option value="overlay">overlay</option><option value="secondary">secondary axis</option><option value="normalized">normalized</option><option value="hidden">hidden</option></select></div>
+</fieldset>
+<fieldset class="control-group"><legend>Labels</legend>
+<div class="field"><label for="pointLabels">points</label><select id="pointLabels"><option value="show">show labels</option><option value="hide">hide labels</option></select></div>
+<div class="field"><label for="plotTitle">title</label><input id="plotTitle"></div>
+</fieldset>
+<div class="buttons"><button class="primary" id="applyControls">Apply</button><button id="resetControls">Reset</button><button id="downloadSvg">SVG</button><button id="downloadPng">PNG</button><button id="downloadSpec">Spec</button></div>
+<div class="status" id="plotStatus"></div>
+</aside>
+<section class="chart-shell"><div id="plot" class="chart"></div></section>
+</div>
+</main>
+<script>
+{% include "scripts/plots/plot_wrapper_bootstrap.js.j2" %}
+</script>
+</body></html>

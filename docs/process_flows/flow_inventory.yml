@@ -1,0 +1,254 @@
+version: 4
+status: complete_drilldown_backbone_with_human_portal_concept
+purpose: >
+  Machine-readable inventory of process-flow documentation for the compression module.
+  This inventory records the documented process-flow backbone, drill-down files,
+  human visualization portal concept, and residual work classes that remain outside
+  broad process-flow documentation.
+
+coverage_position:
+  process_backbone: documented
+  human_visualization_portal: concept_documented
+  drilldown_rounds_completed:
+    - initial_process_spine
+    - parser_schema_mapping_execution_validation_acceptance_report_finalization
+    - sidecar_bundle_iso_recipe_operation_report_completion_archive_ui_journeys
+    - human_portal_strategy_blueprint_adversarial_declaration
+  remaining_work_class: implementation_test_detail_residuals
+  coverage_status_file: docs/process_flows/33_drilldown_coverage_status.md
+
+documentation_set:
+  overview_and_governance:
+    - file: docs/process_flows/00_visualisation_strategy.md
+      coverage_level: strategy
+      status: documented
+      purpose: Mermaid baseline plus complementary visualization modes.
+    - file: docs/process_flows/01_system_overview.md
+      coverage_level: L0-L1
+      status: documented
+      purpose: Application entry, launcher, active workflow chunks, and artifact lifecycle.
+    - file: docs/process_flows/99_flow_documentation_protocol.md
+      coverage_level: protocol
+      status: documented
+      purpose: Maintenance rules for keeping flow docs current.
+    - file: docs/process_flows/33_drilldown_coverage_status.md
+      coverage_level: coverage_audit
+      status: documented
+      purpose: Coverage status and residual classification.
+
+  mtdp_aggregation:
+    - file: docs/process_flows/10_mtdp_aggregation_flows.md
+      coverage_level: L1-L4
+      status: documented
+      purpose: MTDP intake, grouping, enrichment, validation, and archive export.
+    - file: docs/process_flows/11_parser_contract_and_numeric_risks.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Parser passes, parsed-record contract, numeric ingestion, and numeric-risk register.
+    - file: docs/process_flows/12_mtdp_schema_field_lifecycle.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Schema fields from declaration through validation, storage, readiness, and report reuse.
+    - file: docs/process_flows/13_yaml_sidecar_reconciliation_flow.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Same-stem YAML import, mapping profiles, conflicts, unknown keys, image references, and export preservation.
+    - file: docs/process_flows/14_bundle_editing_and_reprocessing_flow.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Bundle editing, unassigned/restored runs, manual correction counts, existing MTDP reprocessing, and group export.
+    - file: docs/process_flows/15_schema_method_report_field_matrix.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Schema field responsibility matrix across MTDP, method execution, ISO choices, and report completion.
+
+  mapping_and_readiness:
+    - file: docs/process_flows/16_mapping_readiness_schema_contracts.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Mapping profile, method input declaration, resolved input, and readiness report contracts.
+    - file: docs/process_flows/21_mapping_to_readiness_resolution.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Mapping candidate discovery, resolution reports, readiness evaluation, and wizard gate behaviour.
+
+  mtda_execution:
+    - file: docs/process_flows/20_mtda_analysis_flows.md
+      coverage_level: L1-L4
+      status: documented
+      purpose: MTDA wizard and analysis flow from setup through archive/report outputs.
+    - file: docs/process_flows/22_method_package_and_operation_execution.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Method package loading, resolve/reduce execution, operation registry dispatch, operation logs, and evidence contracts.
+    - file: docs/process_flows/28_iso14126_method_recipe_flow.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Concrete ISO 14126 method package inputs, resolve/reduce recipes, validation checks, and acceptance policy.
+    - file: docs/process_flows/29_operation_internals_flow.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Operation internals for mapping, area, mean strain, boundaries, stress, peak, failure strain, modulus, and bending.
+
+  validation_acceptance_and_evidence:
+    - file: docs/process_flows/23_validation_policy_flow.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Reference-value validation, tolerance policy, validation rows, and validation archive outputs.
+    - file: docs/process_flows/24_acceptance_selection_flow.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Acceptance flags, run states, selection sets, discharge/final-selection behaviour, and human override outputs.
+    - file: docs/process_flows/25_procedure_evidence_and_audit_blocks.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Operation-log to procedure-index to audit-block transformation and audit packet structure.
+
+  reporting_archives_and_finalization:
+    - file: docs/process_flows/26_report_building_flow.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Formal test-report construction, report context tables, ISO 14126 additions, failure analysis, and report artifacts.
+    - file: docs/process_flows/27_mtda_finalization_flow.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Finalization policy, report-only overrides, human decisions, archive refresh, provenance, and checksum updates.
+    - file: docs/process_flows/30_report_completion_flow.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Report field catalog, value precedence, missing-field detection, and report override interaction.
+    - file: docs/process_flows/31_archive_member_contracts.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: MTDP and MTDA archive member contracts, producer/consumer ownership, and archive boundary risks.
+
+  user_interface:
+    - file: docs/process_flows/32_ui_journey_maps.md
+      coverage_level: L2-L4
+      status: documented
+      purpose: Operator-facing Dataset and Analysis wizard journeys, including setup, running, review, and finalization states.
+
+  human_visualization_portal:
+    - file: docs/process_flows/34_human_visualization_portal_strategy.md
+      coverage_level: concept_strategy
+      status: documented
+      purpose: Defines HTML as a generated no-duplication visualization layer over canonical Markdown/YAML/code.
+    - file: docs/process_flows/35_human_visualization_portal_blueprint.md
+      coverage_level: concept_blueprint
+      status: documented
+      purpose: Defines map-room information architecture, page types, visual grammar, generated dashboards, and success criteria.
+    - file: docs/process_flows/36_human_portal_adversarial_concept_declaration.md
+      coverage_level: adversarial_concept_declaration
+      status: documented
+      purpose: Red/blue-team declaration defining boundaries, risks, decisions, implementation stages, and acceptance criteria.
+
+source_anchor_groups:
+  mtdp_core:
+    - src/mtdp_enrichment/ui/main_window.py
+    - src/mtdp_enrichment/ui/bundle_builder.py
+    - src/mtdp_enrichment/package/mtdp_package.py
+    - src/mtdp_enrichment/package/schema.py
+    - src/mtdp_enrichment/services/group_loader.py
+    - src/mtdp_enrichment/services/group_exporter.py
+    - src/mtdp_enrichment/services/group_reprocessor.py
+  parser:
+    - src/mtdp_enrichment/parsing_gateway/parser_adapter.py
+    - src/parsing/parsers/delimited_mechanical_csv_parser.py
+    - src/parsing/sniffing/file_sniffer.py
+    - src/parsing/layout/table_layout_detector.py
+    - src/parsing/readers/delimited_numeric_reader.py
+    - src/parsing/columns/
+    - src/parsing/models/
+  sidecar_and_schema:
+    - src/mtdp_enrichment/enrichment_import/
+    - src/mtdp_enrichment/schema_library/mechanical/compression/0.3.0.yaml
+  mapping_readiness:
+    - src/mapping/
+    - src/readiness/
+    - src/compatibility/
+  method_execution:
+    - src/methods/core/
+    - src/methods/iso14126/
+    - src/operations/core/
+    - src/operations/curve/
+    - src/operations/diagnostics/
+  validation_acceptance:
+    - src/validation/
+    - src/acceptance/
+    - src/diagnostics/curves.py
+  reporting_audit_archive:
+    - src/reporting/
+    - src/audit/
+    - src/archives/mtdp/
+    - src/archives/mtda/
+    - src/mtda_finalization/
+  ui:
+    - src/mtdp_enrichment/ui/launcher_window.py
+    - src/mtdp_enrichment/ui/main_window.py
+    - src/ui/method_run_wizard/
+  human_portal_future_implementation:
+    - mkdocs.yml
+    - scripts/docs/
+    - docs/generated/
+
+residuals:
+  generated_exhaustive_tables:
+    status: residual_not_blocking_process_flow_coverage
+    examples:
+      - full schema field CSV with field_id, scope, storage, report_role, report_importance, aliases
+      - archive member manifest generated from fixture MTDP and MTDA archives
+  tests_and_fixture_cross_checks:
+    status: residual_not_blocking_process_flow_coverage
+    examples:
+      - contract tests asserting canonical archive members
+      - parser numeric-risk fixtures
+      - operation input/output fixtures
+      - UI action enablement tests
+  scientific_numeric_policy_deep_dives:
+    status: residual_not_blocking_process_flow_coverage
+    examples:
+      - boundary resolution policy validation
+      - bending persistence threshold justification
+      - curve-family and curve-shape outlier policy justification
+      - robust scalar outlier method notes
+  screenshot_bound_ui_docs:
+    status: residual_not_blocking_process_flow_coverage
+    examples:
+      - screenshot index against Dataset journey states
+      - screenshot index against Analysis wizard states
+  exact_dialog_state_machines:
+    status: document_when_refactoring_dialogs
+    examples:
+      - mapping dialog
+      - report completion dialog
+      - review spotlight
+  archive_versioning_policy:
+    status: document_when_archive_schema_evolves
+  human_portal_implementation:
+    status: concept_documented_not_yet_implemented
+    next_step: minimal_static_mkdocs_render_of_existing_process_flow_markdown
+    guardrail: do_not_create_parallel_human_docs_or_handwritten_duplicate_content
+
+update_triggers:
+  - archive_structure_change
+  - wizard_state_or_ui_route_change
+  - parser_contract_change
+  - grouping_validation_or_export_rule_change
+  - sidecar_mapping_or_conflict_policy_change
+  - schema_field_or_report_role_change
+  - mapping_or_readiness_rule_change
+  - method_recipe_or_operation_change
+  - validation_or_acceptance_policy_change
+  - report_audit_or_workbench_surface_change
+  - finalization_or_amendment_change
+  - human_portal_build_or_generated_dashboard_change
+  - bug_reveals_undocumented_branch
+
+local_tree_observation:
+  source: uploaded_file_tree.txt
+  status: noted
+  interpretation: >
+    The local tree includes many generated artifacts, extracted MTDA packages,
+    screenshots, stage-cycle outputs, logs, and diagnostic folders. These are useful
+    evidence/examples but should not be treated as the primary source-of-truth for
+    code process ownership.

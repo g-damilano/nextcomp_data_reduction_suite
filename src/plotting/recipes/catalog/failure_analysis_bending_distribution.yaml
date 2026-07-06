@@ -1,0 +1,68 @@
+projection_id: failure_analysis_bending_distribution
+golden_id: golden_failure_analysis_bending_distribution
+version: 0.1.0
+schema_version: plot_projection_recipe.v0_1
+plot_type: failure_analysis_bending_distribution
+production_state: production
+surface_profiles:
+  - surface: test_report
+    role: formal bending distribution by run
+    renderer: reporting block Vega-Lite adapter
+  - surface: mtda_archive
+    role: report/vega_specs bending distribution artifact
+    renderer: Vega-Lite
+data_contract:
+  source_tables:
+    - report/failure_analysis_bending_distribution.json
+    - aggregate/bending_summary_table.csv
+  required_fields:
+    - run_label
+    - min_bending_percent
+    - max_bending_percent
+  optional_fields:
+    - q1_bending_percent
+    - median_bending_percent
+    - q3_bending_percent
+    - fraction_above_threshold
+    - points_above_threshold
+    - bending_pattern
+  forbidden_transforms:
+    - bending_threshold_recalculation
+transform_ids:
+  - aggregate.bending_summary_passthrough.v1
+semantic_contract:
+  layers:
+    - layer_id: criterion_band
+      semantic_role: area above configured bending threshold
+      required: true
+    - layer_id: threshold_rule
+      semantic_role: configured bending threshold rule
+      required: true
+    - layer_id: bending_min_max_rule
+      semantic_role: min/max bending range per run
+      required: false
+    - layer_id: bending_iqr_bar
+      semantic_role: interquartile bending range per run
+      required: false
+    - layer_id: bending_median_tick
+      semantic_role: median bending tick per run
+      required: false
+quality_contract:
+  requires_data: false
+  unavailable_message_allowed: true
+  requires_axis_labels: true
+staleness_contract:
+  status_source: source_spec.unavailable_message
+  stale_if_source_spec_missing: unavailable
+artifact_contract:
+  primary_artifacts:
+    - report/vega_specs/failure_analysis_bending_distribution.json
+    - report/test_report.html data-vega-block
+  export_formats:
+    - html
+    - json
+migration_metadata:
+  current_builder: plotting.plots.formal_report.failure_analysis_bending_distribution_vega_lite
+  current_router: reporting.blocks.vega_plot.VegaPlotBlock -> plotting.registry.plot_registry -> plotting.plots.formal_report
+  migration_status: plotting-layer compatibility builder; Vega output preserved
+  parity_reference: tests/reporting/test_report_engine_blocks.py

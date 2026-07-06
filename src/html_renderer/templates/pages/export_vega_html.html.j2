@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title_html }}</title>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <style>
+    .vg-tooltip { max-width: 340px !important; white-space: normal !important; overflow-wrap: anywhere !important; pointer-events: none !important; }
+    .vg-tooltip table { width: auto !important; table-layout: auto !important; border-collapse: collapse !important; font-size: 12px !important; background: #fff !important; }
+    .vg-tooltip th, .vg-tooltip td { padding: 2px 6px !important; border: 0 !important; white-space: nowrap !important; overflow-wrap: normal !important; }
+  </style>
+</head>
+<body>
+  <main style="max-width: 1120px; margin: 28px auto; font-family: Arial, sans-serif; color: #17202a;">
+  <h1>{{ page.title_html }}</h1>
+  <p style="color:#5b6876;">Standalone operator evidence figure exported from the MTDA. The figure preserves individual replicate curves, the aggregate mean, range envelope, mean +/- 1 sigma band, and observation counts for the selected report set. Individual replicates are intentionally subdued so the aggregate evidence remains readable.</p>
+  <div id="aggregate-stress-strain"></div>
+  </main>
+  <script>
+    const spec = {{ page.spec_json }};
+    vegaEmbed('#aggregate-stress-strain', spec, {actions: true});
+  </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Packaging/build outputs
+build/
+dist/
+*.spec~
+*.egg-info/
+node_modules/
+release_candidate/
+
+# Generated method archives and export directories
+*.mtdp
+*.mtda
+*_workbench/
+outputs/
+exports/
+
+# Local environment/editor files
+.venv/
+.env
+.idea/
+.vscode/
+artifacts/
+old/
+*.zip
+*.pyc
+datasets/Unreduced_Data/
+prototyping/LB25G0.8x150HD8x1rpm_derivative_dashboards_patched/

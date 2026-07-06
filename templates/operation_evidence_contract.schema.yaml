@@ -1,0 +1,47 @@
+# Operation Evidence Contract Schema
+# Purpose: operation-owned evidence definition for procedure-derived audit/report/workbench surfaces.
+
+operation_contract:
+  operation_type: string                 # e.g. chord_slope
+  version: string                        # semantic version or method package version
+  description: string
+
+  inputs:
+    - name: string
+      type: series|scalar|table|object
+      required: true
+      unit: string|null
+      description: string
+
+  outputs:
+    - name: string
+      type: series|scalar|table|object
+      unit: string|null
+      report_role: string|null           # e.g. compressive_modulus; null if not formal report value
+      description: string
+
+  evidence:
+    evidence_role:
+      - primary_audit_block              # or supporting_evidence / hidden_by_default / workbench_only / test_report_value
+    default_audit_fragment: string|null  # e.g. chord_slope_overlay_fragment
+    required_evidence:
+      - id: string                       # e.g. input_curve
+        type: curve|marker|line|table|scalar|text
+        required: true
+    default_narrative: string
+    warnings_to_surface: true
+
+  audit:
+    default_block_id: string|null        # e.g. run_stress_strain_reduction
+    default_view_type: string|null       # e.g. chord_slope_overlay
+    can_be_grouped: true
+    show_as_standalone_by_default: false
+
+  workbench:
+    view_type: string|null               # operation-level debugging view
+    before_after_required: false
+
+  test_report:
+    include_by_default: false
+    report_role: string|null
+    destinations: []                     # e.g. [individual_results, aggregate_results]

@@ -1,0 +1,18 @@
+methods:
+- method_id: iso14126_2023
+  label: ISO 14126 Compression
+  version: 0.1.0
+  status: active
+  analysis_type: mechanical.compression
+  method_path: src/methods/iso14126
+  default_mapping_path: mappings/iso14126_manual.json
+- method_id: iso14126_2023_v0_1_1
+  label: New method 1
+  version: 0.1.1
+  status: active
+  analysis_type: mechanical.compression
+  method_path: src/methods/generated/iso14126_2023/v0_1_1
+  source: method_editor_generated
+  base_method_id: iso14126_2023
+  generated_at: '2026-07-02T12:45:54.802659Z'
+  default_mapping_path: mappings/iso14126_manual.json

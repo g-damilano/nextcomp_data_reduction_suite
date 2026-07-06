@@ -1,0 +1,1 @@
+{% if page.has_spec %}<div class="plot-panel" data-audit-plot="{{ page.audit_plot_type_html }}"><div id="{{ page.plot_id_html }}" class="chart audit-plot"></div>{{ page.caption_html }}{{ page.warning_html }}</div>{% else %}<div class="plot-unavailable">{{ page.fallback_message_html }}</div>{% endif %}

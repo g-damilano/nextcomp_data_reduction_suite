@@ -1,0 +1,36 @@
+bending_assessment_policy:
+  id: iso14126_default_persistence_v1
+  threshold_percent: 10.0
+  window:
+    type: percent_of_max_load
+    lower_percent: 10
+    upper_percent: 90
+  strain_mode: compression_magnitude
+  pointwise_metrics:
+    include_max: true
+    include_mean: true
+    include_median: true
+    include_p95: true
+    include_p99: true
+    include_points_above_threshold: true
+    include_fraction_above_threshold: true
+  segment_detection:
+    contiguous_by: point_index
+    allow_gap_points: 0
+    classify_single_point_as_spike: true
+  classification:
+    pass_with_spikes:
+      max_longest_segment_points: 2
+      max_total_exceedance_fraction: 0.02
+    warn_transient:
+      max_longest_segment_fraction: 0.05
+      max_total_exceedance_fraction: 0.10
+    fail_sustained:
+      longest_segment_fraction_above: 0.05
+      total_exceedance_fraction_above: 0.10
+  audit:
+    view_type: bending_pattern_assessment
+    show_threshold_line: true
+    show_exceedance_points: true
+    show_segments: true
+    show_10_90_load_window: true

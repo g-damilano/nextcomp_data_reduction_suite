@@ -1,0 +1,770 @@
+{
+  "golden_aggregate_curve_family": {
+    "axis_titles": {
+      "x": [
+        "Normalised strain / %"
+      ],
+      "y": [
+        "Stress / MPa"
+      ]
+    },
+    "freshness_status": "current",
+    "layer_names": [
+      "cohort variability band",
+      "all evaluable curves by Dixon rank",
+      "mean or median curve",
+      "run endpoint labels"
+    ],
+    "layout_keys": [
+      "layer"
+    ],
+    "legend_titles": [
+      "Dixon rank (1 = most distant)"
+    ],
+    "mark_types": [
+      "area",
+      "line",
+      "text"
+    ],
+    "scale_channels": [
+      {
+        "channel": "y",
+        "field": "std_lower",
+        "scale": {
+          "domain": [
+            0.0,
+            200.0
+          ],
+          "nice": false
+        }
+      },
+      {
+        "channel": "y",
+        "field": "stress",
+        "scale": {
+          "domain": [
+            0.0,
+            200.0
+          ],
+          "nice": false
+        }
+      }
+    ],
+    "schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "semantic_layers": [
+      "all_evaluable_curves",
+      "reference_curve",
+      "variability_band",
+      "dixon_rank_coloring",
+      "run_endpoint_labels",
+      "outlier_candidate_curves"
+    ],
+    "tooltip_fields": [
+      "n",
+      "run_label",
+      "specimen",
+      "x",
+      "stress",
+      "distance_rms",
+      "distance_rank",
+      "Qexp",
+      "Qcrit_95",
+      "threshold_method",
+      "diagnostic_classification",
+      "run_id"
+    ]
+  },
+  "golden_aggregate_stress_strain_mean_variability": {
+    "axis_titles": {
+      "x": [
+        "Actual strain / %",
+        "Normalised strain / %"
+      ],
+      "y": [
+        "Stress / MPa"
+      ]
+    },
+    "freshness_status": "stale",
+    "layer_names": [
+      "replicates",
+      "aggregate",
+      "markers"
+    ],
+    "layout_keys": [
+      "hconcat"
+    ],
+    "legend_titles": [],
+    "mark_types": [
+      "line",
+      "area",
+      "point",
+      "text"
+    ],
+    "scale_channels": [],
+    "schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "semantic_layers": [],
+    "tooltip_fields": [
+      "analysis_progress_percent",
+      "mean",
+      "n",
+      "label",
+      "run_id",
+      "stress_MPa"
+    ]
+  },
+  "golden_audit_bending_trace": {
+    "axis_titles": {
+      "x": [
+        "Load / N"
+      ],
+      "y": [
+        "Bending / %"
+      ]
+    },
+    "freshness_status": null,
+    "layer_names": [
+      "run_selector"
+    ],
+    "layout_keys": [
+      "layer"
+    ],
+    "legend_titles": [],
+    "mark_types": [
+      "line",
+      "point",
+      "rule"
+    ],
+    "scale_channels": [],
+    "schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "semantic_layers": [],
+    "tooltip_fields": [
+      "run_id",
+      "load_N",
+      "bending_percent",
+      "exceeds_threshold"
+    ]
+  },
+  "golden_audit_modulus_window": {
+    "axis_titles": {
+      "x": [
+        "Mean strain"
+      ],
+      "y": [
+        "Stress / MPa"
+      ]
+    },
+    "freshness_status": null,
+    "layer_names": [],
+    "layout_keys": [
+      "layer"
+    ],
+    "legend_titles": [],
+    "mark_types": [
+      "line",
+      "rule"
+    ],
+    "scale_channels": [],
+    "schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "semantic_layers": [],
+    "tooltip_fields": []
+  },
+  "golden_audit_stress_strain_family": {
+    "axis_titles": {
+      "x": [
+        "Mean strain"
+      ],
+      "y": [
+        "Stress / MPa"
+      ]
+    },
+    "freshness_status": null,
+    "layer_names": [
+      "run_selector"
+    ],
+    "layout_keys": [
+      "mark"
+    ],
+    "legend_titles": [
+      "Run"
+    ],
+    "mark_types": [
+      "line"
+    ],
+    "scale_channels": [],
+    "schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "semantic_layers": [],
+    "tooltip_fields": [
+      "run_id",
+      "strain_mm_per_mm",
+      "stress_MPa",
+      "load_N"
+    ]
+  },
+  "golden_bending_evidence": {
+    "axis_titles": {
+      "x": [
+        "Load / N"
+      ],
+      "y": [
+        "Bending / %"
+      ]
+    },
+    "freshness_status": null,
+    "layer_names": [
+      "10-90% window",
+      "10% and 90% Fmax boundary lines",
+      "10% and 90% Fmax boundary annotations",
+      "exceedance segments",
+      "bending percent series outside assessment window",
+      "bending percent series",
+      "exceedance points",
+      "threshold line",
+      "threshold annotation"
+    ],
+    "layout_keys": [
+      "layer"
+    ],
+    "legend_titles": [],
+    "mark_types": [
+      "rect",
+      "rule",
+      "text",
+      "line",
+      "point"
+    ],
+    "scale_channels": [
+      {
+        "channel": "x",
+        "field": "x1",
+        "scale": {
+          "domain": [
+            0.0,
+            700.0
+          ],
+          "nice": false
+        }
+      },
+      {
+        "channel": "x",
+        "field": "load_N",
+        "scale": {
+          "domain": [
+            0.0,
+            700.0
+          ],
+          "nice": false
+        }
+      },
+      {
+        "channel": "x",
+        "field": "start_load_N",
+        "scale": {
+          "domain": [
+            0.0,
+            700.0
+          ],
+          "nice": false
+        }
+      }
+    ],
+    "schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "semantic_layers": [
+      "bending_percent_series",
+      "context_bending_series",
+      "threshold_line",
+      "threshold_annotation",
+      "assessment_window_10_90_fmax",
+      "classification_marker",
+      "assessment_window_10_percent_boundary",
+      "assessment_window_90_percent_boundary",
+      "exceedance_points",
+      "exceedance_segments"
+    ],
+    "tooltip_fields": [
+      "label",
+      "load_N",
+      "segment_classification",
+      "bending_percent",
+      "threshold"
+    ]
+  },
+  "golden_curve_shape_distance_ranking": {
+    "axis_titles": {
+      "x": [
+        "Run (sorted by curve difference rank)"
+      ],
+      "y": [
+        "Curve difference score"
+      ]
+    },
+    "freshness_status": null,
+    "layer_names": [
+      "distance_rms by run",
+      "Dixon gap vertical bracket",
+      "Dixon gap bracket ticks",
+      "Dixon denominator vertical bracket",
+      "Dixon denominator bracket ticks",
+      "Dixon bracket labels",
+      "Dixon Q decision annotation"
+    ],
+    "layout_keys": [
+      "layer"
+    ],
+    "legend_titles": [],
+    "mark_types": [
+      "bar",
+      "rule",
+      "text"
+    ],
+    "scale_channels": [
+      {
+        "channel": "x",
+        "field": "run_label",
+        "scale": {
+          "domain": [
+            "#2",
+            "#1"
+          ]
+        }
+      },
+      {
+        "channel": "y",
+        "field": "distance_rms",
+        "scale": {
+          "domain": [
+            0,
+            1.5
+          ],
+          "nice": false
+        }
+      },
+      {
+        "channel": "x",
+        "field": "rank2_run",
+        "scale": {
+          "domain": [
+            "#2",
+            "#1"
+          ]
+        }
+      },
+      {
+        "channel": "y",
+        "field": "rank2_score",
+        "scale": {
+          "domain": [
+            0,
+            1.5
+          ],
+          "nice": false
+        }
+      },
+      {
+        "channel": "x",
+        "field": "x_start",
+        "scale": {
+          "domain": [
+            "#2",
+            "#1"
+          ]
+        }
+      },
+      {
+        "channel": "y",
+        "field": "score",
+        "scale": {
+          "domain": [
+            0,
+            1.5
+          ],
+          "nice": false
+        }
+      },
+      {
+        "channel": "x",
+        "field": "denominator_low_run",
+        "scale": {
+          "domain": [
+            "#2",
+            "#1"
+          ]
+        }
+      },
+      {
+        "channel": "y",
+        "field": "denominator_low_score",
+        "scale": {
+          "domain": [
+            0,
+            1.5
+          ],
+          "nice": false
+        }
+      },
+      {
+        "channel": "x",
+        "field": "x_label",
+        "scale": {
+          "domain": [
+            "#2",
+            "#1"
+          ]
+        }
+      },
+      {
+        "channel": "y",
+        "field": "rank1_score",
+        "scale": {
+          "domain": [
+            0,
+            1.5
+          ],
+          "nice": false
+        }
+      }
+    ],
+    "schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "semantic_layers": [
+      "distance_rms_by_run",
+      "dixon_q_test_against_critical_threshold",
+      "dixon_gap_denominator_geometry",
+      "outlier_candidate_marker",
+      "threshold_method_annotation"
+    ],
+    "tooltip_fields": [
+      "run_label",
+      "specimen",
+      "distance_rms",
+      "distance_rank",
+      "diagnostic_classification",
+      "gap",
+      "denominator",
+      "Qexp",
+      "Qcrit_95",
+      "dixon_variant",
+      "decision",
+      "label"
+    ]
+  },
+  "golden_curve_shape_residuals": {
+    "axis_titles": {
+      "x": [
+        "Normalised strain / %"
+      ],
+      "y": [
+        "Standardized residual z(x)"
+      ]
+    },
+    "freshness_status": null,
+    "layer_names": [
+      "zero line",
+      "residual curves"
+    ],
+    "layout_keys": [
+      "layer"
+    ],
+    "legend_titles": [
+      "Curve-shape classification"
+    ],
+    "mark_types": [
+      "rule",
+      "line"
+    ],
+    "scale_channels": [],
+    "schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "semantic_layers": [
+      "residual_curves",
+      "zero_line"
+    ],
+    "tooltip_fields": [
+      "run_id",
+      "x",
+      "standardized_residual",
+      "diagnostic_classification"
+    ]
+  },
+  "golden_failure_analysis_bending_distribution": {
+    "axis_titles": {
+      "x": [
+        "Run"
+      ],
+      "y": [
+        "Bending / %"
+      ]
+    },
+    "freshness_status": null,
+    "layer_names": [
+      "criterion_band",
+      "threshold",
+      "bending_summary"
+    ],
+    "layout_keys": [
+      "layer"
+    ],
+    "legend_titles": [
+      "Bending pattern"
+    ],
+    "mark_types": [
+      "rect",
+      "rule",
+      "bar",
+      "tick"
+    ],
+    "scale_channels": [],
+    "schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "semantic_layers": [],
+    "tooltip_fields": [
+      "threshold_percent",
+      "run_label",
+      "specimen_name",
+      "min_bending_percent",
+      "q1_bending_percent",
+      "median_bending_percent",
+      "q3_bending_percent",
+      "p95_bending_percent",
+      "max_bending_percent",
+      "fraction_above_threshold",
+      "points_above_threshold",
+      "assessed_point_count"
+    ]
+  },
+  "golden_mtda_dataset_aggregate_compact_package": {
+    "data_mode": "archive_view",
+    "dataset_roles": [],
+    "export_keys": [
+      "compact_plot_package_data",
+      "data_only",
+      "plot_image",
+      "plot_spec_hydrated_data",
+      "settings_only"
+    ],
+    "golden_id": "golden_mtda_dataset_aggregate_compact_package",
+    "html_member": "aggregate/dataset_plot.html",
+    "package_type": "compact-vegalite-workbench",
+    "plot_data_view_schema_versions": [
+      "mtda.plot_data_view.v0_1"
+    ],
+    "plot_data_view_transform_ids": [
+      "aggregate.all_runs_resampled_curve_family.v1"
+    ],
+    "plot_data_view_versions": [
+      "1.0.0"
+    ],
+    "plot_id": "dataset_plot",
+    "plot_type": "dataset_aggregate_stress_strain",
+    "production_state": "production",
+    "projection_contract_keys": [
+      "artifact_contract",
+      "data_contract",
+      "quality_contract",
+      "semantic_contract",
+      "staleness_contract",
+      "transform_ids"
+    ],
+    "projection_id": "mtda_dataset_aggregate_compact_package",
+    "projection_semantic_layer_ids": [
+      "all_runs_resampled_curve_family",
+      "stress_aggregate_band",
+      "bending_summary",
+      "fmax_distribution"
+    ],
+    "recipe_schema_version": "plot_projection_recipe.v0_1",
+    "recipe_version": "0.1.0",
+    "schema_version": "0.1",
+    "semantic_layer_ids": [],
+    "staleness_contract_keys": [
+      "stale_if_source_checksum_mismatch",
+      "status_source"
+    ],
+    "state_model_keys": [
+      "currentSpec",
+      "originalPackage",
+      "workingPackage"
+    ],
+    "template_path": "dataset_plot.template.json",
+    "view_data_mode": "runtime_resolved"
+  },
+  "golden_mtda_run_compact_stress_strain_evidence": {
+    "data_mode": "archive_view",
+    "dataset_roles": [
+      "front rear strain agreement envelope",
+      "front rear strain traces",
+      "bounded curve",
+      "chord line",
+      "chord points",
+      "analysis markers"
+    ],
+    "export_keys": [
+      "compact_plot_package_data",
+      "data_only",
+      "plot_image",
+      "plot_spec_hydrated_data",
+      "settings_only"
+    ],
+    "golden_id": "golden_mtda_run_compact_stress_strain_evidence",
+    "html_member": "processed/runs/run_001_plot.html",
+    "package_type": "compact-vegalite-workbench",
+    "plot_data_view_schema_versions": [
+      "mtda.plot_data_view.v0_1"
+    ],
+    "plot_data_view_transform_ids": [
+      "run.bounded_average_curve.v1"
+    ],
+    "plot_data_view_versions": [
+      "1.0.0"
+    ],
+    "plot_id": "run_001_plot",
+    "plot_type": "run_stress_strain_reduction_evidence",
+    "production_state": "production",
+    "projection_contract_keys": [
+      "artifact_contract",
+      "data_contract",
+      "quality_contract",
+      "semantic_contract",
+      "staleness_contract",
+      "transform_ids"
+    ],
+    "projection_id": "mtda_run_compact_stress_strain_evidence",
+    "projection_semantic_layer_ids": [
+      "bounded_analysis_curve",
+      "front_strain_trace",
+      "rear_strain_trace",
+      "strain_agreement_envelope",
+      "analysis_markers"
+    ],
+    "recipe_schema_version": "plot_projection_recipe.v0_1",
+    "recipe_version": "0.1.0",
+    "schema_version": "0.1",
+    "semantic_layer_ids": [
+      "bounded_analysis_curve",
+      "average_strain_curve",
+      "strain_agreement_envelope",
+      "front_strain_trace",
+      "rear_strain_trace",
+      "modulus_chord_start",
+      "modulus_chord_end",
+      "modulus_chord_line",
+      "experiment_start_marker",
+      "experiment_end_marker",
+      "max_or_failure_marker",
+      "front rear strain agreement envelope",
+      "front rear strain traces",
+      "bounded curve",
+      "chord line",
+      "chord points",
+      "analysis markers"
+    ],
+    "staleness_contract_keys": [
+      "stale_if_source_checksum_mismatch",
+      "status_source"
+    ],
+    "state_model_keys": [
+      "currentSpec",
+      "originalPackage",
+      "workingPackage"
+    ],
+    "template_path": "run_001_plot.template.json",
+    "view_data_mode": "runtime_resolved"
+  },
+  "golden_stress_strain_reduction": {
+    "axis_titles": {
+      "x": [
+        "Strain / %"
+      ],
+      "y": [
+        "Stress / MPa"
+      ]
+    },
+    "freshness_status": null,
+    "layer_names": [
+      "front rear strain agreement envelope",
+      "front rear strain traces",
+      "bounded curve",
+      "chord line",
+      "chord points",
+      "analysis markers"
+    ],
+    "layout_keys": [
+      "layer"
+    ],
+    "legend_titles": [
+      "Strain traces"
+    ],
+    "mark_types": [
+      "area",
+      "line",
+      "point"
+    ],
+    "scale_channels": [
+      {
+        "channel": "x",
+        "field": "strain_min",
+        "scale": {
+          "domain": [
+            0.041,
+            0.35900000000000004
+          ],
+          "nice": false
+        }
+      },
+      {
+        "channel": "y",
+        "field": "stress",
+        "scale": {
+          "domain": [
+            10.25,
+            89.75
+          ],
+          "nice": false
+        }
+      },
+      {
+        "channel": "x",
+        "field": "gauge_strain",
+        "scale": {
+          "domain": [
+            0.041,
+            0.35900000000000004
+          ],
+          "nice": false
+        }
+      },
+      {
+        "channel": "x",
+        "field": "strain",
+        "scale": {
+          "domain": [
+            0.041,
+            0.35900000000000004
+          ],
+          "nice": false
+        }
+      }
+    ],
+    "schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "semantic_layers": [
+      "bounded_analysis_curve",
+      "average_strain_curve",
+      "strain_agreement_envelope",
+      "front_strain_trace",
+      "rear_strain_trace",
+      "modulus_chord_start",
+      "modulus_chord_end",
+      "modulus_chord_line",
+      "experiment_start_marker",
+      "experiment_end_marker",
+      "max_or_failure_marker"
+    ],
+    "tooltip_fields": [
+      "series",
+      "strain_min",
+      "strain_max",
+      "stress",
+      "point_index",
+      "gauge_strain",
+      "strain",
+      "label",
+      "marker"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title_html }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; color: #202124; }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; }
+    dt { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>{{ page.title_html }}</h1>
+  <dl>{% for row in page.metadata_rows %}<dt>{{ row.key_html }}</dt><dd>{{ row.value_html }}</dd>{% endfor %}</dl>
+  {{ page.body_html }}
+</body>
+</html>

@@ -1,0 +1,30 @@
+mtdp_supplemental_version: 0.1.0
+scope: run
+schema_hint:
+  schema_id: mechanical.compression
+  schema_version: 0.2.0
+dataset:
+  sample_type: Golden untreated compression
+  treatment: control
+  material_label: CAG-CF-ER
+run:
+  specimen_name: CAG-CF-ER-Comp-E1
+  metrology:
+    width:
+      value: 9.80
+      unit: mm
+    thickness:
+      value: 2.30
+      unit: mm
+  acquisition:
+    operator: Release Tester
+    instrument: Instron 5969
+    load_cell:
+      value: 50
+      unit: kN
+    test_speed:
+      value: 1.0
+      unit: mm/min
+    test_date: 2026-05-08
+  review:
+    validity: accepted

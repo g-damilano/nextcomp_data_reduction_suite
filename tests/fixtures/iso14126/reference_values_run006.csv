@@ -1,0 +1,13 @@
+run_id,field,point_index,reference_value,unit,tolerance_abs,tolerance_rel,source,note
+run_006,width_mm,,9.71,mm,0.0001,,excel,Specimen E6 width
+run_006,thickness_mm,,2.18,mm,0.0001,,excel,Specimen E6 thickness
+run_006,area_mm2,,21.1678,mm^2,0.0001,,excel,Area from 9.71 mm x 2.18 mm
+run_006,max_load_N,,4953.57,N,0.1,,excel,Bounded method max load at physical terminal load-drop endpoint
+run_006,compressive_strength_MPa,,234.014399229018,MPa,0.5,,excel,Strength at physical terminal load-drop endpoint
+run_006,compressive_modulus_GPa,,55.2770854,GPa,1.0,,excel,Workbook modulus reference; method output is ISO chord
+run_006,mean_strain_microstrain,0,0.72534,usn,0.01,,excel,Average strain row 0
+run_006,mean_strain_microstrain,29,112.405015,usn,0.01,,excel,Average strain row 29
+run_006,mean_strain_microstrain,141,1615.62557,usn,0.01,,excel,Average strain row 141
+run_006,mean_strain_microstrain,283,4562.959075,usn,0.01,,excel,Average strain row 283 before physical terminal endpoint
+run_006,stress_MPa,29,0.942816754,MPa,0.01,,excel,Stress row 29
+run_006,stress_MPa,283,228.699723164429,MPa,0.5,,excel,Stress row 283 before physical terminal endpoint

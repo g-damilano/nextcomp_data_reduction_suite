@@ -1,0 +1,21 @@
+# Patch for src/methods/iso14126/resolve_recipe.yaml
+# Insert after strain construction and before reduction-dependent outputs.
+
+- id: resolve.experiment_boundaries
+  label: Resolve experiment start/end boundaries
+  op: resolve_experiment_boundaries
+  inputs:
+    load: load_N
+    time: time_s
+    strain: mean_strain
+  parameters:
+    start_policy: first_point
+    end_policy: max_abs_load
+    include_endpoint: true
+    sustained_decline:
+      enabled: true
+      min_points: 3
+      min_relative_drop: 0.005
+      use_as: diagnostic_only
+  output: experiment_boundaries
+  audit_view: experiment_boundary_resolution

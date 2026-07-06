@@ -1,0 +1,99 @@
+{
+  "schema": "gui-transition-representative-workflows/v1",
+  "fixtures": {
+    "golden_package": "tests/fixtures/mtdp/golden_compression_group/expected/golden_compression_group.mtdp",
+    "golden_source_root": "tests/fixtures/mtdp/golden_compression_group/source",
+    "canonical_method_root": "src/methods/iso14126",
+    "default_mapping": "mappings/iso14126_manual.json"
+  },
+  "workflows": [
+    {
+      "id": "packaging-export-analysis-readiness",
+      "description": "A backend-loaded golden MTDP package is re-exported through the GUI bridge and immediately used by Analysis readiness.",
+      "input_package": "tests/fixtures/mtdp/golden_compression_group/expected/golden_compression_group.mtdp",
+      "expected_group_count": 1,
+      "expected_run_count": 2,
+      "export": {
+        "output_name": "representative_exported_group.mtdp",
+        "required_members": [
+          "metadata/manifest.json",
+          "metadata/dataset.json",
+          "metadata/provenance.json",
+          "metadata/checksums.json",
+          "dataset/raw/run_001_raw.csv",
+          "dataset/raw/run_002_raw.csv",
+          "dataset/normalized/run_001_normalized.csv",
+          "dataset/normalized/run_002_normalized.csv"
+        ]
+      },
+      "analysis": {
+        "method_id": "iso14126_2023",
+        "mapping_name": "iso14126_manual.json",
+        "readiness_status": "READY_WITH_WARNINGS",
+        "run_enabled": true,
+        "execution_critical_missing": 0
+      }
+    },
+    {
+      "id": "method-editor-generated-analysis-readiness",
+      "description": "A controlled Method Editor draft is generated, registered, selected by Analysis, and readiness-checked without mutating the ISO reference method.",
+      "base_method_id": "iso14126_2023",
+      "target_version": "0.6.0",
+      "generated_method_id": "iso14126_2023_v0_6_0",
+      "input_package": "tests/fixtures/mtdp/golden_compression_group/expected/golden_compression_group.mtdp",
+      "controlled_patch": {
+        "parameter_group": "modulus_chord_strain_window",
+        "values": {
+          "start_strain": 0.0006,
+          "end_strain": 0.0026
+        }
+      },
+      "analysis": {
+        "readiness_status": "READY_WITH_WARNINGS",
+        "run_enabled": true,
+        "execution_critical_missing": 0
+      }
+    },
+    {
+      "id": "analysis-execution-review-finalization",
+      "description": "The golden package runs through Analysis execution, review confirmation, MTDA finalization, copy-path, and artifact resolution.",
+      "input_package": "tests/fixtures/mtdp/golden_compression_group/expected/golden_compression_group.mtdp",
+      "method_id": "iso14126_2023",
+      "output_name": "representative_analysis_run.mtda",
+      "generate_workbench": false,
+      "readiness_status": "READY_WITH_WARNINGS",
+      "run": {
+        "terminal_status": "completed",
+        "progress_percent": 100,
+        "required_events": ["runProgress", "runCompleted"],
+        "required_members": [
+          "dataset/04_reports/test_report.html",
+          "dataset/04_reports/test_report.json",
+          "dataset/04_reports/audit_report.html",
+          "dataset/04_reports/audit_report.json"
+        ]
+      },
+      "review": {
+        "reviewer": "QA",
+        "note": "Representative workflow review confirmed.",
+        "decision": "keep",
+        "default_included": false,
+        "final_included": true,
+        "reason": "Representative workflow review accepted the diagnostic deviation.",
+        "defects": ["bending"]
+      },
+      "finalization": {
+        "reviewer": "QA",
+        "note": "Representative workflow finalized.",
+        "reason_kind": "review_decisions",
+        "status": "finalized",
+        "human_decision_count": 1,
+        "required_member_suffixes": [
+          "finalization/archive_state.json",
+          "finalization/amendment_ledger.json"
+        ]
+      },
+      "artifacts": ["test_report", "audit_report", "output_folder", "open_mtda"]
+    }
+  ]
+}

@@ -1,0 +1,401 @@
+resolve:
+  - id: resolve.map_load
+    label: Map load channel
+    op: map_channel
+    from_mapping: load
+    output: load_N
+    transform: absolute
+    raw_output: load_N_raw
+    audit_view: mapped_channel_series
+
+  - id: resolve.map_extension
+    label: Map extension channel
+    op: map_channel
+    from_mapping: extension
+    output: extension_mm
+    required: false
+    audit_view: mapped_channel_series
+
+  - id: resolve.map_front_strain
+    label: Map front strain channel
+    op: map_channel
+    from_mapping: front_strain
+    output: front_strain_raw
+    audit_view: mapped_channel_series
+
+  - id: resolve.map_rear_strain
+    label: Map rear strain channel
+    op: map_channel
+    from_mapping: rear_strain
+    output: rear_strain_raw
+    audit_view: mapped_channel_series
+
+  - id: resolve.map_time
+    label: Map time channel
+    op: map_channel
+    from_mapping: time
+    output: time_s
+    required: false
+    audit_view: mapped_channel_series
+
+  - id: resolve.map_specimen_name
+    label: Map specimen name
+    op: map_scalar
+    from_mapping: specimen_name
+    output: specimen_name
+    numeric: false
+    audit_view: scalar_card
+
+  - id: resolve.map_sample_id
+    label: Map sample ID
+    op: map_scalar
+    from_mapping: sample_id
+    output: sample_id
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_width
+    label: Map specimen width
+    op: map_scalar
+    from_mapping: width
+    output: width_mm
+    numeric: true
+    audit_view: scalar_card
+
+  - id: resolve.map_thickness
+    label: Map specimen thickness
+    op: map_scalar
+    from_mapping: thickness
+    output: thickness_mm
+    numeric: true
+    audit_view: scalar_card
+
+  - id: resolve.map_gauge_length
+    label: Map strain-measurement gauge length
+    op: map_scalar
+    from_mapping: gauge_length
+    output: gauge_length_mm
+    numeric: true
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_distance_between_end_tabs
+    label: Map distance between end tabs / unsupported length
+    op: map_scalar
+    from_mapping: distance_between_end_tabs
+    output: distance_between_end_tabs_mm
+    numeric: true
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_tab_length
+    label: Map tab length
+    op: map_scalar
+    from_mapping: tab_length
+    output: tab_length_mm
+    numeric: true
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_tab_thickness
+    label: Map tab thickness
+    op: map_scalar
+    from_mapping: tab_thickness
+    output: tab_thickness_mm
+    numeric: true
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_failure_mode
+    label: Map failure mode
+    op: map_scalar
+    from_mapping: failure_mode
+    output: failure_mode
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_primary_failure_mode
+    label: Map primary failure mode
+    op: map_scalar
+    from_mapping: primary_failure_mode
+    output: primary_failure_mode
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_failure_location
+    label: Map failure location
+    op: map_scalar
+    from_mapping: failure_location
+    output: failure_location
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_failure_observed
+    label: Map failure observed
+    op: map_scalar
+    from_mapping: failure_observed
+    output: failure_observed
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_invalid_specimen_reason
+    label: Map invalid specimen reason
+    op: map_scalar
+    from_mapping: invalid_specimen_reason
+    output: invalid_specimen_reason
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_invalid_specimen_reason_other
+    label: Map other invalid specimen reason
+    op: map_scalar
+    from_mapping: invalid_specimen_reason_other
+    output: invalid_specimen_reason_other
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_failure_analysis_notes
+    label: Map failure analysis notes
+    op: map_scalar
+    from_mapping: failure_analysis_notes
+    output: failure_analysis_notes
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_visible_buckling_or_bending_observation
+    label: Map visible buckling or bending observation
+    op: map_scalar
+    from_mapping: visible_buckling_or_bending_observation
+    output: visible_buckling_or_bending_observation
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_visible_buckling_or_bending_observation_other
+    label: Map other buckling or bending observation
+    op: map_scalar
+    from_mapping: visible_buckling_or_bending_observation_other
+    output: visible_buckling_or_bending_observation_other
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_failure_image_reference
+    label: Map failure image reference
+    op: map_scalar
+    from_mapping: failure_image_reference
+    output: failure_image_reference
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_rejection_reason
+    label: Map rejection reason
+    op: map_scalar
+    from_mapping: rejection_reason
+    output: rejection_reason
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_run_notes
+    label: Map run notes
+    op: map_scalar
+    from_mapping: run_notes
+    output: run_notes
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_validity
+    label: Map validity token
+    op: map_scalar
+    from_mapping: validity
+    output: validity
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.map_requires_review
+    label: Map review flag
+    op: map_scalar
+    from_mapping: requires_review
+    output: requires_review
+    numeric: false
+    required: false
+    audit_view: scalar_card
+
+  - id: resolve.derive_area
+    label: Derive cross-section area
+    op: derive_area
+    width: width_mm
+    thickness: thickness_mm
+    output: area_mm2
+    unit: mm^2
+    audit_view: geometry_area
+    evidence:
+      evidence_role: supporting_evidence
+      default_audit_block: run_identity_and_status
+      audit_view: geometry_area_table
+      workbench_view: scalar_card
+      required_artifacts:
+        - specimen_geometry_inputs
+        - area_value
+    report:
+      include: true
+      roles:
+        - specimen_geometry
+      destinations:
+        - specimen_geometry
+    surface_policy:
+      audit_report: supporting
+      test_report: formal_result
+      workbench: detailed
+
+  - id: resolve.derive_mean_strain
+    label: Construct mean compressive strain from front/rear gauge magnitudes
+    op: derive_series_mean
+    inputs:
+      series:
+        - front_strain_raw
+        - rear_strain_raw
+    parameters:
+      mode: mean_absolute
+      absolute_outputs:
+        - front_strain_abs
+        - rear_strain_abs
+    output: mean_strain
+    audit_view: mean_absolute_strain_construction
+    evidence:
+      evidence_role: supporting_evidence
+      default_audit_block: run_stress_strain_reduction
+      audit_view: mean_absolute_strain_overlay
+      workbench_view: mean_strain_construction_view
+      required_artifacts:
+        - front_rear_strain_series
+        - mean_strain_series
+    report:
+      include: false
+      roles: []
+      destinations: []
+    surface_policy:
+      audit_report: supporting
+      test_report: hidden
+      workbench: detailed
+
+  - id: resolve.gate_experiment_signal
+    label: Classify coherent experiment signal window
+    op: gate_experiment_signal
+    inputs:
+      load: load_N
+      time: time_s
+      strain: mean_strain
+    parameters:
+      min_coherent_numeric_points: 4
+      min_peak_fraction_of_series_max: 0.05
+      post_drop_scan_points: 8
+      min_drop_fraction_of_peak: 0.005
+      later_higher_relative_tolerance: 0.0001
+      invalid_cluster_min_points: 2
+      implausible_tail_jump_fraction_of_peak: 2.0
+      artificial_plateau_min_points: 3
+      loading_onset_fraction_of_peak: 0.05
+      low_load_tail_fraction_of_peak: 0.20
+      low_load_tail_min_points: 3
+      low_load_tail_min_reference_peak_fraction_of_full_run_max: 0.10
+      domain_jump_step_multiplier: 8.0
+      domain_jump_span_fraction: 0.20
+      disconnected_fragment_load_fraction_of_peak: 0.50
+      disconnected_fragment_min_points: 5
+      late_restart_jump_fraction_of_peak: 0.05
+      late_restart_lookback_points: 15
+    output: experiment_signal_gate
+    audit_view: experiment_signal_gate
+    evidence:
+      evidence_role: supporting_evidence
+      default_audit_block: run_stress_strain_reduction
+      audit_view: experiment_signal_gate
+      workbench_view: experiment_signal_gate_view
+      required_artifacts:
+        - experiment_signal_gate
+        - excluded_signal_regions
+        - source_series_refs
+    report:
+      include: false
+      roles: []
+      destinations: []
+    surface_policy:
+      audit_report: supporting
+      test_report: linked_evidence_only
+      workbench: detailed
+
+  - id: resolve.experiment_boundaries
+    label: Resolve experiment start/end boundaries
+    op: resolve_experiment_boundaries
+    inputs:
+      load: load_N
+      time: time_s
+      strain: mean_strain
+      gate: experiment_signal_gate
+    parameters:
+      start_policy: first_point
+      end_policy: peak_decline_non_recovery
+      include_endpoint: true
+      slope_break:
+        slope_domain: strain
+        derivative_step_points: 1
+        min_load_fraction_of_max: 0.1
+        min_relative_load_drop: 0.005
+        min_negative_domain_step: 0.00001
+        detect_strain_collapse: true
+        min_strain_before_collapse: 0.0002
+        min_relative_strain_collapse: 0.25
+        prebreak_lookback_points: 8
+        use_prebreak_curvature: true
+      sustained_decline:
+        enabled: true
+        min_points: 3
+        use_as: endpoint
+        min_drop_fraction_of_peak: 0.005
+        recovery_level_fraction_of_peak: 0.9
+        low_state_level_fraction_of_peak: 0.99
+        low_state_window_points: 3
+        low_state_min_fraction: 0.5
+        min_low_state_points: 1
+        local_recovery_window_multiplier: 2.0
+        min_recovery_window_points: 5
+        trough_to_recovery_window_points: 6
+        recovery_amplitude_decisive_fraction_of_peak: 0.95
+        recovery_slope_fraction: 0.75
+        later_higher_relative_tolerance: 0.0001
+        later_higher_absolute_tolerance: 0.0
+        min_gate_peak_fraction_of_full_run_max: 0.10
+        significant_recovery_requires_higher_or_slope: true
+        sign_state_audit_policy: diagnostic_veto_recovery
+    output: experiment_boundaries
+    audit_view: experiment_boundary_resolution
+    evidence:
+      evidence_role: supporting_evidence
+      default_audit_block: run_stress_strain_reduction
+      audit_view: boundary_markers_overlay
+      workbench_view: boundary_resolution_view
+      required_artifacts:
+        - boundary_record
+        - boundary_events
+        - bounded_series_refs
+    report:
+      include: false
+      roles: []
+      destinations: []
+    surface_policy:
+      audit_report: supporting
+      test_report: linked_evidence_only
+      workbench: detailed

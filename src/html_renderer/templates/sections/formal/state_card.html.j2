@@ -1,0 +1,18 @@
+{% from "macros/panels.html.j2" import report_hero_card -%}
+{%- set lede_html -%}{{ page.lede_html }}
+      {{ page.method_context_html }}
+      {{ page.method_boundary_html }}{%- endset -%}
+{%- set body_html %}
+  <div class="table-wrap">
+    <table class="compact report-state-table">
+      <thead><tr><th>Area</th><th>State</th><th>Location</th></tr></thead>
+      <tbody>
+        <tr data-key="required_missing_count"><td>Required report content</td><td>{{ page.required_state_html }}</td><td>{{ page.required_location_html }}</td></tr>
+        <tr data-key="recommended_missing_count"><td>Recommended metadata</td><td>{{ page.recommended_state_html }}</td><td>{{ page.recommended_location_html }}</td></tr>
+        <tr><td>Data use</td><td>{{ page.data_state_html }}</td><td>Run inclusion is shown in <a href="#section-individual_test_results">Section 8</a> and summarised in <a href="#section-deviations_from_standard">Section 11.2</a>.</td></tr>
+        <tr><td>Aggregate basis</td><td>{{ page.aggregate_basis_html }}</td><td><a href="#section-aggregated_results">Section 9</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+{%- endset -%}
+{{ report_hero_card('aria-label="Report Completion Summary" class="report-state-card" id="report-state"', 'Test report', page.title_html, lede_html|safe, page.status_class, page.quality_label_html, page.completion_label_html, body_html|safe, wrapper_tag="div", title_attrs_html='id="report-title"', status_attrs_html='data-key="report_completion_status"', compact=False) }}

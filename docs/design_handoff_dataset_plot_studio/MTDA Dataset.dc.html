@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>8552-IM7 — dataset report · aggregate plot studio</title>
+  <style>
+    html, body { margin: 0; padding: 0; background: #ffffff; }
+    * { box-sizing: border-box; }
+    input, select, button, textarea { font: inherit; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <script src="data/archive_data.js"></script>
+  <script src="data/bending_dist.js"></script>
+</helmet>
+
+<div style="font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1c2530; line-height: 1.45;">
+
+  <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height: 100vh; display: grid; place-items: center; color: #8a95a1; font-size: 13px;">Loading archive index…</div>
+  </sc-if>
+
+  <!-- ================================================================ RUN STUDIO ================================================================ -->
+  <sc-if value="{{ isStudio }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Dataset aggregate studio" style="height: 100vh; display: flex; flex-direction: column; background: #ffffff; overflow: hidden;">
+
+      <!-- top bar -->
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 9px 18px; border-bottom: 1px solid #dfe5ec; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 14px; min-width: 0;">
+          <button onClick="{{ goHome }}" style="border: 0; background: transparent; color: #185f8f; font-weight: 650; font-size: 13px; cursor: pointer; padding: 4px 6px; border-radius: 6px;" style-hover="background: #eef4f9;">← Archive</button>
+          <div style="width: 1px; height: 18px; background: #dfe5ec;"></div>
+          <div style="font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><b>Dataset report</b> <span style="color: #6b7785;">· {{ datasetName }} · aggregate of {{ runCount }} runs</span></div>
+          <div style="font-size: 12px; color: #b3bcc6; white-space: nowrap;">selection set <span style="font-family: ui-monospace, Menlo, Consolas, monospace;">final_report_runs</span></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 7px; position: relative; flex-shrink: 0;">
+          <button onClick="{{ resetView }}" title="Restore axis domains after zoom/pan" style="border: 1px solid #c5cfd9; background: #ffffff; border-radius: 6px; padding: 5px 11px; font-size: 12.5px; cursor: pointer; color: #344251;" style-hover="background: #f4f7fa;">Reset view</button>
+          <button onClick="{{ resetPage }}" title="Restore original plot, styles, layers and data" style="border: 1px solid #d6b0b0; background: #ffffff; border-radius: 6px; padding: 5px 11px; font-size: 12.5px; cursor: pointer; color: #9d2222;" style-hover="background: #fdf6f6;">Reset page</button>
+          <input type="file" accept=".json,application/json" ref="{{ profileInputRef }}" onChange="{{ onProfileFile }}" style="display: none;">
+          <button onClick="{{ toggleExport }}" style="border: 1px solid #185f8f; background: #185f8f; color: #ffffff; border-radius: 6px; padding: 5px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer;" style-hover="background: #134e76;">Export ▾</button>
+          <sc-if value="{{ exportOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; top: calc(100% + 6px); right: 0; z-index: 40; width: 312px; background: #ffffff; border: 1px solid #c9d2dd; border-radius: 10px; box-shadow: 0 8px 28px rgba(23, 32, 42, 0.16); padding: 8px;">
+              <sc-for list="{{ exportItems }}" as="ex" hint-placeholder-count="5">
+                <div onClick="{{ ex.on }}" style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 9px 10px; border-radius: 7px; cursor: pointer;" style-hover="background: #f2f6fa;">
+                  <div>
+                    <div style="font-size: 13px; font-weight: 650;">{{ ex.name }}</div>
+                    <div style="font-size: 11.5px; color: #6b7785;">{{ ex.note }}</div>
+                  </div>
+                  <span style="{{ ex.tagStyle }}">{{ ex.tag }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <!-- canvas + inspector -->
+      <div ref="{{ gridRef }}" style="flex: 1; display: grid; grid-template-columns: {{ gridCols }}; min-height: 0;">
+
+        <!-- canvas -->
+        <div ref="{{ canvasRef }}" onDoubleClick="{{ onCanvasDbl }}" style="position: relative; min-width: 0; background: #ffffff;">
+          <div style="position: absolute; top: 10px; left: 18px; z-index: 5; display: flex; gap: 6px; align-items: center;">
+            <sc-for list="{{ figTabs }}" as="ft" hint-placeholder-count="2">
+              <button onClick="{{ ft.on }}" style="{{ ft.style }}">{{ ft.label }}</button>
+            </sc-for>
+            <span style="font-size: 11.5px; color: #9aa5b1; margin-left: 8px;">{{ figHint }}</span>
+          </div>
+          <div style="position: absolute; inset: 46px 14px 36px 14px;">
+            <div ref="{{ plotRef }}" style="width: 100%; height: 100%;"></div>
+          </div>
+          <div style="position: absolute; right: 16px; top: 12px; z-index: 6; display: flex; gap: 6px;">
+            <button onClick="{{ alignOrigin }}" title="Anchor the axes to the origin — set both axis minimums to 0, keeping the current maximums" style="border: 1px solid #c5cfd9; background: rgba(255,255,255,0.92); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; color: #344251;" style-hover="background: #fff;">⌎ Align to origin</button>
+            <button onClick="{{ resetView }}" title="Reset interactive pan / zoom" style="border: 1px solid #c5cfd9; background: rgba(255,255,255,0.92); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; color: #344251;" style-hover="background: #fff;">⤢ Reset zoom</button>
+          </div>
+          <div style="position: absolute; left: 18px; bottom: 10px; font-size: 11.5px; color: #9aa5b1;">scroll over plot = zoom both · scroll over an axis = scale that axis · drag = pan · double-click a title/legend to rename</div>
+
+          <!-- inline label editor (double-click on title / axis / legend) -->
+          <sc-if value="{{ inlineEditOpen }}" hint-placeholder-val="{{ false }}">
+            <div onMouseDown="{{ onInlineCommit }}" style="position: fixed; inset: 0; z-index: 24; background: transparent;"></div>
+            <div style="{{ inlineEditStyle }}">
+              <div ref="{{ inlineBoxRef }}" style="background: #ffffff; border: 1px solid #185f8f; border-radius: 8px; box-shadow: 0 6px 22px rgba(23,32,42,0.18); padding: 8px; width: 210px;">
+                <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #6b7785; margin-bottom: 5px;">{{ inlineEditLabel }}</div>
+                <input ref="{{ inlineInputRef }}" sc-camel-default-value="{{ inlineEditValue }}" onKeyDown="{{ onInlineKey }}" onInput="{{ onInlinePreview }}" style="width: 100%; border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; font-size: 12.5px; background: #fff;">
+                <div ref="{{ inlinePreviewRef }}" style="font-size: 13px; color: #17202a; margin-top: 6px; min-height: 16px; padding: 3px 6px; background: #f4f7fa; border-radius: 5px;">{{ inlineEditPreview }}</div>
+                <div style="font-size: 10px; color: #9aa5b1; margin-top: 4px;">Enter / click away to apply · Esc to cancel · supports <span style="font-family: ui-monospace, Menlo, Consolas, monospace;">σ_{max}</span>, <span style="font-family: ui-monospace, Menlo, Consolas, monospace;">mm^2</span>, <span style="font-family: ui-monospace, Menlo, Consolas, monospace;">\sigma \mu \times</span></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- DATA SHEET -->
+          <sc-if value="{{ dataOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; z-index: 30; background: rgba(248, 250, 252, 0.98); display: flex; flex-direction: column; border-right: 1px solid #dfe5ec;">
+              <div style="display: flex; align-items: center; gap: 12px; padding: 10px 18px; border-bottom: 1px solid #dfe5ec; flex-wrap: wrap;">
+                <div style="font-size: 13.5px; font-weight: 750;">Data <span style="border: 1px solid #b8d7a8; background: #f2fbef; color: #2f6424; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 600;">data only</span></div>
+                <select onChange="{{ onDataset }}" sc-camel-default-value="{{ datasetSel }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 8px; font-size: 12.5px; background: #ffffff;">
+                  <sc-for list="{{ datasetOptions }}" as="opt" hint-placeholder-count="2">
+                    <option value="{{ opt.value }}">{{ opt.label }}</option>
+                  </sc-for>
+                </select>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #5b6470;">
+                  <button onClick="{{ pagePrev }}" style="border: 1px solid #c5cfd9; background: #fff; border-radius: 6px; padding: 3px 9px; cursor: pointer;">←</button>
+                  <span>{{ pagerLabel }}</span>
+                  <button onClick="{{ pageNext }}" style="border: 1px solid #c5cfd9; background: #fff; border-radius: 6px; padding: 3px 9px; cursor: pointer;">→</button>
+                </div>
+                <div style="flex: 1;"></div>
+                <button onClick="{{ resetData }}" title="Restore all rows to the values of record" style="border: 1px solid #d6b0b0; background: #ffffff; border-radius: 6px; padding: 4px 11px; font-size: 12.5px; cursor: pointer; color: #9d2222;">Reset data</button>
+                <button onClick="{{ downloadCsv }}" style="border: 1px solid #c5cfd9; background: #ffffff; border-radius: 6px; padding: 4px 11px; font-size: 12.5px; cursor: pointer;">Download CSV</button>
+                <button onClick="{{ closeSheets }}" style="border: 1px solid #c5cfd9; background: #ffffff; border-radius: 6px; padding: 4px 11px; font-size: 12.5px; cursor: pointer; font-weight: 650;">Close ✕</button>
+              </div>
+              <div style="padding: 4px 18px 6px; font-size: 11.5px; color: #6b7785;">{{ dataHint }}</div>
+              <div style="flex: 1; overflow: auto; padding: 0 18px 16px;">{{ dataTable }}</div>
+            </div>
+          </sc-if>
+
+          <!-- SPEC SHEET -->
+          <sc-if value="{{ specOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; z-index: 30; background: rgba(248, 250, 252, 0.98); display: flex; flex-direction: column; border-right: 1px solid #dfe5ec;">
+              <div style="display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 1px solid #dfe5ec;">
+                <div style="font-size: 13.5px; font-weight: 750;">Vega-Lite spec <span style="border: 1px solid #d9bd7c; background: #fff8e6; color: #73520a; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 600;">plot spec + hydrated data</span></div>
+                <div style="flex: 1;"></div>
+                <button onClick="{{ specFormat }}" style="border: 1px solid #c5cfd9; background: #fff; border-radius: 6px; padding: 4px 11px; font-size: 12.5px; cursor: pointer;">Format</button>
+                <button onClick="{{ specValidate }}" style="border: 1px solid #c5cfd9; background: #fff; border-radius: 6px; padding: 4px 11px; font-size: 12.5px; cursor: pointer;">Validate</button>
+                <button onClick="{{ specCopy }}" style="border: 1px solid #c5cfd9; background: #fff; border-radius: 6px; padding: 4px 11px; font-size: 12.5px; cursor: pointer;">Copy</button>
+                <button onClick="{{ applySpec }}" style="border: 1px solid #185f8f; background: #185f8f; color: #fff; border-radius: 6px; padding: 4px 11px; font-size: 12.5px; font-weight: 650; cursor: pointer;">Apply spec</button>
+                <button onClick="{{ resetSpec }}" style="border: 1px solid #c5cfd9; background: #fff; border-radius: 6px; padding: 4px 11px; font-size: 12.5px; cursor: pointer;">Regenerate</button>
+                <button onClick="{{ closeSheets }}" style="border: 1px solid #c5cfd9; background: #fff; border-radius: 6px; padding: 4px 11px; font-size: 12.5px; cursor: pointer; font-weight: 650;">Close ✕</button>
+              </div>
+              <div style="padding: 4px 18px 6px; font-size: 11.5px; color: #6b7785;">{{ specStatus }}</div>
+              <div style="flex: 1; padding: 0 18px 16px;">
+                <textarea ref="{{ specRef }}" spellcheck="false" style="width: 100%; height: 100%; resize: none; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11.5px; line-height: 1.4; border: 1px solid #c9d2dd; border-radius: 8px; padding: 10px; background: #ffffff; color: #2a3744;"></textarea>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+        <!-- inspector -->
+        <aside style="position: relative; border-left: 1px solid #dfe5ec; background: #f8fafc; display: flex; flex-direction: column; min-height: 0;">
+          <div onMouseDown="{{ startResize }}" title="Drag to resize panel" style="position: absolute; top: 0; left: -4px; width: 8px; height: 100%; cursor: col-resize; z-index: 20;" style-hover="background: rgba(24, 95, 143, 0.12);"></div>
+          <div style="display: flex; gap: 4px; padding: 10px 12px 8px; flex-shrink: 0;">
+            <sc-for list="{{ segItems }}" as="sg" hint-placeholder-count="4">
+              <button onClick="{{ sg.on }}" style="{{ sg.style }}">{{ sg.label }}</button>
+            </sc-for>
+          </div>
+
+          <div key="{{ resetKey }}" style="flex: 1; overflow-y: auto; padding: 4px 14px 18px;">
+
+            <!-- STYLE -->
+            <sc-if value="{{ segStyle }}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div style="border: 1px solid #e4e8ed; border-radius: 8px; background: #fff; overflow: hidden;">
+                  <div onClick="{{ onTitlesSec }}" style="display: flex; align-items: center; justify-content: space-between; padding: 9px 11px; cursor: pointer; font-size: 11.5px; font-weight: 700; color: #3a4654;" style-hover="background: #f4f7fa;"><span>Titles &amp; labels</span><span style="color: #9aa5b1;">{{ chevTitles }}</span></div>
+                  <sc-if value="{{ secTitles }}" hint-placeholder-val="{{ true }}">
+                  <div style="padding: 2px 11px 12px;">
+                  <div style="display: grid; grid-template-columns: 78px 1fr; gap: 7px 8px; align-items: center; font-size: 12.5px;">
+                    <label>Title</label><input onChange="{{ onTitle }}" sc-camel-default-value="{{ sTitle }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <label>X label</label><input onChange="{{ onXLabel }}" sc-camel-default-value="{{ sXLabel }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <label>Y label</label><input onChange="{{ onYLabel }}" sc-camel-default-value="{{ sYLabel }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                  </div>
+                  </div>
+                  </sc-if>
+                </div>
+                <div style="border: 1px solid #e4e8ed; border-radius: 8px; background: #fff; overflow: hidden;">
+                  <div onClick="{{ onAxisSec }}" style="display: flex; align-items: center; justify-content: space-between; padding: 9px 11px; cursor: pointer; font-size: 11.5px; font-weight: 700; color: #3a4654;" style-hover="background: #f4f7fa;"><span>Axis &amp; range</span><span style="color: #9aa5b1;">{{ chevAxis }}</span></div>
+                  <sc-if value="{{ secAxis }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding: 2px 11px 12px;">
+                  <div style="display: flex; gap: 6px; margin-bottom: 7px;">
+                    <button onClick="{{ captureView }}" title="Read the current panned/zoomed view into the boxes below for exact fine-tuning" style="flex: 1; border: 1px solid #c5cfd9; background: #fff; border-radius: 6px; padding: 5px 0; font-size: 11.5px; cursor: pointer;" style-hover="background: #f4f7fa;">⤓ Capture view</button>
+                    <button onClick="{{ fitData }}" title="Clear manual ranges — fit axes to the data" style="flex: 1; border: 1px solid #c5cfd9; background: #fff; border-radius: 6px; padding: 5px 0; font-size: 11.5px; cursor: pointer;" style-hover="background: #f4f7fa;">Fit to data</button>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 7px 8px; font-size: 12.5px;">
+                    <input onChange="{{ onXMin }}" sc-camel-default-value="{{ sXMin }}" placeholder="x min" inputMode="decimal" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <input onChange="{{ onXMax }}" sc-camel-default-value="{{ sXMax }}" placeholder="x max" inputMode="decimal" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <input onChange="{{ onYMin }}" sc-camel-default-value="{{ sYMin }}" placeholder="y min" inputMode="decimal" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <input onChange="{{ onYMax }}" sc-camel-default-value="{{ sYMax }}" placeholder="y max" inputMode="decimal" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                  </div>
+                  </div>
+                  </sc-if>
+                </div>
+                <div style="border: 1px solid #e4e8ed; border-radius: 8px; background: #fff; overflow: hidden;">
+                  <div onClick="{{ onTypeSec }}" style="display: flex; align-items: center; justify-content: space-between; padding: 9px 11px; cursor: pointer; font-size: 11.5px; font-weight: 700; color: #3a4654;" style-hover="background: #f4f7fa;"><span>Type · sizes in pt</span><span style="color: #9aa5b1;">{{ chevType }}</span></div>
+                  <sc-if value="{{ secType }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding: 2px 11px 12px;">
+                  <div style="background: #eef3f8; border: 1px solid #d6deea; border-radius: 8px; padding: 9px 10px; margin-bottom: 9px;">
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px;">
+                      <span style="font-size: 12px; font-weight: 700; color: #3a4654;">Master scale</span>
+                      <span style="font-size: 11px; color: #6b7785;">× {{ sScale }}</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                      <input type="range" min="0.6" max="1.8" step="0.05" sc-camel-default-value="{{ sScale }}" onInput="{{ onScale }}" onChange="{{ onScale }}" style="flex: 1; min-width: 0; accent-color: #185f8f;">
+                      <input type="number" min="0.6" max="1.8" step="0.05" sc-camel-default-value="{{ sScale }}" onChange="{{ onScale }}" style="width: 54px; border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; background: #fff;">
+                    </div>
+                    <div style="font-size: 10.5px; color: #8a95a1; margin-top: 5px;">Scales every text size, line weight and marker together — set base sizes in pt, then resize the whole figure with one knob.</div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 78px 1fr 1fr; gap: 7px 8px; align-items: center; font-size: 12.5px; margin-bottom: 9px;">
+                    <label title="Fixed canvas size in px — leave empty to fill the panel responsively">Canvas px</label>
+                    <input onChange="{{ onCw }}" sc-camel-default-value="{{ sCw }}" inputMode="numeric" placeholder="width" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <input onChange="{{ onCh }}" sc-camel-default-value="{{ sCh }}" inputMode="numeric" placeholder="height" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <label title="Width ÷ height. Sets the plot shape; with a width it computes height. Empty = free.">Aspect</label>
+                    <input onChange="{{ onAspect }}" sc-camel-default-value="{{ sAspect }}" inputMode="decimal" placeholder="e.g. 1.6" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <select onChange="{{ onAspectPreset }}" sc-camel-default-value="" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; background: #fff;"><option value="">presets…</option><option value="1">1:1 square</option><option value="1.3333">4:3</option><option value="1.6">16:10</option><option value="1.7778">16:9</option><option value="0.7071">A-portrait</option></select>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 78px 1fr; gap: 7px 8px; align-items: center; font-size: 12.5px;">
+                    <label>Font</label>
+                    <select onChange="{{ onFont }}" sc-camel-default-value="{{ sFont }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; background: #fff;">
+                      <option value="">Default (sans-serif)</option>
+                      <option value="Arial">Arial</option>
+                      <option value="Helvetica">Helvetica</option>
+                      <option value="Verdana">Verdana</option>
+                      <option value="Times New Roman">Times New Roman</option>
+                      <option value="Georgia">Georgia</option>
+                      <option value="Courier New">Courier New</option>
+                    </select>
+                    <label>Title pt</label><input onChange="{{ onTitleSize }}" sc-camel-default-value="{{ sTitleSize }}" type="number" min="4" step="0.5" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <label>Axis pt</label><input onChange="{{ onAxisSize }}" sc-camel-default-value="{{ sAxisSize }}" type="number" min="4" step="0.5" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <label>Tick pt</label><input onChange="{{ onTickSize }}" sc-camel-default-value="{{ sTickSize }}" type="number" min="4" step="0.5" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                  </div>
+                  </div>
+                  </sc-if>
+                </div>
+                <div style="border: 1px solid #e4e8ed; border-radius: 8px; background: #fff; overflow: hidden;">
+                  <div onClick="{{ onPlotSec }}" style="display: flex; align-items: center; justify-content: space-between; padding: 9px 11px; cursor: pointer; font-size: 11.5px; font-weight: 700; color: #3a4654;" style-hover="background: #f4f7fa;"><span>Axes, ticks &amp; grid</span><span style="color: #9aa5b1;">{{ chevPlot }}</span></div>
+                  <sc-if value="{{ secPlot }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding: 2px 11px 12px; display: flex; flex-direction: column; gap: 12px;">
+
+                    <!-- X axis -->
+                    <div>
+                      <div style="font-size: 11px; font-weight: 700; color: #4a6582; margin-bottom: 6px;">X axis</div>
+                      <div style="display: grid; grid-template-columns: 62px 1fr 62px 1fr; gap: 6px 8px; align-items: center; font-size: 12px;">
+                        <label>Grid</label><select onChange="{{ onXGrid }}" sc-camel-default-value="{{ sXGrid }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; background: #fff;"><option value="show">Show</option><option value="hide">Hide</option></select>
+                        <label>Ticks</label><select onChange="{{ onXTicks }}" sc-camel-default-value="{{ sXTicks }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; background: #fff;"><option value="show">Show</option><option value="hide">Hide</option></select>
+                        <label title="Axis domain line">Line</label><select onChange="{{ onXLine }}" sc-camel-default-value="{{ sXLine }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; background: #fff;"><option value="show">Show</option><option value="hide">Hide</option></select>
+                        <label title="Rotate tick labels, degrees">Angle</label><input onChange="{{ onXAngle }}" sc-camel-default-value="{{ sXAngle }}" inputMode="decimal" placeholder="auto" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; min-width: 0; background: #fff;">
+                        <label title="Auto tick placement, or manual control below">Mode</label>
+                        <select onChange="{{ onXMode }}" sc-camel-default-value="{{ sXMode }}" style="grid-column: span 3; border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; background: #fff;"><option value="auto">Automatic ticks</option><option value="manual">Manual ticks</option></select>
+                      </div>
+                      <sc-if value="{{ sXManual }}" hint-placeholder-val="{{ false }}">
+                        <div style="margin-top: 6px; padding: 8px; background: #f6f8fb; border: 1px solid #e1e7ee; border-radius: 7px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; font-size: 11.5px;">
+                          <input onChange="{{ onXStart }}" sc-camel-default-value="{{ sXStart }}" inputMode="decimal" placeholder="start" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; min-width: 0; background: #fff;">
+                          <input onChange="{{ onXEnd }}" sc-camel-default-value="{{ sXEnd }}" inputMode="decimal" placeholder="end" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; min-width: 0; background: #fff;">
+                          <input onChange="{{ onXStep }}" sc-camel-default-value="{{ sXStep }}" inputMode="decimal" placeholder="step" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; min-width: 0; background: #fff;">
+                          <input onChange="{{ onXCount }}" sc-camel-default-value="{{ sXCount }}" inputMode="numeric" placeholder="count" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; min-width: 0; background: #fff;">
+                          <input onChange="{{ onXMinStep }}" sc-camel-default-value="{{ sXMinStep }}" inputMode="decimal" placeholder="min step" style="grid-column: span 2; border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; min-width: 0; background: #fff;">
+                        </div>
+                      </sc-if>
+                    </div>
+
+                    <!-- Y axis -->
+                    <div style="border-top: 1px solid #eef1f5; padding-top: 10px;">
+                      <div style="font-size: 11px; font-weight: 700; color: #4a6582; margin-bottom: 6px;">Y axis</div>
+                      <div style="display: grid; grid-template-columns: 62px 1fr 62px 1fr; gap: 6px 8px; align-items: center; font-size: 12px;">
+                        <label>Grid</label><select onChange="{{ onYGrid }}" sc-camel-default-value="{{ sYGrid }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; background: #fff;"><option value="show">Show</option><option value="hide">Hide</option></select>
+                        <label>Ticks</label><select onChange="{{ onYTicks }}" sc-camel-default-value="{{ sYTicks }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; background: #fff;"><option value="show">Show</option><option value="hide">Hide</option></select>
+                        <label title="Axis domain line">Line</label><select onChange="{{ onYLine }}" sc-camel-default-value="{{ sYLine }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; background: #fff;"><option value="show">Show</option><option value="hide">Hide</option></select>
+                        <label title="Rotate tick labels, degrees">Angle</label><input onChange="{{ onYAngle }}" sc-camel-default-value="{{ sYAngle }}" inputMode="decimal" placeholder="auto" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; min-width: 0; background: #fff;">
+                        <label title="Auto tick placement, or manual control below">Mode</label>
+                        <select onChange="{{ onYMode }}" sc-camel-default-value="{{ sYMode }}" style="grid-column: span 3; border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; background: #fff;"><option value="auto">Automatic ticks</option><option value="manual">Manual ticks</option></select>
+                      </div>
+                      <sc-if value="{{ sYManual }}" hint-placeholder-val="{{ false }}">
+                        <div style="margin-top: 6px; padding: 8px; background: #f6f8fb; border: 1px solid #e1e7ee; border-radius: 7px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; font-size: 11.5px;">
+                          <input onChange="{{ onYStart }}" sc-camel-default-value="{{ sYStart }}" inputMode="decimal" placeholder="start" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; min-width: 0; background: #fff;">
+                          <input onChange="{{ onYEnd }}" sc-camel-default-value="{{ sYEnd }}" inputMode="decimal" placeholder="end" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; min-width: 0; background: #fff;">
+                          <input onChange="{{ onYStep }}" sc-camel-default-value="{{ sYStep }}" inputMode="decimal" placeholder="step" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; min-width: 0; background: #fff;">
+                          <input onChange="{{ onYCount }}" sc-camel-default-value="{{ sYCount }}" inputMode="numeric" placeholder="count" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; min-width: 0; background: #fff;">
+                          <input onChange="{{ onYMinStep }}" sc-camel-default-value="{{ sYMinStep }}" inputMode="decimal" placeholder="min step" style="grid-column: span 2; border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 6px; min-width: 0; background: #fff;">
+                        </div>
+                      </sc-if>
+                    </div>
+
+                    <!-- Line display -->
+                    <div style="border-top: 1px solid #eef1f5; padding-top: 10px;">
+                      <div style="font-size: 11px; font-weight: 700; color: #4a6582; margin-bottom: 6px;">Line &amp; background</div>
+                      <div style="display: grid; grid-template-columns: 78px 1fr; gap: 7px 8px; align-items: center; font-size: 12.5px;">
+                        <label>Curve</label>
+                        <select onChange="{{ onInterp }}" sc-camel-default-value="{{ sInterp }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; background: #fff;"><option value="linear">Straight</option><option value="monotone">Smooth trend</option><option value="basis">Smooth spline</option><option value="step">Step</option></select>
+                        <label title="Plot background colour">Background</label><input type="color" onChange="{{ onBg }}" sc-camel-default-value="{{ sBg }}" style="border: 1px solid #c9d2dd; border-radius: 6px; height: 30px; padding: 2px; min-width: 0; background: #fff;">
+                      </div>
+                    </div>
+
+                  </div>
+                  </sc-if>
+                </div>
+                <div style="border: 1px solid #e4e8ed; border-radius: 8px; background: #fff; overflow: hidden;">
+                  <div onClick="{{ onLegendSec }}" style="display: flex; align-items: center; justify-content: space-between; padding: 9px 11px; cursor: pointer; font-size: 11.5px; font-weight: 700; color: #3a4654;" style-hover="background: #f4f7fa;"><span>Legend</span><span style="color: #9aa5b1;">{{ chevLegend }}</span></div>
+                  <sc-if value="{{ secLegend }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding: 2px 11px 12px;">
+                  <div style="display: grid; grid-template-columns: 78px 1fr; gap: 7px 8px; align-items: center; font-size: 12.5px;">
+                    <label>Position</label>
+                    <select onChange="{{ onLegend }}" sc-camel-default-value="{{ sLegend }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; background: #fff;"><option value="right">Right</option><option value="left">Left</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="hidden">Hidden</option></select>
+                    <label title="Arrange legend entries vertically or horizontally">Flow</label>
+                    <select onChange="{{ onLegendDir }}" sc-camel-default-value="{{ sLegendDir }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; background: #fff;"><option value="vertical">Vertical</option><option value="horizontal">Horizontal</option></select>
+                    <label title="Legend text size in pt">Text pt</label><input type="number" min="4" step="0.5" onChange="{{ onLegendSize }}" sc-camel-default-value="{{ sLegendSize }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <label title="Size of the marker symbol beside each legend label">Marker size</label><input onChange="{{ onLegSymSize }}" sc-camel-default-value="{{ sLegSymSize }}" inputMode="decimal" placeholder="auto" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <label title="Outline / stroke thickness of the legend markers">Marker line</label><input onChange="{{ onLegSymStroke }}" sc-camel-default-value="{{ sLegSymStroke }}" inputMode="decimal" placeholder="auto" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <label title="Legend marker transparency, 0–1">Marker opacity</label><input onChange="{{ onLegSymOpacity }}" sc-camel-default-value="{{ sLegSymOpacity }}" inputMode="decimal" placeholder="auto" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <label title="Number of legend columns — useful for horizontal legends">Columns</label><input onChange="{{ onLegColumns }}" sc-camel-default-value="{{ sLegColumns }}" inputMode="decimal" placeholder="auto" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                    <label title="Maximum label width in px before labels are shortened">Label width</label><input onChange="{{ onLegLabelLimit }}" sc-camel-default-value="{{ sLegLabelLimit }}" inputMode="decimal" placeholder="auto" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; min-width: 0; background: #fff;">
+                  </div>
+                  </div>
+                  </sc-if>
+                </div>
+                <div style="font-size: 11.5px; color: #8a95a1; border-top: 1px solid #e4e8ed; padding-top: 10px;">Changes replot live. Per-trace colours, weights and names live under <b>Layers</b>. Save the whole look as a reusable set in <b>Saved looks</b> at the bottom of this panel.</div>
+              </div>
+            </sc-if>
+
+            <!-- LAYERS -->
+            <sc-if value="{{ segLayers }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; gap: 6px;">
+                  <button onClick="{{ layersShowAll }}" style="flex: 1; border: 1px solid #c5cfd9; background: #fff; border-radius: 6px; padding: 5px 0; font-size: 12px; cursor: pointer;" style-hover="background: #f4f7fa;">Show all</button>
+                  <button onClick="{{ layersHideEvidence }}" title="Hide the supporting context layers, keep the primary curve" style="flex: 1; border: 1px solid #c5cfd9; background: #fff; border-radius: 6px; padding: 5px 0; font-size: 12px; cursor: pointer;" style-hover="background: #f4f7fa;">Hide context</button>
+                </div>
+
+                <sc-for list="{{ layerGroups }}" as="lg" hint-placeholder-count="3">
+                  <div data-drop-token="{{ lg.dropToken }}" onMouseUp="{{ lg.onRelease }}" onDragOver="{{ lg.onDragOver }}" onDrop="{{ lg.onDrop }}" style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #e6ebf1; padding: 5px 0 0;">
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; font-weight: 650; letter-spacing: 0.075em; text-transform: uppercase; color: #7b8794; padding: 0 2px;"><span data-drag-token="{{ lg.dragToken }}" draggable="true" onMouseDown="{{ lg.onGrab }}" onDragStart="{{ lg.onDragStart }}" title="Drag group to reorder its layer cluster" style="cursor: grab; color: #b3bdc8;">⋮⋮</span><span>{{ lg.label }}</span></div>
+                    <sc-for list="{{ lg.cards }}" as="lc" hint-placeholder-count="2">
+                  <div data-drop-token="{{ lc.dropToken }}" onMouseUp="{{ lc.onRelease }}" onDragOver="{{ lc.onDragOver }}" onDrop="{{ lc.onDrop }}" style="border: 1px solid #dbe2ea; border-radius: 8px; background: #ffffff; padding: 10px 12px;">
+                    <div onClick="{{ lc.onToggle }}" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                      <span data-drag-token="{{ lc.dragToken }}" draggable="true" onMouseDown="{{ lc.onGrab }}" onDragStart="{{ lc.onDragStart }}" title="Drag to reorder drawing layer" onClick="{{ lc.stopClick }}" style="flex-shrink: 0; color: #9aa5b1; cursor: grab; font-size: 15px; line-height: 1;">⋮⋮</span>
+                      <input type="checkbox" sc-camel-default-checked="{{ lc.visible }}" onChange="{{ lc.onVisible }}" onClick="{{ lc.stopClick }}" style="flex-shrink: 0; cursor: pointer;">
+                      <input sc-camel-default-value="{{ lc.label }}" onChange="{{ lc.onLabel }}" onClick="{{ lc.stopClick }}" title="Rename — this name shows in the legend / annotation" style="flex: 1; min-width: 0; border: 1px solid transparent; border-radius: 6px; padding: 3px 6px; font-size: 12.5px; font-weight: 620; background: transparent; cursor: text;" style-hover="border-color: #c9d2dd; background: #fff;" style-focus="border-color: #185f8f; background: #fff;">
+                      <span style="flex-shrink: 0; font-size: 10px; color: #9aa5b1; border: 1px solid #e0e6ec; border-radius: 999px; padding: 1px 7px;">{{ lc.role }}</span>
+                      <span title="Expand / collapse" style="flex-shrink: 0; width: 22px; height: 22px; display: grid; place-items: center; color: #6b7785; font-size: 12px;">{{ lc.chev }}</span>
+                    </div>
+                    <sc-if value="{{ lc.open }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 10px; color: #9aa5b1; margin: 6px 0 0 26px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ lc.src }}</div>
+                    <div style="display: grid; grid-template-columns: 64px 1fr; gap: 6px 8px; align-items: center; font-size: 12px; margin-top: 8px; color: #5b6470;">
+                      <sc-if value="{{ lc.hasColor }}" hint-placeholder-val="{{ true }}">
+                        <label>Colour</label><input type="color" sc-camel-default-value="{{ lc.color }}" onChange="{{ lc.onColor }}" style="border: 1px solid #c9d2dd; border-radius: 6px; height: 28px; width: 100%; padding: 2px; background: #fff;">
+                      </sc-if>
+                      <sc-if value="{{ lc.hasWidth }}" hint-placeholder-val="{{ true }}">
+                        <label>{{ lc.sizeLabel }}</label><input type="number" min="0" step="0.25" sc-camel-default-value="{{ lc.width }}" onChange="{{ lc.onWidth }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; min-width: 0; background: #fff;">
+                      </sc-if>
+                      <sc-if value="{{ lc.hasDash }}" hint-placeholder-val="{{ false }}">
+                        <label>Dash</label>
+                        <select sc-camel-default-value="{{ lc.dash }}" onChange="{{ lc.onDash }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; background: #fff;"><option value="solid">Solid</option><option value="dashed">Dashed</option><option value="dotted">Dotted</option></select>
+                      </sc-if>
+                      <label>Opacity</label><input type="number" min="0" max="1" step="0.05" sc-camel-default-value="{{ lc.opacity }}" onChange="{{ lc.onOpacity }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; min-width: 0; background: #fff;">
+                    </div>
+                    <sc-if value="{{ lc.refTexture }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #dbe2ea;">
+                        <div style="display: grid; grid-template-columns: 86px 1fr; gap: 6px 8px; align-items: center; font-size: 12px; color: #5b6470;">
+                          <label>Fill</label><input type="color" sc-camel-default-value="{{ lc.bgColor }}" onChange="{{ lc.onBgColor }}" style="border: 1px solid #c9d2dd; border-radius: 6px; height: 28px; width: 100%; padding: 2px; background: #fff;">
+                          <label>Hatch colour</label><input type="color" sc-camel-default-value="{{ lc.color }}" onChange="{{ lc.onColor }}" style="border: 1px solid #c9d2dd; border-radius: 6px; height: 28px; width: 100%; padding: 2px; background: #fff;">
+                        </div>
+                        <div style="margin-top: 8px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
+                          <sc-for list="{{ lc.patternOptions }}" as="po" hint-placeholder-count="8">
+                            <button onClick="{{ po.onSelect }}" title="{{ po.label }}" style="{{ po.buttonStyle }}">
+                              <span style="{{ po.previewStyle }}"></span>
+                              <span style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px;">{{ po.code }}</span>
+                            </button>
+                          </sc-for>
+                        </div>
+                        <button onClick="{{ lc.onHatchSettings }}" style="margin-top: 8px; width: 100%; display: flex; align-items: center; justify-content: space-between; border: 1px solid #dbe2ea; border-radius: 7px; background: #f8fafc; padding: 6px 8px; color: #4a5868; font-size: 11.5px; font-weight: 650; cursor: pointer;">
+                          <span>Hatch settings</span><span>{{ lc.hatchSettingsChev }}</span>
+                        </button>
+                        <sc-if value="{{ lc.hatchSettingsOpen }}" hint-placeholder-val="{{ false }}">
+                          <div style="margin-top: 7px; display: grid; grid-template-columns: 86px 1fr; gap: 6px 8px; align-items: center; font-size: 12px; color: #5b6470;">
+                            <label>Hatch alpha</label><input type="number" min="0" max="1" step="0.05" sc-camel-default-value="{{ lc.hatchOpacity }}" onChange="{{ lc.onHatchOpacity }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; min-width: 0; background: #fff;">
+                            <label>Spacing px</label><input type="number" min="2" max="60" step="1" sc-camel-default-value="{{ lc.hatchGap }}" onChange="{{ lc.onHatchGap }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; min-width: 0; background: #fff;">
+                            <label>Stroke px</label><input type="number" min="0.25" max="8" step="0.25" sc-camel-default-value="{{ lc.hatchWidth }}" onChange="{{ lc.onHatchWidth }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; min-width: 0; background: #fff;">
+                            <label>Angle °</label><input type="number" min="-180" max="180" step="5" sc-camel-default-value="{{ lc.hatchAngle }}" onChange="{{ lc.onHatchAngle }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; min-width: 0; background: #fff;">
+                            <label>Scale</label><input type="number" min="0.25" max="4" step="0.25" sc-camel-default-value="{{ lc.hatchScale }}" onChange="{{ lc.onHatchScale }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; min-width: 0; background: #fff;">
+                            <label>Offset px</label><input type="number" min="-80" max="80" step="1" sc-camel-default-value="{{ lc.hatchOffset }}" onChange="{{ lc.onHatchOffset }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; min-width: 0; background: #fff;">
+                            <label>Blend</label><select sc-camel-default-value="{{ lc.blend }}" onChange="{{ lc.onBlend }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; background: #fff;"><option value="multiply">Multiply</option><option value="normal">Normal</option><option value="screen">Screen</option></select>
+                            <label>Clip</label><select sc-camel-default-value="{{ lc.clipMode }}" onChange="{{ lc.onClipMode }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; background: #fff;"><option value="above">Above threshold</option><option value="full">Full plot</option></select>
+                          </div>
+                        </sc-if>
+                        <div style="font-size: 10.5px; color: #9aa5b1; margin-top: 4px;">Hatch is a visual texture over the solid above-threshold assessment fill.</div>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ lc.refThreshold }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #dbe2ea;">
+                        <label style="display: block; font-size: 11px; font-weight: 650; color: #4a6582; margin-bottom: 4px;">Position — threshold / %</label>
+                        <input onChange="{{ onThr }}" sc-camel-default-value="{{ bThr }}" inputMode="decimal" type="number" step="0.5" style="width: 100%; border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; background: #fff;">
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ lc.refWindow }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #dbe2ea;">
+                        <label style="display: block; font-size: 11px; font-weight: 650; color: #4a6582; margin-bottom: 4px;">Position — bounds, % of Fmax</label>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                          <input onChange="{{ onWinLo }}" sc-camel-default-value="{{ bWinLo }}" inputMode="decimal" type="number" step="1" placeholder="low" style="flex: 1; min-width: 0; border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; background: #fff;">
+                          <span style="font-size: 11px; color: #9aa5b1;">to</span>
+                          <input onChange="{{ onWinHi }}" sc-camel-default-value="{{ bWinHi }}" inputMode="decimal" type="number" step="1" placeholder="high" style="flex: 1; min-width: 0; border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 7px; background: #fff;">
+                        </div>
+                        <div style="font-size: 10.5px; color: #9aa5b1; margin-top: 4px;">Drives the shaded window and both boundary lines.</div>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ lc.isLine }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #dbe2ea; display: flex; flex-wrap: wrap; gap: 12px;">
+                        <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #4a5868; cursor: pointer;"><input type="checkbox" sc-camel-default-checked="{{ lc.showLegend }}" onChange="{{ lc.onLegend }}">Show in legend</label>
+                        <sc-if value="{{ lc.canMain }}" hint-placeholder-val="{{ false }}">
+                          <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #4a5868; cursor: pointer;" title="The emphasised primary trace — drawn on top"><input type="checkbox" sc-camel-checked="{{ lc.isMain }}" onChange="{{ lc.onMain }}">Main trace</label>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ lc.isMarker }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #dbe2ea;">
+                        <div style="display: grid; grid-template-columns: 64px 1fr; gap: 6px 8px; align-items: center; font-size: 12px; color: #5b6470;">
+                          <label title="Label size in pt">Label pt</label><input type="number" min="4" step="0.5" sc-camel-default-value="{{ lc.lblPt }}" onChange="{{ lc.onLblPt }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; min-width: 0; background: #fff;">
+                          <label>Anchor</label>
+                          <select sc-camel-default-value="{{ lc.anchor }}" onChange="{{ lc.onAnchor }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; background: #fff;"><option value="above">Label above</option><option value="below">Label below</option></select>
+                          <label>Position</label>
+                          <select sc-camel-default-value="{{ lc.mAuto }}" onChange="{{ lc.onAuto }}" style="border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; background: #fff;"><option value="auto">Auto (from data)</option><option value="">Manual override</option></select>
+                        </div>
+                        <div style="display: flex; gap: 6px; align-items: center; margin-top: 6px;">
+                          <input onChange="{{ lc.onMx }}" sc-camel-default-value="{{ lc.mx }}" inputMode="decimal" placeholder="strain %" style="flex: 1; min-width: 0; border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; background: #fff;">
+                          <input onChange="{{ lc.onMy }}" sc-camel-default-value="{{ lc.my }}" inputMode="decimal" placeholder="stress MPa" style="flex: 1; min-width: 0; border: 1px solid #c9d2dd; border-radius: 6px; padding: 4px 7px; background: #fff;">
+                        </div>
+                        <div style="font-size: 10.5px; color: #9aa5b1; margin-top: 5px;">Source: {{ lc.srcLogic }} · editing a value switches this marker to manual override.</div>
+                      </div>
+                    </sc-if>
+                    </sc-if>
+                  </div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+                <div style="font-size: 11.5px; color: #8a95a1;">Drag layer cards to reorder the draw stack: lower cards are drawn later and sit visually on top. Rename a layer to change how it reads in the legend. Layer edits restyle the working view only — the generated defaults return with <b>Reset page</b>.</div>
+              </div>
+            </sc-if>
+
+            <!-- DATA seg -->
+            <sc-if value="{{ segData }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 14px; font-size: 12.5px; color: #4a5868;">
+
+                <!-- Main results — per-run compressive strength + validity (package results table) -->
+                <div style="border: 1px solid #d7dee8; border-radius: 9px; background: #fff; overflow: hidden;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 12px; border-bottom: 1px solid #eef1f5;">
+                    <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #3a4654;">Main results</span>
+                    <span style="{{ mainValiditySummaryStyle }}">{{ mainValiditySummary }}</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px; background: #f7f9fb;">
+                    <sc-for list="{{ mainRunGroups }}" as="rg" hint-placeholder-count="2">
+                      <div data-drop-token="{{ rg.dropToken }}" onMouseUp="{{ rg.onRelease }}" onDragOver="{{ rg.onDragOver }}" onDrop="{{ rg.onDrop }}" style="border: 1px solid #dbe2ea; border-radius: 8px; background: #ffffff; padding: 7px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+                          <div style="display: flex; align-items: center; gap: 7px; font-size: 10px; font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; color: #6b7785;"><span data-drag-token="{{ rg.dragToken }}" draggable="true" onMouseDown="{{ rg.onGrab }}" onDragStart="{{ rg.onDragStart }}" title="Drag group to reorder run clusters" style="cursor: grab; color: #a6b2bf;">⋮⋮</span>{{ rg.label }}</div>
+                          <span style="font-size: 10.5px; color: #9aa5b1;">{{ rg.count }} runs</span>
+                        </div>
+                        <sc-for list="{{ rg.runs }}" as="mr" hint-placeholder-count="5">
+                          <div data-drop-token="{{ mr.dropToken }}" onMouseUp="{{ mr.onRelease }}" onDragOver="{{ mr.onDragOver }}" onDrop="{{ mr.onDrop }}" style="display: grid; grid-template-columns: auto auto 1fr auto auto; gap: 8px; align-items: center; border-top: 1px solid #eef1f5; padding: 6px 0;">
+                            <span data-drag-token="{{ mr.dragToken }}" draggable="true" onMouseDown="{{ mr.onGrab }}" onDragStart="{{ mr.onDragStart }}" title="Drag run to reorder plotted sequence" style="color: #a6b2bf; cursor: grab;">⋮⋮</span>
+                            <input type="checkbox" sc-camel-default-checked="{{ mr.included }}" onChange="{{ mr.onIncluded }}" title="Include this run in the working aggregate plots">
+                            <span style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #185f8f;">{{ mr.run }}</span>
+                            <span style="font-size: 12.5px; font-weight: 650; color: #1c2530; font-variant-numeric: tabular-nums;">{{ mr.strength }}</span>
+                            <span style="{{ mr.validityStyle }}">{{ mr.validity }}</span>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="padding: 8px 12px; border-top: 1px solid #eef1f5; font-size: 11px; color: #9aa5b1; line-height: 1.4;">Compressive strength per specimen as surfaced in the dataset <span style="font-family: ui-monospace, Menlo, Consolas, monospace; color: #6b7785;">results_table.csv</span> · mean <b style="color: #3a4654;">{{ mainMeanStrength }}</b> MPa across {{ runCount }} runs.</div>
+                </div>
+
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b7785;">Data</div>
+                <p style="margin: 0;">Inspect and edit the plotted tables in a full-width sheet. Edits replot live; they never modify the CSV files of record.</p>
+                <button onClick="{{ openData }}" style="border: 1px solid #185f8f; background: #185f8f; color: #fff; border-radius: 7px; padding: 8px 12px; font-size: 13px; font-weight: 700; cursor: pointer;" style-hover="background: #134e76;">Open data table</button>
+                <div style="border-top: 1px solid #e4e8ed; padding-top: 10px;">
+                  <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b7785; margin-bottom: 6px;">Data of record</div>
+                  <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <a href="data/stress_strain_aligned.csv" download="stress_strain_aligned.csv" style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11.5px; color: #185f8f; text-decoration: none;" style-hover="text-decoration: underline;">⬇ stress_strain_aligned.csv</a>
+                    <a href="data/characteristic_points.csv" download="characteristic_points.csv" style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11.5px; color: #185f8f; text-decoration: none;" style-hover="text-decoration: underline;">⬇ characteristic_points.csv</a>
+                    <a href="data/statistics.csv" download="statistics.csv" style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11.5px; color: #185f8f; text-decoration: none;" style-hover="text-decoration: underline;">⬇ statistics.csv</a>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- SPEC seg (same tab as Data) -->
+            <sc-if value="{{ segSpec }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12.5px; color: #4a5868; margin-top: 14px; border-top: 1px solid #e4e8ed; padding-top: 14px;">
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b7785;">Spec</div>
+                <p style="margin: 0;">The full Vega-Lite specification behind the current figure — structure plus hydrated data arrays. Edit it directly for anything the controls don't cover.</p>
+                <button onClick="{{ openSpec }}" style="border: 1px solid #185f8f; background: #185f8f; color: #fff; border-radius: 7px; padding: 8px 12px; font-size: 13px; font-weight: 700; cursor: pointer;" style-hover="background: #134e76;">Open spec editor</button>
+                <button onClick="{{ exportSpec }}" style="border: 1px solid #c5cfd9; background: #fff; border-radius: 7px; padding: 7px 12px; font-size: 12.5px; cursor: pointer;">Download spec JSON</button>
+                <div style="font-size: 11.5px; color: #8a95a1;">Applying a hand-edited spec switches the page to <i>custom spec</i> mode; style/layer controls pause until you regenerate.</div>
+              </div>
+            </sc-if>
+
+          </div>
+
+          <!-- PINNED: saved looks -->
+          <div style="flex-shrink: 0; border-top: 1px solid #dfe5ec; background: #eef3f8; padding: 10px 14px 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px;">
+              <div style="display: flex; align-items: center; gap: 6px;"><div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #4a6582;">Saved looks</div><span title="Save a look to reuse it later, or Import file… a profile exported from another plot. Looks are independent of this package — one file applies to any run or dataset figure." style="display: inline-grid; place-items: center; width: 16px; height: 16px; border: 1px solid #c8d4e0; border-radius: 50%; color: #6f7d8b; background: #f8fbfd; font-size: 10px; font-weight: 700; cursor: help;">i</span></div>
+              <div style="font-size: 10.5px; color: #8a95a1;">portable · file-based</div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <input ref="{{ presetNameRef }}" placeholder="Name this look…" style="flex: 1; border: 1px solid #c9d2dd; border-radius: 6px; padding: 5px 8px; min-width: 0; background: #fff; font-size: 12.5px;">
+              <button onClick="{{ savePreset }}" title="Save the current styling as a reusable look" style="border: 1px solid #185f8f; background: #185f8f; color: #fff; border-radius: 6px; padding: 5px 11px; font-size: 12px; font-weight: 700; cursor: pointer;" style-hover="background: #134e76;">Save</button>
+              <button onClick="{{ importPreset }}" title="Import a .plot_profile.json saved from any MTDA plot and apply it here" style="border: 1px solid #185f8f; background: #fff; color: #185f8f; border-radius: 6px; padding: 5px 11px; font-size: 12px; font-weight: 700; cursor: pointer;" style-hover="background: #e7f0f8;">Import file…</button>
+            </div>
+            <div style="max-height: 132px; overflow-y: auto; margin-top: 7px; display: flex; flex-direction: column; gap: 6px;">
+              <sc-for list="{{ presetRows }}" as="pr" hint-placeholder-count="0">
+                <div style="display: flex; align-items: center; gap: 6px; border: 1px solid #dbe2ea; border-radius: 7px; background: #ffffff; padding: 5px 8px;">
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 12.5px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ pr.name }}</div>
+                    <div style="font-size: 10px; color: #9aa5b1;">{{ pr.meta }}</div>
+                  </div>
+                  <button onClick="{{ pr.onApply }}" style="border: 1px solid #185f8f; background: #ffffff; color: #185f8f; border-radius: 6px; padding: 3px 10px; font-size: 11.5px; font-weight: 700; cursor: pointer;" style-hover="background: #eef4f9;">Apply</button>
+                  <button onClick="{{ pr.onExport }}" title="Export this look as a portable profile file" style="border: 1px solid #c5cfd9; background: #ffffff; border-radius: 6px; padding: 3px 8px; font-size: 11.5px; cursor: pointer;">⬇</button>
+                  <button onClick="{{ pr.onDelete }}" title="Delete" style="border: 1px solid #d6b0b0; background: #ffffff; color: #9d2222; border-radius: 6px; padding: 3px 8px; font-size: 11.5px; cursor: pointer;">✕</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <!-- footer strip -->
+      <div style="display: flex; align-items: center; gap: 14px; padding: 7px 18px; border-top: 1px solid #dfe5ec; font-size: 11.5px; color: #8a95a1; flex-shrink: 0;">
+        <span>Generated view — not the data of record</span>
+        <span style="color: #d3dae2;">|</span>
+        <a href="data/stress_strain_aligned.csv" download="stress_strain_aligned.csv" style="font-family: ui-monospace, Menlo, Consolas, monospace; color: #185f8f; text-decoration: none;" style-hover="text-decoration: underline;">stress_strain_aligned.csv</a>
+        <a href="data/characteristic_points.csv" download="characteristic_points.csv" style="font-family: ui-monospace, Menlo, Consolas, monospace; color: #185f8f; text-decoration: none;" style-hover="text-decoration: underline;">characteristic_points.csv</a>
+        <a href="data/statistics.csv" download="statistics.csv" style="font-family: ui-monospace, Menlo, Consolas, monospace; color: #185f8f; text-decoration: none;" style-hover="text-decoration: underline;">statistics.csv</a>
+      </div>
+    </div>
+  </sc-if>
+
+  
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    ready: false, figure: 'aggregate', presets: [], inspectorW: 380,
+    segment: 'style', exportOpen: false,
+    dataOpen: false, specOpen: false,
+    datasetSel: 'band', dataPage: 0,
+    resetGen: 0, specStatus: 'Generated from the current controls. Edit freely, then Apply.',
+    customSpec: false, inlineEdit: null,
+    secOpen: { titles: true, axis: false, type: false, plot: false, legend: false },
+    openLayers: { hatch: true },
+    hatchSettingsOpen: false
+  };
+
+  componentDidMount() {
+    this._poll = setInterval(() => {
+      if (window.MTDA_DATA && window.vegaEmbed) {
+        clearInterval(this._poll);
+        this.initData();
+      }
+    }, 100);
+  }
+  componentWillUnmount() { clearInterval(this._poll); if (this.view) { try { this.view.finalize(); } catch (e) {} } }
+
+  get styleState() { return this.styles[this.state.figure]; }
+  set styleState(v) { this.styles[this.state.figure] = v; }
+  get layerState() { return this.layersMap[this.state.figure]; }
+  set layerState(v) { this.layersMap[this.state.figure] = v; }
+  get specOverride() { return this.specOverrides[this.state.figure]; }
+  set specOverride(v) { this.specOverrides[this.state.figure] = v; }
+
+  initData() {
+    const D = window.MTDA_DATA;
+    this.D = D;
+    this.runCount = D.runs.length;
+    this.datasetName = (D.meta && D.meta.datasetName) || '8552-IM7';
+
+    // Re-normalise each replicate against its experiment boundaries so that Fmax (peak stress)
+    // sits at 100 % and post-failure data is dropped, then resample to a common grid and
+    // recompute the aggregate band. x = normalised strain to failure (0 = start, 100 = Fmax).
+    const GRID = 250;
+    const gx = i => (i / (GRID - 1)) * 100;
+    const series = {};
+    for (const p of D.alignedSeries) (series[p.run] = series[p.run] || []).push(p);
+    this.runIds = Object.keys(series).sort();
+    const resampled = {};   // run -> y[] sampled on the 0..100 grid
+    const peakStress = {};  // run -> Fmax (MPa)
+    for (const id of this.runIds) {
+      const pts = series[id].slice().sort((a, b) => a.x - b.x);
+      let pk = 0;
+      for (let i = 0; i < pts.length; i++) if (pts[i].y > pts[pk].y) pk = i;
+      peakStress[id] = pts[pk].y;
+      const xPeak = pts[pk].x || 1;
+      // truncate at Fmax, renormalise x so the peak maps to 100
+      const tr = pts.slice(0, pk + 1).map(p => ({ x: (p.x / xPeak) * 100, y: p.y }));
+      if (!tr.length || tr[0].x > 0) tr.unshift({ x: 0, y: tr.length ? tr[0].y : 0 });
+      tr[tr.length - 1].x = 100;
+      const arr = new Array(GRID); let j = 0;
+      for (let i = 0; i < GRID; i++) {
+        const xq = gx(i);
+        while (j < tr.length - 2 && tr[j + 1].x < xq) j++;
+        const a = tr[Math.min(j, tr.length - 1)], b = tr[Math.min(j + 1, tr.length - 1)];
+        const t = (b.x - a.x) > 1e-9 ? (xq - a.x) / (b.x - a.x) : 0;
+        arr[i] = a.y + t * (b.y - a.y);
+      }
+      resampled[id] = arr;
+    }
+    this.gridCount = GRID;
+    this.gridX = gx;
+    this.resampledByRun = resampled;
+    this.peakStressByRun = peakStress;
+    this.runIdsAll = this.runIds.slice();
+    this.runMetaById = {};
+    for (const r of D.runs) this.runMetaById[r.id] = r;
+    this.runIncluded = {};
+    for (const id of this.runIdsAll) this.runIncluded[id] = true;
+
+    // per-run bending distribution — candlestick (quartile body + min→max wick)
+    const patCat = p => /^FAIL/.test(p || '') ? 'FAIL' : /^WARN/.test(p || '') ? 'WARN' : 'PASS';
+    const dist = window.MTDA_BENDING_DIST || {};
+    this.origBend = D.runs.map(r => {
+      const d = dist[r.id] || {};
+      const row = {
+        run: r.id,
+        min: +(+(d.min || 0)).toFixed(2),
+        q1: +(+(d.q1 || 0)).toFixed(2),
+        median: +(+(d.median != null ? d.median : r.bendMedian) || 0).toFixed(2),
+        q3: +(+(d.q3 || 0)).toFixed(2),
+        max: +(+(d.max != null ? d.max : r.bendMax) || 0).toFixed(2),
+        p95: +(+(d.p95 != null ? d.p95 : r.bendP95) || 0).toFixed(2),
+        p99: +(+(d.p99 != null ? d.p99 : r.bendP99) || 0).toFixed(2),
+        threshold: r.bendThreshold != null ? +r.bendThreshold : 10,
+        fracAbove: +(((+r.bendFracAbove) || 0) * 100).toFixed(1),
+        ptsAbove: r.bendPtsAbove,
+        pattern: patCat(r.bendPattern),
+        patternFull: r.bendPattern
+      };
+      return this.orderedBendingRow(row);
+    });
+    this.bendRows = this.origBend.map(d => Object.assign({}, d));
+    this.bendThreshold = this.bendRows[0] ? this.bendRows[0].threshold : 10;
+
+    this.styles = { aggregate: this.defaultStyle('aggregate'), bending: this.defaultStyle('bending') };
+    this.layersMap = { aggregate: this.defaultLayers('aggregate'), bending: this.defaultLayers('bending') };
+    this.layerGroups = this.defaultLayerGroups();
+    this.layerGroupOrders = { aggregate: Object.keys(this.layerGroups.aggregate), bending: Object.keys(this.layerGroups.bending) };
+    this.layerOrders = { aggregate: this.defaultLayerOrder('aggregate'), bending: this.defaultLayerOrder('bending') };
+    this.runOrder = this.defaultRunOrder();
+    this.runGroups = this.defaultRunGroups();
+    this.runGroupOrderKeys = Object.keys(this.runGroups);
+    this.specOverrides = { aggregate: null, bending: null };
+    this.recomputeWorkingData();
+    let presets = [];
+    try { presets = JSON.parse(localStorage.getItem('mtda_plot_style_presets') || '[]'); } catch (e) { presets = []; }
+    this.setState({ ready: true, presets });
+  }
+
+  defaultStyle(fig) {
+    const base = {
+      xMin: '', xMax: '', yMin: '', yMax: '',
+      font: '', titleSize: 12, axisSize: 10, tickSize: 8, scale: 1,
+      cw: '', ch: '', aspect: '',
+      xGrid: 'show', xTicks: 'show', xLine: 'show', xMode: 'auto', xStart: '', xEnd: '', xStep: '', xCount: '', xMinStep: '', xAngle: '',
+      yGrid: 'show', yTicks: 'show', yLine: 'show', yMode: 'auto', yStart: '', yEnd: '', yStep: '', yCount: '', yMinStep: '', yAngle: '',
+      interp: 'linear', bg: '#ffffff',
+      legend: 'right', legendDir: 'vertical', legendSize: 9,
+      legendSymbolSize: '', legendSymbolStroke: '', legendSymbolOpacity: '', legendColumns: '', legendLabelLimit: ''
+    };
+    if (fig === 'bending') return Object.assign(base, {
+      title: '8552-IM7 — aggregate bending by run', xLabel: 'Run', yLabel: 'Bending / %', xAngle: -32
+    });
+    return Object.assign(base, {
+      title: '8552-IM7 — aggregate compressive stress–strain',
+      xLabel: 'Normalised strain to failure / %', yLabel: 'Stress / MPa'
+    });
+  }
+  defaultLayers(fig) {
+    if (fig === 'bending') return {
+      hatch:     { label: 'Threshold background',    role: 'background', visible: true, color: '#e58a80', bgColor: '#f7c9c5', texture: '/', width: 1, dash: 'solid', opacity: 0.22, hatchOpacity: 0.35, hatchGap: 8, hatchWidth: 1.2, hatchAngle: 45, hatchScale: 1, hatchOffset: 0, blend: 'multiply', clipMode: 'above' },
+      box:       { label: 'Inter-quartile (q1–q3)', role: 'box',  visible: true, color: '#86b894', colorMode: 'pattern', width: 0.6, dash: 'solid', opacity: 0.92 },
+      wick:      { label: 'Range (min→max)',        role: 'wick', visible: true, color: '#9aa5b1', width: 1.5, dash: 'solid', opacity: 1 },
+      median:    { label: 'Median bending',         role: 'tick', visible: true, color: '#17202a', width: 100, dash: 'solid', opacity: 1 },
+      threshold: { label: 'Threshold 10%',          role: 'rule', visible: true, color: '#9d2222', width: 1.5, dash: 'dashed', opacity: 1 }
+    };
+    return {
+      range:      { label: 'Min–max range',         role: 'band',      visible: true, legend: true, color: '#d2e2ef', width: 0,   dash: 'solid', opacity: 0.55 },
+      std:        { label: '±1σ band',              role: 'band',      visible: true, legend: true, color: '#9cbfdc', width: 0,   dash: 'solid', opacity: 0.6 },
+      replicates: { label: 'Individual replicates', role: 'multiline', visible: true, legend: true, color: '#8a9eb2', width: 0.9, dash: 'solid', opacity: 0.5 },
+      mean:       { label: 'Mean curve',            role: 'line',      visible: true, legend: true, main: true, color: '#1f4e79', width: 2.8, dash: 'solid', opacity: 1 },
+      fmaxWick:   { label: 'Fmax min–max',          role: 'wick',      visible: true, color: '#7a2020', width: 1.5, dash: 'solid', opacity: 1 },
+      fmaxBox:    { label: 'Fmax q1–q3',            role: 'box',       visible: true, color: '#b3392f', width: 16,  dash: 'solid', opacity: 0.9 },
+      fmaxMedian: { label: 'Fmax median',           role: 'tick',      visible: true, color: '#3a0d0d', width: 80,  dash: 'solid', opacity: 1 },
+      markers:    { label: 'Run σmax points',       role: 'markers',   visible: false, color: '#9d2222', width: 50, opacity: 0.85 }
+    };
+  }
+  defaultRunOrder() {
+    return (this.runIdsAll || []).slice();
+  }
+  defaultRunGroups() {
+    const plotted = this.defaultRunOrder().filter(id => this.runIncluded && this.runIncluded[id]);
+    const excluded = this.defaultRunOrder().filter(id => this.runIncluded && !this.runIncluded[id]);
+    return {
+      plotted: { label: 'Plotted runs', ids: plotted },
+      excluded: { label: 'Excluded runs', ids: excluded }
+    };
+  }
+
+  defaultLayerOrder(fig) {
+    return fig === 'bending'
+      ? ['hatch', 'wick', 'box', 'median', 'threshold']
+      : ['range', 'std', 'replicates', 'fmaxWick', 'fmaxBox', 'markers', 'mean', 'fmaxMedian'];
+  }
+  defaultLayerGroups() {
+    return {
+      aggregate: {
+        context: { label: 'Context', ids: ['range', 'std', 'replicates'] },
+        fmax: { label: 'Fmax distribution', ids: ['fmaxWick', 'fmaxBox', 'fmaxMedian', 'markers'] },
+        primary: { label: 'Primary curve', ids: ['mean'] }
+      },
+      bending: {
+        background: { label: 'Background', ids: ['hatch'] },
+        candle: { label: 'Candlestick', ids: ['wick', 'box', 'median'] },
+        rules: { label: 'Rules', ids: ['threshold'] }
+      }
+    };
+  }
+  layerOrderFor(fig) {
+    const known = this.layersMap && this.layersMap[fig] ? Object.keys(this.layersMap[fig]) : [];
+    const current = (this.layerOrders && this.layerOrders[fig]) || this.defaultLayerOrder(fig);
+    const ordered = current.filter(id => known.includes(id));
+    for (const id of known) if (!ordered.includes(id)) ordered.push(id);
+    return ordered;
+  }
+  layerGroupFor(fig, id) {
+    const groups = (this.layerGroups && this.layerGroups[fig]) || {};
+    for (const key in groups) if (groups[key].ids.includes(id)) return groups[key].label;
+    return 'Other';
+  }
+  sortLayers(layers, fig) {
+    const order = this.layerOrderFor(fig);
+    const rank = id => {
+      const i = order.indexOf(id);
+      return i >= 0 ? i : order.length + 1;
+    };
+    const idOf = layer => {
+      const name = layer && layer.name || '';
+      if (name === 'layer_min_max_range') return 'range';
+      if (name === 'layer_std_band') return 'std';
+      if (name === 'layer_individual_replicates') return 'replicates';
+      if (name === 'layer_mean_curve') return 'mean';
+      if (name === 'layer_fmax_min_max') return 'fmaxWick';
+      if (name === 'layer_fmax_q1_q3') return 'fmaxBox';
+      if (name === 'layer_fmax_median' || name === 'layer_fmax_label') return 'fmaxMedian';
+      if (name === 'layer_run_sigma_max_points') return 'markers';
+      if (name === 'layer_bending_background_fill') return 'hatch';
+      if (name === 'layer_bending_min_max') return 'wick';
+      if (name === 'layer_bending_q1_q3') return 'box';
+      if (name === 'layer_bending_median') return 'median';
+      if (name === 'layer_bending_threshold') return 'threshold';
+      return '';
+    };
+    return layers.map((layer, index) => ({ layer, index, id: idOf(layer) }))
+      .sort((a, b) => (rank(a.id) - rank(b.id)) || (a.index - b.index))
+      .map(entry => entry.layer);
+  }
+  moveLayer(from, to) {
+    from = String(from || '').replace(/^layer:/, '');
+    to = String(to || '').replace(/^layer:/, '');
+    if (!from || !to || from === to) return;
+    const fig = this.state.figure;
+    const order = this.layerOrderFor(fig).slice();
+    const a = order.indexOf(from), b = order.indexOf(to);
+    if (a < 0 || b < 0) return;
+    order.splice(a, 1);
+    order.splice(b, 0, from);
+    this.layerOrders[fig] = order;
+    this.specOverride = null;
+    this.setState({ resetGen: this.state.resetGen + 1 });
+    this.replotSoon();
+  }
+  layerGroupOrder(fig) {
+    const groups = this.layerGroups && this.layerGroups[fig] ? this.layerGroups[fig] : {};
+    const current = this.layerGroupOrders && this.layerGroupOrders[fig] ? this.layerGroupOrders[fig] : Object.keys(groups);
+    const ordered = current.filter(key => groups[key]);
+    for (const key in groups) if (!ordered.includes(key)) ordered.push(key);
+    return ordered;
+  }
+  moveLayerGroup(from, to) {
+    from = String(from || '').replace(/^layergroup:/, '');
+    to = String(to || '').replace(/^layergroup:/, '');
+    if (!from || !to || from === to) return;
+    const fig = this.state.figure;
+    const order = this.layerGroupOrder(fig).slice();
+    const a = order.indexOf(from), b = order.indexOf(to);
+    if (a < 0 || b < 0) return;
+    order.splice(a, 1);
+    order.splice(b, 0, from);
+    this.layerGroupOrders[fig] = order;
+    const groups = this.layerGroups[fig] || {};
+    this.layerOrders[fig] = order.flatMap(key => (groups[key] && groups[key].ids) || []).filter(id => this.layersMap[fig] && this.layersMap[fig][id]);
+    this.specOverride = null;
+    this.setState({ resetGen: this.state.resetGen + 1 });
+    this.replotSoon();
+  }
+  runGroupOrder() {
+    const groups = this.runGroups || {};
+    const current = this.runGroupOrderKeys || Object.keys(groups);
+    const ordered = current.filter(key => groups[key]);
+    for (const key in groups) if (!ordered.includes(key)) ordered.push(key);
+    return ordered;
+  }
+  moveRunGroup(from, to) {
+    from = String(from || '').replace(/^rungroup:/, '');
+    to = String(to || '').replace(/^rungroup:/, '');
+    if (!from || !to || from === to) return;
+    const order = this.runGroupOrder().slice();
+    const a = order.indexOf(from), b = order.indexOf(to);
+    if (a < 0 || b < 0) return;
+    order.splice(a, 1);
+    order.splice(b, 0, from);
+    this.runGroupOrderKeys = order;
+    this.setState({ resetGen: this.state.resetGen + 1 });
+  }
+  moveRun(from, to, targetGroup) {
+    from = String(from || '').replace(/^run:/, '');
+    to = String(to || '').replace(/^run:/, '');
+    if (!from || !to || from === to) return;
+    const order = this.runOrder.slice();
+    const a = order.indexOf(from), b = order.indexOf(to);
+    if (a < 0 || b < 0) return;
+    order.splice(a, 1);
+    order.splice(b, 0, from);
+    this.runOrder = order;
+    const targetKey = targetGroup || Object.keys(this.runGroups).find(key => this.runGroups[key].ids.includes(to));
+    for (const key in this.runGroups) this.runGroups[key].ids = this.runGroups[key].ids.filter(id => id !== from);
+    if (targetKey && this.runGroups[targetKey]) {
+      const ids = this.runGroups[targetKey].ids;
+      const idx = ids.indexOf(to);
+      ids.splice(idx >= 0 ? idx : ids.length, 0, from);
+      this.runIncluded[from] = targetKey !== 'excluded';
+    }
+    this.recomputeWorkingData();
+    this.specOverride = null;
+    this.setState({ resetGen: this.state.resetGen + 1 });
+    this.replotSoon();
+  }
+  moveRunToGroup(run, targetGroup) {
+    run = String(run || '').replace(/^run:/, '');
+    if (!run || !this.runGroups || !this.runGroups[targetGroup]) return;
+    for (const key in this.runGroups) this.runGroups[key].ids = this.runGroups[key].ids.filter(id => id !== run);
+    this.runGroups[targetGroup].ids.push(run);
+    this.runIncluded[run] = targetGroup !== 'excluded';
+    this.recomputeWorkingData();
+    this.specOverride = null;
+    this.setState({ resetGen: this.state.resetGen + 1 });
+    this.replotSoon();
+  }
+  isRejectedRun(r) {
+    if (r.finalIncluded === false) return true;
+    const token = String(r.validity || '').trim().toLowerCase();
+    return ['rejected', 'invalid', 'false', '0', 'no', 'n', 'excluded'].includes(token);
+  }
+  activeRunIds() {
+    return (this.runOrder || this.runIdsAll).filter(id => this.runIncluded[id]);
+  }
+  quantile(values, p) {
+    if (!values.length) return 0;
+    const sorted = values.slice().sort((a, b) => a - b);
+    const idx = (sorted.length - 1) * p, lo = Math.floor(idx), hi = Math.ceil(idx);
+    return lo === hi ? sorted[lo] : sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  }
+  orderedBendingRow(row) {
+    const vals = [row.min, row.q1, row.median, row.q3, row.max].map(Number);
+    if (vals.every(Number.isFinite)) {
+      const ordered = vals.slice().sort((a, b) => a - b);
+      row.min = +ordered[0].toFixed(2);
+      row.q1 = +ordered[1].toFixed(2);
+      row.median = +ordered[2].toFixed(2);
+      row.q3 = +ordered[3].toFixed(2);
+      row.max = +ordered[4].toFixed(2);
+    }
+    return row;
+  }
+  recomputeWorkingData() {
+    const active = this.activeRunIds();
+    const GRID = this.gridCount || 250;
+    const gx = this.gridX || (i => (i / (GRID - 1)) * 100);
+    this.runIds = active.slice();
+    this.band = [];
+    for (let i = 0; i < GRID; i++) {
+      const vals = active.map(id => this.resampledByRun[id] && this.resampledByRun[id][i]).filter(Number.isFinite);
+      if (!vals.length) continue;
+      const n = vals.length;
+      const mean = vals.reduce((s, v) => s + v, 0) / n;
+      const variance = n > 1 ? vals.reduce((s, v) => s + (v - mean) * (v - mean), 0) / (n - 1) : 0;
+      const std = Math.sqrt(variance);
+      this.band.push({ x: +gx(i).toFixed(3), mean: +mean.toFixed(3), std: +std.toFixed(3),
+        min: +Math.min.apply(null, vals).toFixed(3), max: +Math.max.apply(null, vals).toFixed(3),
+        n, lo: +(mean - std).toFixed(3), hi: +(mean + std).toFixed(3) });
+    }
+    this.replicates = [];
+    for (const id of active) for (let i = 0; i < GRID; i++)
+      if (this.resampledByRun[id]) this.replicates.push({ run: id, x: +gx(i).toFixed(3), y: +this.resampledByRun[id][i].toFixed(3) });
+    const strengths = active.map(id => this.peakStressByRun[id]).filter(Number.isFinite);
+    this.charPoints = active.map(id => ({ run: id, scope: 'run', x: 100, y: +this.peakStressByRun[id].toFixed(2), label: id }));
+    if (strengths.length) {
+      const meanS = strengths.reduce((s, v) => s + v, 0) / strengths.length;
+      const stdS = strengths.length > 1 ? Math.sqrt(strengths.reduce((s, v) => s + (v - meanS) * (v - meanS), 0) / (strengths.length - 1)) : 0;
+      this.fmaxStats = { min: +Math.min.apply(null, strengths).toFixed(2), max: +Math.max.apply(null, strengths).toFixed(2),
+        q1: +this.quantile(strengths, 0.25).toFixed(2), median: +this.quantile(strengths, 0.5).toFixed(2), q3: +this.quantile(strengths, 0.75).toFixed(2),
+        mean: +meanS.toFixed(2), std: +stdS.toFixed(2), lo: +(meanS - stdS).toFixed(2), hi: +(meanS + stdS).toFixed(2), n: strengths.length };
+      this.charPoints.push({ run: 'mean', scope: 'aggregate', x: 100, y: +meanS.toFixed(2), label: 'Mean σmax' });
+    } else {
+      this.fmaxStats = null;
+    }
+    const byRun = {};
+    for (const row of this.origBend) byRun[row.run] = row;
+    this.bendRows = active.map(id => byRun[id]).filter(Boolean).map(row => {
+      const next = this.orderedBendingRow(Object.assign({}, row, { threshold: this.bendThreshold }));
+      next.pattern = this.bendingPatternFor(next, this.bendThreshold);
+      next.patternFull = next.pattern;
+      return next;
+    });
+  }
+  toggleRunIncluded(run, included) {
+    this.runIncluded[run] = included;
+    if (this.runGroups) {
+      const fromKey = included ? 'excluded' : 'plotted';
+      const toKey = included ? 'plotted' : 'excluded';
+      if (this.runGroups[fromKey]) this.runGroups[fromKey].ids = this.runGroups[fromKey].ids.filter(id => id !== run);
+      if (this.runGroups[toKey] && !this.runGroups[toKey].ids.includes(run)) this.runGroups[toKey].ids.push(run);
+    }
+    this.recomputeWorkingData();
+    this.specOverride = null;
+    this.setState({ resetGen: this.state.resetGen + 1 });
+    this.replotSoon();
+  }
+  bendingPatternFor(row, threshold) {
+    const th = +threshold;
+    if (!isFinite(th)) return row.pattern || 'PASS';
+    if (+row.q3 > th || +row.median > th) return 'FAIL';
+    if (+row.max > th) return 'WARN';
+    return 'PASS';
+  }
+  hatchDefs() {
+    return [
+      { code: '/', label: 'Forward diagonal' },
+      { code: '\\', label: 'Reverse diagonal' },
+      { code: '|', label: 'Vertical' },
+      { code: '-', label: 'Horizontal' },
+      { code: '+', label: 'Grid' },
+      { code: 'x', label: 'Cross diagonal' },
+      { code: '.', label: 'Dots' },
+      { code: 'o', label: 'Small circles' },
+      { code: 'O', label: 'Large circles' },
+      { code: '//', label: 'Dense forward diagonal' },
+      { code: '++', label: 'Dense grid' },
+      { code: 'none', label: 'Solid only' }
+    ];
+  }
+  safeCssColor(value, fallback) {
+    const v = String(value || '').trim();
+    return /^#[0-9a-f]{3,8}$/i.test(v) ? v : fallback;
+  }
+  hatchNum(value, fallback, min, max) {
+    const n = parseFloat(value);
+    let v = isFinite(n) ? n : fallback;
+    if (min !== undefined) v = Math.max(min, v);
+    if (max !== undefined) v = Math.min(max, v);
+    return v;
+  }
+  hatchCss(pattern, color, layer) {
+    const c = this.safeCssColor(color, '#e58a80');
+    const p = pattern || '/';
+    const src = layer || {};
+    const scale = this.hatchNum(src.hatchScale, 1, 0.25, 4);
+    const gap = this.hatchNum(src.hatchGap, 8, 2, 60) * scale;
+    const denseGap = Math.max(2, gap * 0.55);
+    const thick = this.hatchNum(src.hatchWidth, 1.2, 0.25, 8);
+    const angle = this.hatchNum(src.hatchAngle, 45, -180, 180);
+    const offset = this.hatchNum(src.hatchOffset, 0, -80, 80);
+    const line = (a, g, w) => 'repeating-linear-gradient(' + a + 'deg, transparent 0 ' + g + 'px, ' + c + ' ' + g + 'px ' + (g + w) + 'px, transparent ' + (g + w) + 'px ' + (g * 2) + 'px)';
+    const dot = (r, outer, s) => ({ image: 'radial-gradient(circle, ' + c + ' 0 ' + r + 'px, transparent ' + outer + 'px)', size: s + 'px ' + s + 'px', position: offset + 'px ' + offset + 'px' });
+    const ring = (r1, r2, s) => ({ image: 'radial-gradient(circle, transparent 0 ' + r1 + 'px, ' + c + ' ' + r1 + 'px ' + r2 + 'px, transparent ' + (r2 + 0.3) + 'px)', size: s + 'px ' + s + 'px', position: offset + 'px ' + offset + 'px' });
+    const out = image => ({ image, size: 'auto', position: offset + 'px ' + offset + 'px' });
+    if (p === 'none') return { image: 'none', size: 'auto', position: offset + 'px ' + offset + 'px' };
+    if (p === '/') return out(line(180 - angle, gap, thick));
+    if (p === '\\') return out(line(angle, gap, thick));
+    if (p === '|') return out(line(90, gap, thick));
+    if (p === '-') return out(line(0, gap, thick));
+    if (p === '+') return out(line(90, gap, thick) + ', ' + line(0, gap, thick));
+    if (p === 'x') return out(line(180 - angle, gap, thick) + ', ' + line(angle, gap, thick));
+    if (p === '.') return dot(Math.max(0.8, thick * 1.1), Math.max(1.2, thick * 1.55), Math.max(5, gap * 1.45));
+    if (p === 'o') return ring(Math.max(1.2, thick * 1.8), Math.max(2, thick * 2.6), Math.max(7, gap * 1.65));
+    if (p === 'O') return ring(Math.max(2.2, thick * 3.4), Math.max(3.2, thick * 4.4), Math.max(10, gap * 2.1));
+    if (p === '//') return out(line(180 - angle, denseGap, thick));
+    if (p === '++') return out(line(90, denseGap, thick) + ', ' + line(0, denseGap, thick));
+    return out(line(180 - angle, gap, thick));
+  }
+  hatchPreviewStyle(pattern, selected, layer) {
+    const css = this.hatchCss(pattern, layer.color, layer);
+    return 'display:block;width:100%;height:28px;border-radius:4px;border:1px solid ' + (selected ? '#185f8f' : '#d7dee8') + ';background-color:' + (layer.bgColor || '#f7c9c5') + ';background-image:' + css.image + ';background-size:' + css.size + ';background-position:' + (css.position || '0 0') + ';opacity:0.9;';
+  }
+  hatchButtonStyle(selected) {
+    return 'display:grid;grid-template-rows:30px auto;gap:3px;align-items:center;border:1px solid ' + (selected ? '#185f8f' : '#dbe2ea') + ';background:' + (selected ? '#eef6ff' : '#ffffff') + ';border-radius:7px;padding:4px;cursor:pointer;color:#3a4654;';
+  }
+  svgHatchPattern(id, pattern, color, layer) {
+    const p = pattern || '/';
+    if (p === 'none') return null;
+    const ns = 'http://www.w3.org/2000/svg';
+    const c = this.safeCssColor(color, '#e58a80');
+    const src = layer || {};
+    const scale = this.hatchNum(src.hatchScale, 1, 0.25, 4);
+    const gap = this.hatchNum(src.hatchGap, 8, 2, 60) * scale;
+    const denseGap = Math.max(2, gap * 0.55);
+    const thick = this.hatchNum(src.hatchWidth, 1.2, 0.25, 8);
+    const angle = this.hatchNum(src.hatchAngle, 45, -180, 180);
+    const offset = this.hatchNum(src.hatchOffset, 0, -80, 80);
+    const size = (p === '//' || p === '++') ? denseGap * 2 : gap * 2;
+    const pat = document.createElementNS(ns, 'pattern');
+    pat.setAttribute('id', id);
+    pat.setAttribute('patternUnits', 'userSpaceOnUse');
+    pat.setAttribute('width', size);
+    pat.setAttribute('height', size);
+    pat.setAttribute('patternTransform', 'translate(' + offset + ' ' + offset + ')');
+    const stroke = (el) => {
+      el.setAttribute('stroke', c);
+      el.setAttribute('stroke-width', thick);
+      el.setAttribute('stroke-linecap', 'square');
+      pat.appendChild(el);
+    };
+    const line = (x1, y1, x2, y2) => {
+      const el = document.createElementNS(ns, 'line');
+      el.setAttribute('x1', x1); el.setAttribute('y1', y1); el.setAttribute('x2', x2); el.setAttribute('y2', y2);
+      stroke(el);
+    };
+    const rotate = (el, deg) => el.setAttribute('transform', 'rotate(' + deg + ' ' + (size / 2) + ' ' + (size / 2) + ')');
+    if (p === '/' || p === '//') {
+      const el = document.createElementNS(ns, 'line');
+      el.setAttribute('x1', -size); el.setAttribute('y1', size); el.setAttribute('x2', size * 2); el.setAttribute('y2', -size * 2);
+      rotate(el, angle - 45); stroke(el);
+    } else if (p === '\\') {
+      const el = document.createElementNS(ns, 'line');
+      el.setAttribute('x1', -size); el.setAttribute('y1', -size); el.setAttribute('x2', size * 2); el.setAttribute('y2', size * 2);
+      rotate(el, angle - 45); stroke(el);
+    } else if (p === '|') {
+      line(size / 2, 0, size / 2, size);
+    } else if (p === '-') {
+      line(0, size / 2, size, size / 2);
+    } else if (p === '+' || p === '++') {
+      line(size / 2, 0, size / 2, size); line(0, size / 2, size, size / 2);
+    } else if (p === 'x') {
+      line(-size, size, size * 2, -size * 2); line(-size, -size, size * 2, size * 2);
+    } else if (p === '.') {
+      const el = document.createElementNS(ns, 'circle');
+      el.setAttribute('cx', size / 2); el.setAttribute('cy', size / 2); el.setAttribute('r', Math.max(0.8, thick * 1.1));
+      el.setAttribute('fill', c); pat.appendChild(el);
+    } else if (p === 'o' || p === 'O') {
+      const el = document.createElementNS(ns, 'circle');
+      el.setAttribute('cx', size / 2); el.setAttribute('cy', size / 2);
+      el.setAttribute('r', p === 'O' ? Math.max(3, thick * 3.7) : Math.max(1.8, thick * 2.2));
+      el.setAttribute('fill', 'none'); stroke(el);
+    }
+    return pat;
+  }
+  svgLayerAnchor(svg, layerName) {
+    const spec = this.currentSpec || this.specOverride || this.buildSpec();
+    const layers = (spec && spec.layer) || [];
+    const index = layers.findIndex(layer => layer && layer.name === layerName);
+    if (index >= 0) {
+      const byClass = svg.querySelector('.layer_' + index + '_marks');
+      if (byClass) return byClass;
+      const containsClass = Array.from(svg.querySelectorAll('g')).find(g => (g.getAttribute('class') || '').indexOf('layer_' + index + '_') >= 0);
+      if (containsClass) return containsClass;
+    }
+    const rectMarks = Array.from(svg.querySelectorAll('g.mark-rect, g[aria-roledescription="rect mark"]'));
+    return rectMarks[0] || null;
+  }
+
+  // ---------- plot ----------
+  dashArray(d) { return d === 'dashed' ? [6, 4] : d === 'dotted' ? [2, 3] : null; }
+
+  autoMarker(id) {
+    if (id === 'fmax') {
+      let f = this.curveData[0];
+      for (const p of this.curveData) if (p.stress > f.stress) f = p;
+      return { sx: +(f.strain * 100).toFixed(5), sy: f.stress };
+    }
+    const end = this.curveData.find(p => p.i === this.boundaryEnd) || this.curveData[this.curveData.length - 1];
+    return { sx: +(end.strain * 100).toFixed(5), sy: end.stress };
+  }
+  markerPos(id) {
+    const m = this.layerState[id];
+    if (m && m.auto === false && m.mx !== '' && m.my !== '' && isFinite(+m.mx) && isFinite(+m.my)) return { sx: +m.mx, sy: +m.my };
+    return this.autoMarker(id);
+  }
+
+  // LaTeX-subset → Unicode: ^{ } superscript, _{ } subscript, \cmd symbols
+  mathText(s) {
+    if (s == null) return s;
+    s = '' + s;
+    if (s.indexOf('^') < 0 && s.indexOf('_') < 0 && s.indexOf('\\') < 0) return s;
+    const sym = {
+      alpha:'α',beta:'β',gamma:'γ',delta:'δ',epsilon:'ε',varepsilon:'ε',zeta:'ζ',eta:'η',theta:'θ',iota:'ι',kappa:'κ',lambda:'λ',mu:'µ',nu:'ν',xi:'ξ',pi:'π',rho:'ρ',sigma:'σ',tau:'τ',upsilon:'υ',phi:'φ',chi:'χ',psi:'ψ',omega:'ω',
+      Gamma:'Γ',Delta:'Δ',Theta:'Θ',Lambda:'Λ',Xi:'Ξ',Pi:'Π',Sigma:'Σ',Phi:'Φ',Psi:'Ψ',Omega:'Ω',
+      times:'×',cdot:'·',bullet:'•',pm:'±',mp:'∓',leq:'≤',le:'≤',geq:'≥',ge:'≥',neq:'≠',approx:'≈',equiv:'≡',propto:'∝',sim:'∼',
+      infty:'∞',degree:'°',deg:'°',prime:'′',sqrt:'√',partial:'∂',nabla:'∇',sum:'∑',int:'∫',angle:'∠',perp:'⊥',cdots:'⋯',ldots:'…',
+      rightarrow:'→',to:'→',leftarrow:'←',Rightarrow:'⇒',langle:'⟨',rangle:'⟩'
+    };
+    s = s.replace(/\\([A-Za-z]+)/g, (m, name) => (sym[name] != null ? sym[name] : m));
+    const sup = { '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','+':'⁺','-':'⁻','=':'⁼','(':'⁽',')':'⁾','n':'ⁿ','i':'ⁱ','a':'ᵃ','b':'ᵇ','c':'ᶜ','d':'ᵈ','e':'ᵉ','f':'ᶠ','g':'ᵍ','h':'ʰ','j':'ʲ','k':'ᵏ','l':'ˡ','m':'ᵐ','o':'ᵒ','p':'ᵖ','r':'ʳ','s':'ˢ','t':'ᵗ','u':'ᵘ','v':'ᵛ','w':'ʷ','x':'ˣ','y':'ʸ','z':'ᶻ' };
+    const sub = { '0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉','+':'₊','-':'₋','=':'₌','(':'₍',')':'₎','a':'ₐ','e':'ₑ','h':'ₕ','i':'ᵢ','j':'ⱼ','k':'ₖ','l':'ₗ','m':'ₘ','n':'ₙ','o':'ₒ','p':'ₚ','r':'ᵣ','s':'ₛ','t':'ₜ','u':'ᵤ','v':'ᵥ','x':'ₓ' };
+    let out = '';
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if ((c === '^' || c === '_') && i + 1 < s.length) {
+        const tbl = c === '^' ? sup : sub;
+        let grp;
+        if (s[i + 1] === '{') { const end = s.indexOf('}', i + 2); if (end > -1) { grp = s.slice(i + 2, end); i = end; } else { grp = s[i + 1]; i++; } }
+        else { grp = s[i + 1]; i++; }
+        out += Array.from(grp).map(ch => tbl[ch] || ch).join('');
+      } else out += c;
+    }
+    return out;
+  }
+
+  cleanScale(v) {
+    const n = parseFloat(v);
+    if (!isFinite(n)) return 1;
+    return +Math.max(0.6, Math.min(1.8, n)).toFixed(2);
+  }
+  scaleOf(S) { return this.cleanScale(S.scale); }
+  textScaleOf(S) {
+    const sc = this.scaleOf(S);
+    return +(1 + (sc - 1) * 0.65).toFixed(3);
+  }
+  fpx(pt, S) { return +(((+pt) || 0) * 1.3333 * this.textScaleOf(S)).toFixed(2); }   // pt → px, with moderated master scale
+  spx(px, S) { return +(((+px) || 0) * this.scaleOf(S)).toFixed(3); }                // px stroke/point, with master scale
+
+  legendConfig(S) {
+    const sc = this.scaleOf(S);
+    const lg = { labelFontSize: this.fpx(S.legendSize, S), titleFontSize: this.fpx(S.legendSize, S) };
+    if (+S.legendSymbolSize > 0) lg.symbolSize = +S.legendSymbolSize * sc;
+    if (S.legendSymbolStroke !== '' && isFinite(+S.legendSymbolStroke)) lg.symbolStrokeWidth = +S.legendSymbolStroke * sc;
+    if (S.legendSymbolOpacity !== '' && isFinite(+S.legendSymbolOpacity)) lg.symbolOpacity = +S.legendSymbolOpacity;
+    if (+S.legendColumns > 0) lg.columns = +S.legendColumns;
+    if (+S.legendLabelLimit > 0) lg.labelLimit = +S.legendLabelLimit;
+    return lg;
+  }
+
+  axisValues(domain, step) {
+    if (!(step > 0) || !domain) return undefined;
+    const out = [];
+    for (let t = domain[0]; t <= domain[1] + 1e-12; t += step) out.push(+t.toFixed(6));
+    return out.length > 1 && out.length < 500 ? out : undefined;
+  }
+  // Build a Vega-Lite axis config for prefix 'x' or 'y' from the per-axis style fields
+  buildAxis(p, S, domain) {
+    const g = k => S[p + k];
+    const num = v => (v !== '' && v != null && isFinite(+v)) ? +v : null;
+    const ax = { grid: g('Grid') === 'show', ticks: g('Ticks') !== 'hide', domain: g('Line') !== 'hide' };
+    if (g('Mode') === 'manual') {
+      const start = num(g('Start')), end = num(g('End')), step = num(g('Step'));
+      const lo = start != null ? start : (domain ? domain[0] : null);
+      const hi = end != null ? end : (domain ? domain[1] : null);
+      if (step != null && step > 0 && lo != null && hi != null) {
+        const vals = []; for (let t = lo; t <= hi + 1e-9; t += step) vals.push(+t.toFixed(6));
+        if (vals.length > 1 && vals.length < 1000) ax.values = vals;
+      }
+      const count = num(g('Count')); if (count != null && !ax.values) ax.tickCount = count;
+      const minStep = num(g('MinStep')); if (minStep != null) ax.tickMinStep = minStep;
+    } else {
+      const step = num(g('Step'));
+      const v = this.axisValues(domain, step); if (v) ax.values = v;
+    }
+    const angle = num(g('Angle')); if (angle != null) ax.labelAngle = angle;
+    return ax;
+  }
+  // canvas sizing: returns {width, height} as numbers or 'container'
+  canvasSize(S) {
+    const num = v => (v !== '' && v != null && isFinite(+v) && +v > 0) ? +v : null;
+    let W = num(S.cw), H = num(S.ch), ar = num(S.aspect);
+    if (ar) {
+      if (W && !num(S.ch)) H = Math.round(W / ar);
+      else if (H && !num(S.cw)) W = Math.round(H * ar);
+      else if (!W && !H) { const cw = (this.plotEl && this.plotEl.clientWidth) || 520; W = cw; H = Math.round(cw / ar); }
+    }
+    return { width: W || 'container', height: H || 'container' };
+  }
+
+  buildSpec() {
+    if (this.state.figure === 'bending') return this.buildBendingSpec();
+    const S = this.styleState, L = this.layerState;
+    const band = this.band;
+    let ymax = 0;
+    for (const bb of band) {
+      if (L.range.visible && bb.max > ymax) ymax = bb.max;
+      if (L.std.visible && bb.hi > ymax) ymax = bb.hi;
+      if (L.mean.visible && bb.mean > ymax) ymax = bb.mean;
+    }
+    if (L.replicates.visible) for (const p of this.replicates) if (p.y > ymax) ymax = p.y;
+    if (L.markers.visible) for (const c of this.charPoints) if (c.y > ymax) ymax = c.y;
+    const fmaxOn = L.fmaxWick.visible || L.fmaxBox.visible || L.fmaxMedian.visible;
+    if (fmaxOn && this.fmaxStats && this.fmaxStats.max > ymax) ymax = this.fmaxStats.max;
+    const fmaxX = 100;   // Fmax is the failure endpoint; keep the candle anchored here
+    const xMaxDefault = 100;
+    const xScale = { nice: false, domain: [S.xMin !== '' ? +S.xMin : 0, S.xMax !== '' ? +S.xMax : xMaxDefault] };
+    const yScale = { nice: false, domain: [S.yMin !== '' ? +S.yMin : 0, S.yMax !== '' ? +S.yMax : +(ymax * 1.04).toFixed(1)] };
+
+    // shared colour legend across the named layers, in draw order
+    const legendIds = ['mean', 'std', 'range', 'replicates'].filter(id => L[id].visible && L[id].legend !== false);
+    const legNames = legendIds.map(id => this.mathText(L[id].label));
+    const legColors = legendIds.map(id => L[id].color);
+    let first = true;
+    const colorEnc = id => {
+      const enc = { datum: this.mathText(L[id].label) };
+      if (first) {
+        enc.scale = { domain: legNames, range: legColors };
+        enc.legend = S.legend === 'hidden' ? null : { orient: S.legend, title: 'Layers', direction: S.legendDir || 'vertical' };
+        first = false;
+      }
+      return enc;
+    };
+    const inLeg = id => L[id].legend !== false && legNames.length > 0;
+
+    let layers = [];
+    // min–max range band
+    if (L.range.visible) {
+      const lay = { name: 'layer_min_max_range', description: this.mathText(L.range.label), data: { name: 'band' }, mark: { type: 'area', clip: true, opacity: L.range.opacity, color: inLeg('range') ? undefined : L.range.color },
+        encoding: { x: { field: 'x', type: 'quantitative' }, y: { field: 'min', type: 'quantitative' }, y2: { field: 'max' } } };
+      if (inLeg('range')) lay.encoding.color = colorEnc('range');
+      layers.push(lay);
+    }
+    // ±1σ band
+    if (L.std.visible) {
+      const lay = { name: 'layer_std_band', description: this.mathText(L.std.label), data: { name: 'band' }, mark: { type: 'area', clip: true, opacity: L.std.opacity, color: inLeg('std') ? undefined : L.std.color },
+        encoding: { x: { field: 'x', type: 'quantitative' }, y: { field: 'lo', type: 'quantitative' }, y2: { field: 'hi' } } };
+      if (inLeg('std')) lay.encoding.color = colorEnc('std');
+      layers.push(lay);
+    }
+    // individual replicates (one line per run)
+    if (L.replicates.visible) {
+      const lay = { name: 'layer_individual_replicates', description: this.mathText(L.replicates.label), data: { name: 'reps' }, mark: { type: 'line', clip: true, interpolate: S.interp, strokeWidth: this.spx(L.replicates.width, S), opacity: L.replicates.opacity, color: inLeg('replicates') ? undefined : L.replicates.color },
+        encoding: { x: { field: 'x', type: 'quantitative' }, y: { field: 'y', type: 'quantitative' }, detail: { field: 'run' }, order: { field: 'x', type: 'quantitative' },
+          tooltip: [ { field: 'run', title: 'Run' }, { field: 'x', title: S.xLabel, format: '.1f', type: 'quantitative' }, { field: 'y', title: S.yLabel, format: '.1f', type: 'quantitative' } ] } };
+      if (inLeg('replicates')) lay.encoding.color = colorEnc('replicates');
+      layers.push(lay);
+    }
+    // mean curve
+    let meanRef = null;
+    if (L.mean.visible) {
+      const lay = { name: 'layer_mean_curve', description: this.mathText(L.mean.label), data: { name: 'band' }, mark: { type: 'line', clip: true, interpolate: S.interp, strokeWidth: this.spx(L.mean.width, S), strokeDash: this.dashArray(L.mean.dash), opacity: L.mean.opacity, color: inLeg('mean') ? undefined : L.mean.color },
+        encoding: { x: { field: 'x', type: 'quantitative' }, y: { field: 'mean', type: 'quantitative' }, order: { field: 'x', type: 'quantitative' },
+          tooltip: [ { field: 'x', title: S.xLabel, format: '.1f', type: 'quantitative' }, { field: 'mean', title: 'Mean stress / MPa', format: '.1f', type: 'quantitative' }, { field: 'std', title: 'σ / MPa', format: '.1f', type: 'quantitative' }, { field: 'n', title: 'n', type: 'quantitative' } ] } };
+      if (inLeg('mean')) lay.encoding.color = colorEnc('mean');
+      layers.push(lay); meanRef = lay;
+    }
+    // per-run σmax points (optional — off by default; the candlestick summarises them)
+    if (L.markers.visible) layers.push({
+      name: 'layer_run_sigma_max_points', description: this.mathText(L.markers.label),
+      data: { name: 'char' }, transform: [{ filter: "datum.scope === 'run'" }],
+      mark: { type: 'point', clip: true, filled: true, size: this.spx(L.markers.width, S), opacity: L.markers.opacity, color: L.markers.color },
+      encoding: { x: { field: 'x', type: 'quantitative' }, y: { field: 'y', type: 'quantitative' },
+        tooltip: [ { field: 'run', title: 'Run' }, { field: 'y', title: 'σmax / MPa', format: '.1f', type: 'quantitative' } ] }
+    });
+    // Fmax candlestick at the failure edge (q1–q3 body, median line, min→max wick)
+    const frow = this.fmaxStats ? [Object.assign({ x: fmaxX }, this.fmaxStats)] : [];
+    if (L.fmaxWick.visible) layers.push({
+      name: 'layer_fmax_min_max', description: this.mathText(L.fmaxWick.label),
+      data: { values: frow },
+      mark: { type: 'rule', clip: true, strokeWidth: this.spx(L.fmaxWick.width, S), color: L.fmaxWick.color, opacity: L.fmaxWick.opacity, strokeDash: this.dashArray(L.fmaxWick.dash) },
+      encoding: { x: { field: 'x', type: 'quantitative' }, y: { field: 'min', type: 'quantitative' }, y2: { field: 'max' },
+        tooltip: [ { field: 'min', title: 'Min σmax / MPa', format: '.1f', type: 'quantitative' }, { field: 'max', title: 'Max σmax / MPa', format: '.1f', type: 'quantitative' } ] }
+    });
+    if (L.fmaxBox.visible) layers.push({
+      name: 'layer_fmax_q1_q3', description: this.mathText(L.fmaxBox.label),
+      data: { values: frow },
+      mark: { type: 'bar', clip: false, size: this.spx(+L.fmaxBox.width || 16, S), opacity: L.fmaxBox.opacity, color: L.fmaxBox.color, stroke: '#ffffff', strokeWidth: this.spx(0.75, S), cornerRadius: 1 },
+      encoding: { x: { field: 'x', type: 'quantitative' }, y: { field: 'q1', type: 'quantitative' }, y2: { field: 'q3' },
+        tooltip: [ { field: 'q1', title: 'Q1 / MPa', format: '.1f', type: 'quantitative' }, { field: 'median', title: 'Median / MPa', format: '.1f', type: 'quantitative' }, { field: 'q3', title: 'Q3 / MPa', format: '.1f', type: 'quantitative' }, { field: 'mean', title: 'Mean / MPa', format: '.1f', type: 'quantitative' }, { field: 'min', title: 'Min / MPa', format: '.1f', type: 'quantitative' }, { field: 'max', title: 'Max / MPa', format: '.1f', type: 'quantitative' } ] }
+    });
+    if (L.fmaxMedian.visible) layers.push({
+      name: 'layer_fmax_median', description: this.mathText(L.fmaxMedian.label),
+      data: { values: frow },
+      mark: { type: 'tick', orient: 'horizontal', clip: false, thickness: this.spx(2.4, S), size: this.spx(18, S), color: L.fmaxMedian.color, opacity: L.fmaxMedian.opacity },
+      encoding: { x: { field: 'x', type: 'quantitative' }, y: { field: 'median', type: 'quantitative' },
+        tooltip: [ { field: 'median', title: 'Median σmax / MPa', format: '.1f', type: 'quantitative' } ] }
+    });
+    if (L.fmaxBox.visible || L.fmaxWick.visible) layers.push({
+      name: 'layer_fmax_label', description: 'Fmax label',
+      data: { values: frow },
+      mark: { type: 'text', clip: true, align: 'right', baseline: 'bottom', dx: -2, dy: -7, fontSize: this.fpx(8, S), color: '#7a2020', fontWeight: 'bold' },
+      encoding: { x: { field: 'x', type: 'quantitative' }, y: { field: 'max', type: 'quantitative' }, text: { value: 'Fmax' } }
+    });
+
+    layers = this.sortLayers(layers, 'aggregate');
+    if (layers.length) {
+      const ax = this.buildAxis('x', S, xScale.domain);
+      const ay = this.buildAxis('y', S, yScale.domain);
+      layers[0].encoding.x = Object.assign({}, layers[0].encoding.x, { title: this.mathText(S.xLabel), scale: xScale, axis: ax });
+      layers[0].encoding.y = Object.assign({}, layers[0].encoding.y, { title: this.mathText(S.yLabel), scale: yScale, axis: ay });
+    }
+    const zoomRef = meanRef || layers[0];
+    if (zoomRef) zoomRef.params = [{ name: 'viewZoom', select: 'interval', bind: 'scales' }];
+
+    const spec = {
+      $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+      title: { text: this.mathText(S.title), anchor: 'start', fontSize: this.fpx(S.titleSize, S) },
+      background: S.bg || '#ffffff',
+      width: this.canvasSize(S).width, height: this.canvasSize(S).height,
+      autosize: { type: 'fit', contains: 'padding' },
+      datasets: { band: this.band, reps: this.replicates, char: this.charPoints },
+      layer: layers,
+      config: {
+        axis: { titleFontSize: this.fpx(S.axisSize, S), labelFontSize: this.fpx(S.tickSize, S) },
+        legend: this.legendConfig(S),
+        view: { stroke: '#d7dee8' }
+      }
+    };
+    if (S.font) spec.config.font = S.font;
+    return spec;
+  }
+
+  buildBendingSpec() {
+    const S = this.styleState, L = this.layerState;
+    const rows = this.bendRows;
+    const th = this.bendThreshold;
+    const runIds = rows.map(r => r.run);
+    let ymax = th * 1.25;
+    for (const r of rows) { if (L.wick.visible && r.max > ymax) ymax = r.max; else if (r.p95 > ymax) ymax = r.p95; }
+    const yScale = { nice: false, domain: [S.yMin !== '' ? +S.yMin : 0, S.yMax !== '' ? +S.yMax : +(ymax * 1.04).toFixed(1)] };
+    const patDomain = ['PASS', 'WARN', 'FAIL'];
+    const patRange = ['#2f8a4e', '#d98a1f', '#c0392b'];
+    const xAngle = (S.xAngle !== '' && isFinite(+S.xAngle)) ? +S.xAngle : -32;
+    const xEnc = () => ({ field: 'run', type: 'ordinal', sort: runIds, title: this.mathText(S.xLabel),
+      scale: { paddingInner: 0.45, paddingOuter: 0.25 },
+      axis: { labelAngle: xAngle, grid: S.xGrid === 'show', ticks: S.xTicks !== 'hide', domain: S.xLine !== 'hide' } });
+
+    const yEnc = (field, withAxis) => {
+      const e = { field: field, type: 'quantitative', scale: yScale };
+      if (withAxis) { e.title = this.mathText(S.yLabel); e.axis = this.buildAxis('y', S, yScale.domain); }
+      return e;
+    };
+
+    const firstY = ['wick', 'box', 'median'].find(id => L[id] && L[id].visible);
+    let layers = [];
+    if (L.hatch && L.hatch.visible) {
+      layers.push({
+        name: 'layer_bending_background_fill', description: this.mathText(L.hatch.label),
+        data: { values: [{ lo: th, hi: yScale.domain[1] }] },
+        mark: { type: 'rect', clip: true, color: L.hatch.bgColor || L.hatch.color || '#f7c9c5', opacity: L.hatch.opacity },
+        encoding: { y: yEnc('lo', !firstY), y2: { field: 'hi' } }
+      });
+    }
+    // candlestick wick: min → max (captures the spike at the top)
+    if (L.wick.visible) layers.push({
+      name: 'layer_bending_min_max', description: this.mathText(L.wick.label),
+      data: { name: 'bend' },
+      mark: { type: 'rule', clip: true, strokeWidth: this.spx(L.wick.width, S), color: L.wick.color, opacity: L.wick.opacity, strokeDash: this.dashArray(L.wick.dash) },
+      encoding: { x: xEnc(), y: yEnc('min', firstY === 'wick'), y2: { field: 'max' },
+        tooltip: [{ field: 'run', title: 'Run' }, { field: 'min', title: 'Min / %', format: '.2f', type: 'quantitative' }, { field: 'max', title: 'Max / %', format: '.1f', type: 'quantitative' }] }
+    });
+    // candlestick body: inter-quartile range q1 → q3, coloured by pattern until the layer colour is edited
+    if (L.box.visible) {
+      const boxMark = {
+        type: 'bar', clip: true, opacity: L.box.opacity,
+        width: { band: Math.max(0.05, Math.min(0.95, +L.box.width || 0.6)) },
+        stroke: '#ffffff', strokeWidth: this.spx(0.75, S), cornerRadius: 1
+      };
+      const boxEncoding = { x: xEnc(), y: yEnc('q1', firstY === 'box'), y2: { field: 'q3' },
+        tooltip: [{ field: 'run', title: 'Run' }, { field: 'patternFull', title: 'Pattern' }, { field: 'q1', title: 'Q1 / %', format: '.2f', type: 'quantitative' }, { field: 'median', title: 'Median / %', format: '.2f', type: 'quantitative' }, { field: 'q3', title: 'Q3 / %', format: '.2f', type: 'quantitative' }, { field: 'max', title: 'Max / %', format: '.1f', type: 'quantitative' }, { field: 'fracAbove', title: '% of window above threshold', format: '.1f', type: 'quantitative' }] };
+      if (L.box.colorMode === 'fixed') {
+        boxMark.color = L.box.color;
+      } else {
+        boxEncoding.color = { field: 'pattern', type: 'nominal', scale: { domain: patDomain, range: patRange },
+          legend: S.legend === 'hidden' ? null : { orient: S.legend, title: 'Bending pattern', direction: S.legendDir || 'vertical' } };
+      }
+      layers.push({
+        name: 'layer_bending_q1_q3', description: this.mathText(L.box.label),
+        data: { name: 'bend' },
+        mark: boxMark,
+        encoding: boxEncoding
+      });
+    }
+    // median line inside the body
+    if (L.median.visible) layers.push({
+      name: 'layer_bending_median', description: this.mathText(L.median.label),
+      data: { name: 'bend' },
+      mark: { type: 'tick', clip: true, thickness: this.spx(2.4, S), size: ((+L.median.width || 100) * 0.6) * this.scaleOf(S), color: L.median.color, opacity: L.median.opacity },
+      encoding: { x: xEnc(), y: yEnc('median', firstY === 'median'),
+        tooltip: [{ field: 'run', title: 'Run' }, { field: 'median', title: 'Median / %', format: '.2f', type: 'quantitative' }] }
+    });
+    // threshold horizontal rule
+    if (L.threshold.visible) layers.push({
+      name: 'layer_bending_threshold', description: this.mathText(L.threshold.label),
+      data: { values: [{ y: th }] },
+      mark: { type: 'rule', clip: true, strokeDash: this.dashArray(L.threshold.dash), strokeWidth: this.spx(L.threshold.width, S), color: L.threshold.color, opacity: L.threshold.opacity },
+      encoding: { y: { field: 'y', type: 'quantitative', scale: yScale } }
+    });
+    layers = this.sortLayers(layers, 'bending');
+    if (layers.length && this.state.figure === 'bending') {
+      // bind interval zoom to the candle bodies on the y axis only (x is categorical)
+      const zr = layers.find(l => l.mark && l.mark.type === 'bar') || layers[0];
+      if (zr) zr.params = [{ name: 'viewZoom', select: { type: 'interval', encodings: ['y'] }, bind: 'scales' }];
+    }
+    const spec = {
+      $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+      title: { text: this.mathText(S.title), anchor: 'start', fontSize: this.fpx(S.titleSize, S) },
+      background: S.bg || '#ffffff',
+      width: this.canvasSize(S).width, height: this.canvasSize(S).height,
+      autosize: { type: 'fit', contains: 'padding' },
+      datasets: { bend: this.bendRows },
+      layer: layers,
+      config: {
+        axis: { titleFontSize: this.fpx(S.axisSize, S), labelFontSize: this.fpx(S.tickSize, S) },
+        legend: this.legendConfig(S),
+        view: { stroke: '#d7dee8' }
+      }
+    };
+    if (S.font) spec.config.font = S.font;
+    return spec;
+  }
+
+  embed() {
+    if (!this.plotEl || !window.vegaEmbed || !this.state.ready) return;
+    this.clearHatchOverlay();
+    const spec = this.specOverride || this.buildSpec();
+    this.currentSpec = spec;
+    if (!spec.layer || !spec.layer.length) {
+      this.plotEl.innerHTML = '<div style="display:grid;place-items:center;height:100%;color:#9aa5b1;font-size:13px;">All layers hidden — enable a layer to draw the figure.</div>';
+      return;
+    }
+    window.vegaEmbed(this.plotEl, spec, { actions: false, renderer: 'svg' })
+      .then(r => {
+        this.view = r.view;
+        this.updateHatchOverlay();
+      })
+      .catch(e => { console.error('vega embed failed', e); });
+  }
+  replotSoon() {
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.embed(), 350);
+  }
+
+  // ---------- geometry of the plotting rectangle, in rendered scene px ----------
+  plotSurface() {
+    return this.canvasEl && this.canvasEl.querySelector('svg, canvas');
+  }
+  dataRect() {
+    const v = this.view;
+    if (!v) return null;
+    let xs, ys, origin;
+    try {
+      xs = v.scale('x'); ys = v.scale('y');
+      origin = (typeof v.origin === 'function') ? v.origin() : [0, 0];
+    } catch (_) { return null; }
+    if (!xs || !ys || !xs.range || !ys.range) return null;
+    const xr = xs.range(), yr = ys.range();
+    const ox = origin[0] || 0, oy = origin[1] || 0;
+    return {
+      left: ox + Math.min(xr[0], xr[1]), right: ox + Math.max(xr[0], xr[1]),
+      top: oy + Math.min(yr[0], yr[1]), bottom: oy + Math.max(yr[0], yr[1]), xs, ys,
+      xpx: v => ox + xs(v), ypx: v => oy + ys(v)
+    };
+  }
+  clearHatchOverlay() {
+    if (this.hatchOverlay && this.hatchOverlay.parentNode) {
+      const rect = this.hatchOverlay.querySelector && this.hatchOverlay.querySelector('rect[fill^="url("]');
+      const fill = rect && rect.getAttribute('fill') || '';
+      const m = fill.match(/#([^)]+)/);
+      if (m) {
+        const owner = this.hatchOverlay.ownerSVGElement;
+        const pattern = owner && owner.querySelector('#' + m[1]);
+        if (pattern && pattern.parentNode) pattern.parentNode.removeChild(pattern);
+      }
+      this.hatchOverlay.parentNode.removeChild(this.hatchOverlay);
+    }
+    this.hatchOverlay = null;
+  }
+  updateHatchOverlay() {
+    this.clearHatchOverlay();
+    const L = this.layerState;
+    const layer = L && L.hatch;
+    if (this.state.figure !== 'bending' || !layer || !layer.visible || layer.texture === 'none') return;
+    const svg = this.canvasEl && this.canvasEl.querySelector('svg');
+    if (!svg || !this.canvasEl) return;
+    const rect = this.dataRect();
+    if (!rect || !rect.ypx) return;
+    let overlayTop = rect.top;
+    let overlayHeight = rect.bottom - rect.top;
+    if ((layer.clipMode || 'above') !== 'full') {
+      const yRaw = rect.ypx(this.bendThreshold);
+      const y = Math.max(rect.top, Math.min(rect.bottom, yRaw));
+      overlayHeight = Math.max(0, y - rect.top);
+    }
+    if (overlayHeight <= 0) return;
+    const ns = 'http://www.w3.org/2000/svg';
+    const defs = svg.querySelector('defs') || svg.insertBefore(document.createElementNS(ns, 'defs'), svg.firstChild);
+    const patternId = 'mtda-hatch-' + Math.random().toString(36).slice(2);
+    const pattern = this.svgHatchPattern(patternId, layer.texture, layer.color, layer);
+    if (!pattern) return;
+    defs.appendChild(pattern);
+    const group = document.createElementNS(ns, 'g');
+    group.setAttribute('data-mtda-hatch-overlay', 'true');
+    group.setAttribute('pointer-events', 'none');
+    group.style.mixBlendMode = layer.blend || 'multiply';
+    const hatchRect = document.createElementNS(ns, 'rect');
+    hatchRect.setAttribute('x', rect.left);
+    hatchRect.setAttribute('y', overlayTop);
+    hatchRect.setAttribute('width', Math.max(0, rect.right - rect.left));
+    hatchRect.setAttribute('height', overlayHeight);
+    hatchRect.setAttribute('fill', 'url(#' + patternId + ')');
+    hatchRect.setAttribute('opacity', this.hatchNum(layer.hatchOpacity, 0.35, 0, 1));
+    group.appendChild(hatchRect);
+    const anchor = this.svgLayerAnchor(svg, 'layer_bending_background_fill');
+    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(group, anchor.nextSibling);
+    else svg.insertBefore(group, svg.firstChild ? svg.firstChild.nextSibling : null);
+    this.hatchOverlay = group;
+  }
+  canvasXY(e) {
+    const surface = this.plotSurface();
+    if (!surface) return null;
+    const r = surface.getBoundingClientRect();
+    return { px: e.clientX - r.left, py: e.clientY - r.top };
+  }
+  legendOrder() {
+    const L = this.layerState;
+    if (this.state.figure === 'bending') return [];
+    return ['mean', 'std', 'range', 'replicates'].filter(id => L[id] && L[id].visible && L[id].legend !== false);
+  }
+
+  // ---------- double-click a title / axis title / legend label to rename ----------
+  // Try Vega hit-testing first (item from native event); fall back to geometry zones.
+  onCanvasDblClick(e) {
+    if (this.specOverride) return;
+    let ie = this.hitFromVega(e);
+    if (!ie) ie = this.hitFromGeometry(e);
+    if (!ie) return;                          // clicked the data area → leave zoom-reset to Vega
+    e.preventDefault();
+    const host = this.canvasEl ? this.canvasEl.getBoundingClientRect() : { left: 0, top: 0, width: 600 };
+    const surface = this.plotSurface();
+    const cr = surface ? surface.getBoundingClientRect() : null;
+    if (ie.bounds && cr) {
+      ie.x = Math.max(8, Math.min((host.width || 600) - 224, cr.left - host.left + ie.bounds.x1 + 6));
+      ie.y = Math.max(8, cr.top - host.top + ie.bounds.y1 + 6);
+      delete ie.bounds;
+    } else {
+      ie.x = Math.max(8, Math.min((host.width || 600) - 224, e.clientX - host.left + 6));
+      ie.y = Math.max(8, e.clientY - host.top + 6);
+    }
+    this.setState({ inlineEdit: ie });
+    setTimeout(() => { if (this.inlineInput) { this.inlineInput.focus(); this.inlineInput.select(); } }, 20);
+  }
+  hitFromVega(e) {
+    const v = this.view;
+    if (!v || typeof v.scenegraph !== 'function') return null;
+    let item = null;
+    try {
+      const origin = (typeof v.origin === 'function') ? v.origin() : [0, 0];
+      const surface = this.plotSurface();
+      if (!surface) return null;
+      const r = surface.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      // walk the scenegraph for a text/symbol item whose bounds contain (x,y) in rendered scene space
+      const hits = [];
+      const walk = (it, ox, oy) => {
+        if (!it) return;
+        const items = it.items || [];
+        for (const ch of items) {
+          const b = ch.bounds;
+          const mark = ch.mark || {};
+          const role = mark.role;
+          const isGuide = role === 'title' || role === 'axis-title' || role === 'axis-label' || role === 'legend-label' || role === 'legend-symbol';
+          const isText = mark.marktype === 'text' && ch.text != null;   // annotation / marker label
+          if (b && (isGuide || isText)) {
+            if (x >= b.x1 - 4 && x <= b.x2 + 4 && y >= b.y1 - 4 && y <= b.y2 + 4) hits.push(ch);
+          }
+          walk(ch, ox, oy);
+        }
+      };
+      walk(v.scenegraph().root, origin[0], origin[1]);
+      // prefer a non-guide annotation text if several overlap
+      item = hits.find(h => h.mark && h.mark.marktype === 'text' && !(h.mark.role || '').startsWith('axis') && (h.mark.role || '') !== 'title') || hits[0];
+    } catch (_) { return null; }
+    if (!item || !item.mark) return null;
+    const ie = this.ieFromItem(item);
+    if (ie && item.bounds) ie.bounds = item.bounds;
+    return ie;
+  }
+  ieFromItem(item) {
+    const role = (item.mark.role || '') + '';
+    const text = item.text != null ? ('' + item.text) : '';
+    const S = this.styleState, L = this.layerState;
+    if (role === 'axis-title') {
+      if (text && text === S.yLabel) return { kind: 'style', field: 'yLabel', label: 'Y axis title', value: S.yLabel };
+      if (text && text === S.xLabel) return { kind: 'style', field: 'xLabel', label: 'X axis title', value: S.xLabel };
+      const horiz = (item.angle || 0) === 0;
+      return horiz ? { kind: 'style', field: 'xLabel', label: 'X axis title', value: S.xLabel } : { kind: 'style', field: 'yLabel', label: 'Y axis title', value: S.yLabel };
+    }
+    if (role === 'title') return { kind: 'style', field: 'title', label: 'Plot title', value: S.title };
+    if (role === 'legend-label' || role === 'legend-symbol') {
+      const v = item.datum && (item.datum.value != null ? item.datum.value : item.datum.label);
+      const id = Object.keys(L).find(k => L[k].label === v) || Object.keys(L).find(k => L[k].label === text);
+      if (id) return { kind: 'layer', layerId: id, label: 'Legend name', value: L[id].label };
+    }
+    // annotation / marker text: map the rendered text back to the owning layer's label
+    if (item.mark && item.mark.marktype === 'text' && text) {
+      // exact label match first (e.g. "Fmax / σmax", "Endpoint")
+      let id = Object.keys(L).find(k => L[k].label === text);
+      // then prefix match for value-suffixed annotations (e.g. "Threshold 10 %")
+      if (!id) id = Object.keys(L).find(k => L[k].label && text.indexOf(L[k].label) === 0);
+      if (id) return { kind: 'layer', layerId: id, label: 'Annotation label', value: L[id].label };
+      // boundary annotations like "10% Fmax" / "90% Fmax" → rename the bounds layer
+      if (/Fmax/.test(text) && L.boundaries) return { kind: 'layer', layerId: 'boundaries', label: 'Annotation label', value: L.boundaries.label };
+    }
+    return null;
+  }
+  hitFromGeometry(e) {
+    const dr = this.dataRect(), surface = this.plotSurface();
+    if (!dr || !surface) return null;
+    const r = surface.getBoundingClientRect();
+    const px = e.clientX - r.left, py = e.clientY - r.top;
+    const S = this.styleState, L = this.layerState;
+    const wx = a => a >= dr.left - 30 && a <= dr.right + 30;
+    if (py < dr.top - 1 && wx(px)) return { kind: 'style', field: 'title', label: 'Plot title', value: S.title };
+    if (px < dr.left - 1 && py >= dr.top - 16 && py <= dr.bottom + 16) return { kind: 'style', field: 'yLabel', label: 'Y axis title', value: S.yLabel };
+    if (py > dr.bottom + 1 && wx(px)) return { kind: 'style', field: 'xLabel', label: 'X axis title', value: S.xLabel };
+    if (px > dr.right + 1 && S.legend !== 'hidden') {
+      const ids = this.legendOrder().filter(id => L[id] && L[id].legend !== false);
+      if (ids.length) {
+        const eh = this.fpx(S.legendSize, S) + 8;
+        let idx = Math.floor((py - (dr.top + 2)) / eh);
+        idx = Math.max(0, Math.min(ids.length - 1, idx));
+        return { kind: 'layer', layerId: ids[idx], label: 'Legend name', value: L[ids[idx]].label };
+      }
+    }
+    return null;
+  }
+  // ---------- scroll over an axis to scale just that axis ----------
+  onAxisWheel(e) {
+    const v = this.view;
+    if (!v || this.specOverride || !this.canvasEl) return;
+    let xs, ys, origin;
+    try {
+      xs = v.scale('x'); ys = v.scale('y');
+      origin = (typeof v.origin === 'function') ? v.origin() : [0, 0];
+    } catch (_) { return; }
+    if (!xs || !ys || !xs.range || !ys.range) return;
+    const surface = this.plotSurface();
+    if (!surface) return;
+    const rect = surface.getBoundingClientRect();
+    const px = e.clientX - rect.left, py = e.clientY - rect.top;
+    const xr = xs.range(), yr = ys.range();
+    const ox = origin[0] || 0, oy = origin[1] || 0;
+    const left = ox + Math.min(xr[0], xr[1]), right = ox + Math.max(xr[0], xr[1]);
+    const top = oy + Math.min(yr[0], yr[1]), bottom = oy + Math.max(yr[0], yr[1]);
+    const overX = py > bottom && px >= left - 6 && px <= right + 48;
+    const overY = px < left && py >= top - 24 && py <= bottom + 6;
+    if (!overX && !overY) return;             // over data area → let Vega's both-axis zoom handle it
+    e.preventDefault();
+    const S = this.styleState;
+    const factor = e.deltaY > 0 ? 1.12 : 1 / 1.12;
+    const num = (val, d) => (val !== '' && val != null && isFinite(+val)) ? +val : d;
+    // Pin the origin (domain min) and scale only the far end.
+    if (overX) {
+      const dom = xs.domain().map(Number);
+      const cur0 = num(S.xMin, dom[0]), cur1 = num(S.xMax, dom[1]);
+      const nmax = cur0 + (cur1 - cur0) * factor;
+      if (isFinite(nmax) && nmax > cur0) { S.xMin = +cur0.toFixed(6); S.xMax = +nmax.toFixed(6); }
+    } else {
+      const dom = ys.domain().map(Number);
+      const cur0 = num(S.yMin, dom[0]), cur1 = num(S.yMax, dom[1]);
+      const nmax = cur0 + (cur1 - cur0) * factor;
+      if (isFinite(nmax) && nmax > cur0) { S.yMin = +cur0.toFixed(4); S.yMax = +nmax.toFixed(4); }
+    }
+    this.specOverride = null;
+    clearTimeout(this._wheelT);
+    this._wheelT = setTimeout(() => { this.setState({ resetGen: this.state.resetGen + 1 }); this.embed(); }, 70);
+  }
+
+  commitInline() {
+    const ie = this.state.inlineEdit;
+    if (this._cancelInline) { this._cancelInline = false; this.setState({ inlineEdit: null }); return; }
+    if (!ie || !this.inlineInput) { this.setState({ inlineEdit: null }); return; }
+    const val = this.inlineInput.value;
+    if (ie.kind === 'layer' && ie.layerId) this.layerState[ie.layerId].label = val;
+    else if (ie.field) this.styleState[ie.field] = val;
+    this.specOverride = null;
+    this.setState({ inlineEdit: null, resetGen: this.state.resetGen + 1 });
+    this.replotSoon();
+  }
+
+  // ---------- exports ----------
+  download(name, content, type) {
+    const blob = content instanceof Blob ? content : new Blob([content], { type: type || 'application/octet-stream' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 400);
+  }
+  stylePreset() {
+    const keys = ['font', 'scale', 'titleSize', 'axisSize', 'tickSize', 'legendSize', 'aspect', 'interp', 'bg',
+      'xGrid', 'xTicks', 'xLine', 'xMode', 'xStep', 'xCount', 'xMinStep', 'xAngle',
+      'yGrid', 'yTicks', 'yLine', 'yMode', 'yStep', 'yCount', 'yMinStep', 'yAngle',
+      'legend', 'legendDir', 'legendSymbolSize', 'legendSymbolStroke', 'legendSymbolOpacity', 'legendColumns', 'legendLabelLimit'];
+    const style = {};
+    for (const k of keys) style[k] = this.styleState[k];
+    return {
+      style,
+      layersByFigure: JSON.parse(JSON.stringify(this.layersMap)),
+      layerOrders: JSON.parse(JSON.stringify(this.layerOrders)),
+      layerGroupOrders: JSON.parse(JSON.stringify(this.layerGroupOrders))
+    };
+  }
+  applyPreset(p) {
+    if (!p) return;
+    const keys = ['font', 'scale', 'titleSize', 'axisSize', 'tickSize', 'legendSize', 'aspect', 'interp', 'bg',
+      'xGrid', 'xTicks', 'xLine', 'xMode', 'xStep', 'xCount', 'xMinStep', 'xAngle',
+      'yGrid', 'yTicks', 'yLine', 'yMode', 'yStep', 'yCount', 'yMinStep', 'yAngle',
+      'legend', 'legendDir', 'legendSymbolSize', 'legendSymbolStroke', 'legendSymbolOpacity', 'legendColumns', 'legendLabelLimit'];
+    const src = p.style || {};
+    for (const fig of ['aggregate', 'bending']) {
+      for (const k of keys) if (src[k] !== undefined && this.styles[fig]) this.styles[fig][k] = src[k];
+    }
+    if (p.layersByFigure) {
+      for (const fig in p.layersByFigure) if (this.layersMap[fig])
+        for (const id in p.layersByFigure[fig]) if (this.layersMap[fig][id]) Object.assign(this.layersMap[fig][id], p.layersByFigure[fig][id]);
+    } else if (p.layers) {
+      for (const id in p.layers) if (this.layerState[id]) Object.assign(this.layerState[id], p.layers[id]);
+    }
+    if (p.layerOrders) {
+      for (const fig in p.layerOrders) if (this.layerOrders[fig]) this.layerOrders[fig] = p.layerOrders[fig].slice();
+    }
+    if (p.layerGroupOrders) {
+      for (const fig in p.layerGroupOrders) if (this.layerGroupOrders[fig]) this.layerGroupOrders[fig] = p.layerGroupOrders[fig].slice();
+    }
+    this.specOverrides = { aggregate: null, bending: null };
+    this.setState({ resetGen: this.state.resetGen + 1 });
+    this.replotSoon();
+  }
+  persistPresets(list) {
+    try { localStorage.setItem('mtda_plot_style_presets', JSON.stringify(list)); } catch (e) {}
+    this.setState({ presets: list });
+  }
+  profileJson() {
+    return JSON.stringify(Object.assign({ kind: 'mtda_plot_style_profile', contains: 'settings_only', portable: 'styling only — applies to any MTDA plot; layer styles match by role' }, this.stylePreset()), null, 2);
+  }
+  currentRows() {
+    const sel = this.state.datasetSel;
+    if (sel === 'bend') return this.bendRows;
+    if (sel === 'char') return this.charPoints;
+    return this.band;
+  }
+  rowsToCsv() {
+    const sel = this.state.datasetSel;
+    const rows = this.currentRows();
+    if (sel === 'bend') {
+      return 'run_id,bending_min_percent,bending_q1_percent,bending_median_percent,bending_q3_percent,bending_max_percent,fraction_above_threshold_percent,bending_pattern\n' +
+        rows.map(d => d.run + ',' + d.min + ',' + d.q1 + ',' + d.median + ',' + d.q3 + ',' + d.max + ',' + d.fracAbove + ',' + d.patternFull).join('\n');
+    }
+    if (sel === 'char') {
+      return 'run_id,scope,x_normalized_percent,compressive_strength_MPa\n' +
+        rows.map(d => d.run + ',' + d.scope + ',' + d.x + ',' + d.y).join('\n');
+    }
+    return 'x_normalized_percent,mean_stress_MPa,std_MPa,min_MPa,max_MPa,n\n' +
+      rows.map(d => d.x + ',' + d.mean + ',' + d.std + ',' + d.min + ',' + d.max + ',' + d.n).join('\n');
+  }
+  scheduleDragDelegates() {
+    clearTimeout(this._dragDelegateT);
+    this._dragDelegateT = setTimeout(() => this.setupDragDelegates(), 80);
+  }
+  applyDragToken(from, to) {
+    from = String(from || '');
+    to = String(to || '');
+    if (!from || !to || from === to) return;
+    if (from.startsWith('layer:') && to.startsWith('layer:')) this.moveLayer(from, to);
+    else if (from.startsWith('layergroup:') && to.startsWith('layergroup:')) this.moveLayerGroup(from, to);
+    else if (from.startsWith('run:') && to.startsWith('run:')) this.moveRun(from, to);
+    else if (from.startsWith('run:') && to.startsWith('rungroup:')) this.moveRunToGroup(from, to.replace(/^rungroup:/, ''));
+    else if (from.startsWith('rungroup:') && to.startsWith('rungroup:')) this.moveRunGroup(from, to);
+  }
+  setupDragDelegates() {
+    const root = this.gridEl || document;
+    const handles = root.querySelectorAll('[data-drag-token]');
+    handles.forEach(el => {
+      if (el.__mtdaDragBound) return;
+      el.__mtdaDragBound = true;
+      const grab = e => {
+        e.stopPropagation();
+        this.dragToken = el.getAttribute('data-drag-token') || '';
+      };
+      el.addEventListener('mousedown', grab);
+      el.addEventListener('dragstart', e => {
+        grab(e);
+        if (e.dataTransfer) {
+          e.dataTransfer.setData('text/plain', this.dragToken);
+          e.dataTransfer.effectAllowed = 'move';
+        }
+      });
+    });
+    const targets = root.querySelectorAll('[data-drop-token]');
+    targets.forEach(el => {
+      if (el.__mtdaDropBound) return;
+      el.__mtdaDropBound = true;
+      const dropTo = e => {
+        const to = el.getAttribute('data-drop-token') || '';
+        const from = e.dataTransfer && e.dataTransfer.getData('text/plain') || this.dragToken;
+        this.dragToken = null;
+        this.applyDragToken(from, to);
+      };
+      el.addEventListener('mouseup', dropTo);
+      el.addEventListener('dragover', e => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; });
+      el.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); dropTo(e); });
+    });
+  }
+
+  // ---------- data table (React.createElement: keyed editable grid) ----------
+  buildDataTable() {
+    const h = React.createElement;
+    const sel = this.state.datasetSel;
+    const rows = this.currentRows();
+    const per = 100;
+    const page = Math.min(this.state.dataPage, Math.max(0, Math.ceil(rows.length / per) - 1));
+    const slice = rows.slice(page * per, page * per + per);
+    const isChar = sel === 'char';
+    const isBend = sel === 'bend';
+    const cols = isBend
+      ? [['run', 'run', false], ['min', 'min %', true], ['q1', 'q1 %', true], ['median', 'median %', true], ['q3', 'q3 %', true], ['max', 'max %', true], ['fracAbove', '% above', false], ['patternFull', 'pattern', false]]
+      : isChar
+      ? [['run', 'run', false], ['scope', 'scope', false], ['x', 'norm. strain %', true], ['y', 'σmax MPa', true]]
+      : [['x', 'norm. strain %', false], ['mean', 'mean MPa', true], ['std', 'σ MPa', true], ['min', 'min MPa', true], ['max', 'max MPa', true], ['n', 'n', false]];
+    const keyOf = (isChar || isBend) ? (row => row.run) : (row => row.x);
+    const cellStyle = { borderBottom: '1px solid #e6ebf0', padding: '3px 8px', fontSize: '12px', fontFamily: 'ui-monospace, Menlo, Consolas, monospace' };
+    const inputStyle = { width: '100px', border: '1px solid transparent', borderRadius: '4px', background: '#fffdf2', padding: '2px 5px', font: 'inherit' };
+    const onEdit = (row, field) => e => {
+      const v = parseFloat(e.target.value);
+      if (isFinite(v)) {
+        row[field] = v;
+        if (sel === 'band' && (field === 'mean' || field === 'std')) { row.lo = +(row.mean - row.std).toFixed(4); row.hi = +(row.mean + row.std).toFixed(4); }
+        if (isBend && ['min', 'q1', 'median', 'q3', 'max'].includes(field)) Object.assign(row, this.orderedBendingRow(row));
+        this.specOverride = null; this.replotSoon();
+      }
+    };
+    return h('table', { key: sel + '-' + page + '-' + this.state.resetGen, style: { borderCollapse: 'collapse', background: '#fff', border: '1px solid #dfe5ec', borderRadius: '6px' } },
+      h('thead', null, h('tr', null, cols.map(c =>
+        h('th', { key: c[0], style: Object.assign({}, cellStyle, { position: 'sticky', top: 0, background: '#f1f5f8', textAlign: 'left', fontFamily: 'inherit', fontSize: '11.5px', color: '#5b6470' }) }, c[1] + (c[2] ? ' ✎' : ''))
+      ))),
+      h('tbody', null, slice.map(row =>
+        h('tr', { key: keyOf(row) }, cols.map(c => {
+          const field = c[0], editable = c[2];
+          if (!editable) return h('td', { key: field, style: Object.assign({}, cellStyle, { color: '#5b6470' }) }, String(row[field]));
+          return h('td', { key: field, style: cellStyle },
+            h('input', { defaultValue: String(row[field]), onChange: onEdit(row, field), inputMode: 'decimal', style: inputStyle }));
+        }))
+      ))
+    );
+  }
+
+  // ---------- renderVals ----------
+  renderVals() {
+    this.scheduleDragDelegates();
+    const st = this.state;
+    if (!st.ready) {
+      return { loading: true, isStudio: false };
+    }
+    const D = this.D, S = this.styleState, L = this.layerState;
+    const setStyle = key => e => {
+      this.styleState[key] = e.target.value;
+      if (!this.specOverride) this.replotSoon();
+    };
+    const setStyleR = key => e => {            // style change that also needs a re-render of the panel
+      this.styleState[key] = e.target.value;
+      this.setState({ resetGen: this.state.resetGen + 1 });
+      if (!this.specOverride) this.replotSoon();
+    };
+    const setLayer = (id, key, parse) => e => {
+      const v = key === 'visible' ? e.target.checked : (parse ? parseFloat(e.target.value) : e.target.value);
+      if (key !== 'visible' && parse && !isFinite(v)) return;
+      this.layerState[id][key] = v;
+      if (!this.specOverride) this.replotSoon();
+    };
+    const seg = name => () => this.setState({ segment: name });
+    const segBase = 'flex: 1; border-radius: 6px; padding: 5px 0; font-size: 12.5px; cursor: pointer; text-align: center;';
+    const segItems = [['style', 'Style'], ['layers', 'Layers'], ['data', 'Data & spec']].map(s => ({
+      label: s[1], on: seg(s[0]),
+      style: st.segment === s[0]
+        ? segBase + 'border: 1px solid #b9c6d3; background: #ffffff; font-weight: 700; color: #1c2530;'
+        : segBase + 'border: 1px solid transparent; background: transparent; color: #6b7785;'
+    }));
+
+    const tag = (bg, bd, fg) => 'border: 1px solid ' + bd + '; background: ' + bg + '; color: ' + fg + '; border-radius: 999px; padding: 2px 8px; font-size: 10.5px; font-weight: 700; white-space: nowrap;';
+    const closeMenu = () => this.setState({ exportOpen: false });
+    const figName = 'dataset_' + this.datasetName + '_' + st.figure;
+    const exportItems = [
+      { name: 'Style profile', note: 'Reusable visual settings, no data', tag: 'settings only', tagStyle: tag('#eef6ff', '#8bb7e0', '#174a7c'),
+        on: () => { this.download(figName + '.settings_only.plot_profile.json', this.profileJson(), 'application/json'); closeMenu(); } },
+      { name: 'Import style profile…', note: 'Applies styling and saves it as a preset', tag: 'settings only', tagStyle: tag('#eef6ff', '#8bb7e0', '#174a7c'),
+        on: () => { if (this.profileInput) this.profileInput.click(); } },
+      { name: 'Dataset CSV', note: 'Current table incl. edits', tag: 'data only', tagStyle: tag('#f2fbef', '#b8d7a8', '#2f6424'),
+        on: () => { this.download('dataset_' + st.datasetSel + '.csv', this.rowsToCsv(), 'text/csv'); closeMenu(); } },
+      { name: 'Figure SVG', note: 'Vector image of the current figure', tag: 'plot image', tagStyle: tag('#fff8e6', '#d9bd7c', '#73520a'),
+        on: () => { if (this.view) this.view.toImageURL('svg').then(u => { const a = document.createElement('a'); a.href = u; a.download = figName + '.svg'; a.click(); }); closeMenu(); } },
+      { name: 'Figure PNG (2×)', note: 'Raster image of the current figure', tag: 'plot image', tagStyle: tag('#fff8e6', '#d9bd7c', '#73520a'),
+        on: () => { if (this.view) this.view.toImageURL('png', 2).then(u => { const a = document.createElement('a'); a.href = u; a.download = figName + '.png'; a.click(); }); closeMenu(); } },
+      { name: 'Vega-Lite spec', note: 'Plot structure + hydrated data arrays', tag: 'spec + data', tagStyle: tag('#fff8e6', '#d9bd7c', '#73520a'),
+        on: () => { this.download(figName + '.full_vegalite_spec_with_data.vl.json', JSON.stringify(this.specOverride || this.buildSpec(), null, 2), 'application/json'); closeMenu(); } },
+      { name: 'Compact plot package', note: 'Profile + working data + spec, travels together', tag: 'package + data', tagStyle: tag('#fff8e6', '#d9bd7c', '#73520a'),
+        on: () => { this.download(figName + '.full_plot_package_with_data.json', JSON.stringify({ kind: 'mtda_compact_plot_package', figure: st.figure, profile: JSON.parse(this.profileJson()), data: st.figure === 'bending' ? { bending_summary: this.bendRows } : { band: this.band, characteristic_points: this.charPoints }, spec: this.specOverride || this.buildSpec() }, null, 1), 'application/json'); closeMenu(); } }
+    ];
+
+    const rows = this.currentRows();
+    const per = 100;
+    const pages = Math.max(1, Math.ceil(rows.length / per));
+    const page = Math.min(st.dataPage, pages - 1);
+
+    const isBendFig = st.figure === 'bending';
+    const layerIds = this.layerOrderFor(st.figure);
+    const layerSrc = isBendFig ? {
+      hatch: 'plot background · threshold assessment fill',
+      box: 'bending in-window dist · q1–q3', wick: 'bending in-window dist · min → max',
+      median: 'bending in-window dist · median', threshold: 'method · bending threshold'
+    } : {
+      range: 'stress_strain_aligned.csv · min / max', std: 'stress_strain_aligned.csv · mean ± std',
+      replicates: 'stress_strain_aligned.csv · per run', mean: 'stress_strain_aligned.csv · mean',
+      fmaxWick: 'σmax per run · min → max', fmaxBox: 'σmax per run · q1–q3', fmaxMedian: 'σmax per run · median',
+      markers: 'characteristic_points.csv · σmax per run'
+    };
+    const layerRole = isBendFig
+      ? { hatch: 'background', box: 'box', wick: 'wick', median: 'tick', threshold: 'rule' }
+      : { range: 'band', std: 'band', replicates: 'multiline', mean: 'line', fmaxWick: 'wick', fmaxBox: 'box', fmaxMedian: 'tick', markers: 'markers' };
+    const noWidth = isBendFig ? { hatch: true } : { range: true, std: true };
+    const noDash = isBendFig ? { hatch: true, box: true, median: true } : { range: true, std: true, replicates: true, fmaxBox: true, fmaxMedian: true, markers: true };
+    const noColor = isBendFig ? { hatch: true } : {};
+    const sizeLabelFor = id => {
+      const r = layerRole[id];
+      if (r === 'box') return 'Body width';
+      if (r === 'tick') return 'Tick size';
+      if (r === 'markers' || r === 'meanpt') return 'Point size';
+      return 'Width';
+    };
+    const setLayerColor = id => e => {
+      L[id].color = e.target.value;
+      if (isBendFig && id === 'box') L[id].colorMode = 'fixed';
+      this.specOverride = null;
+      this.replotSoon();
+    };
+    const setThreshold = e => {
+      const v = parseFloat(e.target.value);
+      if (!isFinite(v)) return;
+      this.bendThreshold = v;
+      if (this.layersMap.bending && this.layersMap.bending.threshold) this.layersMap.bending.threshold.label = 'Threshold ' + v + '%';
+      this.recomputeWorkingData();
+      this.specOverride = null;
+      this.setState({ resetGen: st.resetGen + 1 });
+      this.replotSoon();
+    };
+    const layerCards = layerIds.map(id => {
+      const role = layerRole[id] || 'layer';
+      const isLine = role === 'line' || role === 'multiline';
+      const open = !!st.openLayers[id];
+      return {
+        role, isLine, isMarker: false,
+        open, chev: open ? '▾' : '▸',
+        dragToken: 'layer:' + id, dropToken: 'layer:' + id,
+        onToggle: () => this.setState(s => ({ openLayers: Object.assign({}, s.openLayers, { [id]: !s.openLayers[id] }) })),
+        stopClick: e => e.stopPropagation(),
+        label: L[id].label, visible: L[id].visible, color: L[id].color,
+        group: this.layerGroupFor(st.figure, id),
+        src: layerSrc[id] || 'derived from analysis',
+        width: L[id].width, dash: L[id].dash, opacity: L[id].opacity,
+        bgColor: L[id].bgColor || '#fffafa', texture: L[id].texture || '/',
+        hatchSettingsOpen: !!st.hatchSettingsOpen,
+        hatchSettingsChev: st.hatchSettingsOpen ? '▾' : '▸',
+        hatchOpacity: L[id].hatchOpacity == null ? 0.35 : L[id].hatchOpacity,
+        hatchGap: L[id].hatchGap == null ? 8 : L[id].hatchGap,
+        hatchWidth: L[id].hatchWidth == null ? 1.2 : L[id].hatchWidth,
+        hatchAngle: L[id].hatchAngle == null ? 45 : L[id].hatchAngle,
+        hatchScale: L[id].hatchScale == null ? 1 : L[id].hatchScale,
+        hatchOffset: L[id].hatchOffset == null ? 0 : L[id].hatchOffset,
+        blend: L[id].blend || 'multiply',
+        clipMode: L[id].clipMode || 'above',
+        patternOptions: this.hatchDefs().map(def => ({
+          code: def.code, label: def.label,
+          buttonStyle: this.hatchButtonStyle((L[id].texture || '/') === def.code),
+          previewStyle: this.hatchPreviewStyle(def.code, (L[id].texture || '/') === def.code, L[id]),
+          onSelect: e => {
+            e.preventDefault();
+            e.stopPropagation();
+            L[id].texture = def.code;
+            this.specOverride = null;
+            this.setState({ resetGen: this.state.resetGen + 1 });
+            this.replotSoon();
+          }
+        })),
+        hasColor: !noColor[id], hasWidth: !noWidth[id], hasDash: !noDash[id],
+        sizeLabel: sizeLabelFor(id),
+        refThreshold: isBendFig && id === 'threshold', refTexture: isBendFig && id === 'hatch', refWindow: false,
+        showLegend: L[id].legend !== false, isMain: !!L[id].main, canMain: false,
+        onLegend: e => { L[id].legend = e.target.checked; this.specOverride = null; this.replotSoon(); },
+        onMain: () => {},
+        mAuto: true, anchor: 'above', lblPt: 8, mx: '', my: '', srcLogic: '',
+        onAuto: () => {}, onMx: () => {}, onMy: () => {}, onAnchor: () => {}, onLblPt: () => {},
+        onLabel: setLayer(id, 'label'),
+        onVisible: setLayer(id, 'visible'), onColor: setLayerColor(id),
+        onWidth: setLayer(id, 'width', true), onDash: setLayer(id, 'dash'),
+        onOpacity: setLayer(id, 'opacity', true),
+        onBgColor: setLayer(id, 'bgColor'), onTexture: setLayer(id, 'texture'),
+        onHatchSettings: e => { e.preventDefault(); e.stopPropagation(); this.setState({ hatchSettingsOpen: !st.hatchSettingsOpen }); },
+        onHatchOpacity: setLayer(id, 'hatchOpacity', true),
+        onHatchGap: setLayer(id, 'hatchGap', true),
+        onHatchWidth: setLayer(id, 'hatchWidth', true),
+        onHatchAngle: setLayer(id, 'hatchAngle', true),
+        onHatchScale: setLayer(id, 'hatchScale', true),
+        onHatchOffset: setLayer(id, 'hatchOffset', true),
+        onBlend: setLayer(id, 'blend'),
+        onClipMode: setLayer(id, 'clipMode'),
+        onGrab: e => { e.stopPropagation(); this.dragToken = 'layer:' + id; },
+        onRelease: e => {
+          if (!this.dragToken) return;
+          const token = this.dragToken;
+          this.dragToken = null;
+          if (String(token).startsWith('layer:')) this.moveLayer(token, id);
+        },
+        onDragStart: e => { e.stopPropagation(); e.dataTransfer.setData('text/plain', 'layer:' + id); e.dataTransfer.effectAllowed = 'move'; },
+        onDragOver: e => { e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'move'; },
+        onDrop: e => { e.preventDefault(); e.stopPropagation(); this.moveLayer(e.dataTransfer.getData('text/plain'), id); }
+      };
+    });
+    const groupDefs = this.layerGroups[st.figure] || {};
+    const orderedGroupKeys = this.layerGroupOrder(st.figure);
+    const groupOrder = orderedGroupKeys.map(key => groupDefs[key] && groupDefs[key].label).filter(Boolean);
+    const layerGroups = orderedGroupKeys.map(key => {
+      const group = groupDefs[key];
+      if (!group) return null;
+      const cards = layerCards.filter(card => card.group === group.label);
+      if (!cards.length) return null;
+      return {
+        key, label: group.label, cards, dragToken: 'layergroup:' + key, dropToken: 'layergroup:' + key,
+        onGrab: e => { e.stopPropagation(); this.dragToken = 'layergroup:' + key; },
+        onRelease: e => {
+          if (!this.dragToken) return;
+          const token = this.dragToken;
+          this.dragToken = null;
+          if (String(token).startsWith('layergroup:')) this.moveLayerGroup(token, 'layergroup:' + key);
+        },
+        onDragStart: e => { e.dataTransfer.setData('text/plain', 'layergroup:' + key); e.dataTransfer.effectAllowed = 'move'; },
+        onDragOver: e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; },
+        onDrop: e => {
+          e.preventDefault();
+          const token = e.dataTransfer.getData('text/plain');
+          if (String(token).startsWith('layergroup:')) this.moveLayerGroup(token, 'layergroup:' + key);
+        }
+      };
+    }).filter(Boolean);
+    const ungrouped = layerCards.filter(card => !groupOrder.includes(card.group));
+    if (ungrouped.length) layerGroups.push({ label: 'Other', cards: ungrouped });
+
+    const acceptedTokens = new Set(['accepted', 'valid', 'true', '1', 'yes', 'y', 'included']);
+    const rejectedTokens = new Set(['rejected', 'invalid', 'false', '0', 'no', 'n', 'excluded']);
+    const runKind = r => {
+      if (r.finalIncluded === true) return 'accepted';
+      if (r.finalIncluded === false) return 'rejected';
+      const token = String(r.validity || '').trim().toLowerCase();
+      if (acceptedTokens.has(token)) return 'accepted';
+      if (rejectedTokens.has(token)) return 'rejected';
+      return token || 'accepted';
+    };
+    const runLabel = r => {
+      const k = runKind(r);
+      if (k === 'accepted') return 'Accepted';
+      if (k === 'rejected') return 'Rejected';
+      return r.validity || k;
+    };
+    const acceptedStyle = 'border: 1px solid #b8d7a8; background: #f2fbef; color: #2f6424; border-radius: 999px; padding: 1px 9px; font-size: 11px; font-weight: 650;';
+    const rejectedStyle = 'border: 1px solid #d9bd7c; background: #fff8e6; color: #73520a; border-radius: 999px; padding: 1px 9px; font-size: 11px; font-weight: 650;';
+    const mainResultsByRun = {};
+    for (const r of this.D.runs) {
+      mainResultsByRun[r.id] = {
+        run: r.id,
+        dragToken: 'run:' + r.id, dropToken: 'run:' + r.id,
+        included: !!this.runIncluded[r.id],
+        onIncluded: e => this.toggleRunIncluded(r.id, e.target.checked),
+        strength: r.strength != null ? r.strength.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—',
+        validity: runLabel(r),
+        validityStyle: runKind(r) === 'accepted' ? acceptedStyle : rejectedStyle,
+        onGrab: e => { e.stopPropagation(); this.dragToken = 'run:' + r.id; },
+        onRelease: e => {
+          if (!this.dragToken) return;
+          const token = this.dragToken;
+          this.dragToken = null;
+          if (String(token).startsWith('run:')) this.moveRun(token, r.id);
+        },
+        onDragStart: e => { e.stopPropagation(); e.dataTransfer.setData('text/plain', 'run:' + r.id); e.dataTransfer.effectAllowed = 'move'; },
+        onDragOver: e => { e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'move'; },
+        onDrop: e => { e.preventDefault(); e.stopPropagation(); this.moveRun(e.dataTransfer.getData('text/plain'), r.id); }
+      };
+    }
+    const mainResults = (this.runOrder || this.runIdsAll).map(id => mainResultsByRun[id]).filter(Boolean);
+    const mainRunGroups = this.runGroupOrder().map(key => {
+      const group = this.runGroups[key];
+      if (!group) return null;
+      const runs = group.ids.map(id => {
+        const card = mainResultsByRun[id];
+        if (!card) return null;
+        return Object.assign({}, card, {
+          onRelease: e => {
+            if (!this.dragToken) return;
+            const token = this.dragToken;
+            this.dragToken = null;
+            if (String(token).startsWith('run:')) this.moveRun(token, id, key);
+          },
+          onDrop: e => { e.preventDefault(); e.stopPropagation(); this.moveRun(e.dataTransfer.getData('text/plain'), id, key); }
+        });
+      }).filter(Boolean);
+      return {
+        key, label: group.label, count: runs.length, runs, dragToken: 'rungroup:' + key, dropToken: 'rungroup:' + key,
+        onGrab: e => { e.stopPropagation(); this.dragToken = 'rungroup:' + key; },
+        onRelease: e => {
+          if (!this.dragToken) return;
+          const token = this.dragToken;
+          this.dragToken = null;
+          if (String(token).startsWith('run:')) this.moveRunToGroup(token, key);
+          else if (String(token).startsWith('rungroup:')) this.moveRunGroup(token, 'rungroup:' + key);
+        },
+        onDragStart: e => { e.dataTransfer.setData('text/plain', 'rungroup:' + key); e.dataTransfer.effectAllowed = 'move'; },
+        onDragOver: e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; },
+        onDrop: e => {
+          e.preventDefault();
+          const token = e.dataTransfer.getData('text/plain');
+          if (String(token).startsWith('run:')) this.moveRunToGroup(token, key);
+          else if (String(token).startsWith('rungroup:')) this.moveRunGroup(token, 'rungroup:' + key);
+        }
+      };
+    }).filter(Boolean);
+
+    return {
+      loading: false,
+      isStudio: true,
+      datasetName: this.datasetName,
+      runCount: this.runCount,
+      goHome: () => { window.location.href = 'MTDA Archive.dc.html'; },
+      resetView: () => this.embed(),
+      alignOrigin: () => {
+        // anchor axes to the origin: keep current maxima, set minima to 0
+        try {
+          if (this.view) {
+            const xs = this.view.scale('x'), ys = this.view.scale('y');
+            const xd = xs && xs.domain && xs.domain(), yd = ys && ys.domain && ys.domain();
+            if (xd && xd.length === 2 && typeof xd[1] === 'number') S.xMax = +xd[1].toFixed(6);
+            if (yd && yd.length === 2 && typeof yd[1] === 'number') S.yMax = +yd[1].toFixed(4);
+          }
+        } catch (e) {}
+        S.xMin = 0; S.yMin = 0;
+        this.specOverride = null;
+        this.setState({ resetGen: st.resetGen + 1 });
+        this.embed();
+      },
+      captureView: () => {
+        if (!this.view) return;
+        try {
+          const xd = this.view.scale('x') && this.view.scale('x').domain();
+          const yd = this.view.scale('y') && this.view.scale('y').domain();
+          if (xd && xd.length === 2 && typeof xd[0] === 'number') { S.xMin = +xd[0].toFixed(6); S.xMax = +xd[1].toFixed(6); }
+          if (yd && yd.length === 2 && typeof yd[0] === 'number') { S.yMin = +yd[0].toFixed(4); S.yMax = +yd[1].toFixed(4); }
+          this.specOverride = null;
+          this.setState({ resetGen: st.resetGen + 1 });
+          this.replotSoon();
+        } catch (e) {}
+      },
+      fitData: () => { S.xMin = ''; S.xMax = ''; S.yMin = ''; S.yMax = ''; this.specOverride = null; this.setState({ resetGen: st.resetGen + 1 }); this.embed(); },
+      resetPage: () => {
+        this.runIncluded = {};
+        for (const id of this.runIdsAll) this.runIncluded[id] = true;
+        this.bendThreshold = this.origBend[0] ? this.origBend[0].threshold : 10;
+        this.styles = { aggregate: this.defaultStyle('aggregate'), bending: this.defaultStyle('bending') };
+        this.layersMap = { aggregate: this.defaultLayers('aggregate'), bending: this.defaultLayers('bending') };
+        this.layerGroups = this.defaultLayerGroups();
+        this.layerGroupOrders = { aggregate: Object.keys(this.layerGroups.aggregate), bending: Object.keys(this.layerGroups.bending) };
+        this.layerOrders = { aggregate: this.defaultLayerOrder('aggregate'), bending: this.defaultLayerOrder('bending') };
+        this.runOrder = this.defaultRunOrder();
+        this.runGroups = this.defaultRunGroups();
+        this.runGroupOrderKeys = Object.keys(this.runGroups);
+        this.specOverrides = { aggregate: null, bending: null };
+        this.recomputeWorkingData();
+        this.setState({ resetGen: st.resetGen + 1, customSpec: false, specStatus: 'Regenerated from defaults.' });
+        this.replotSoon();
+      },
+      toggleExport: () => this.setState({ exportOpen: !st.exportOpen }),
+      // resizable inspector
+      gridCols: 'minmax(0, 1fr) ' + st.inspectorW + 'px',
+      gridRef: el => { this.gridEl = el; },
+      startResize: e => {
+        e.preventDefault();
+        const startX = e.clientX, startW = st.inspectorW;
+        const move = ev => {
+          let w = startW + (startX - ev.clientX);
+          w = Math.max(300, Math.min(660, w));
+          this._pendingW = w;
+          if (this.gridEl) this.gridEl.style.gridTemplateColumns = 'minmax(0, 1fr) ' + w + 'px';
+        };
+        const up = () => {
+          document.removeEventListener('mousemove', move);
+          document.removeEventListener('mouseup', up);
+          if (this._pendingW) this.setState({ inspectorW: this._pendingW });
+        };
+        document.addEventListener('mousemove', move);
+        document.addEventListener('mouseup', up);
+      },
+      profileInputRef: el => { this.profileInput = el; },
+      onProfileFile: e => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        const rd = new FileReader();
+        rd.onload = () => {
+          try {
+            const obj = JSON.parse(rd.result);
+            this.applyPreset(obj);
+            const name = (f.name || 'Imported profile').replace(/\.settings_only\.plot_profile\.json$|\.json$/i, '');
+            const list = this.state.presets.filter(p => p.name !== name).concat([{
+              name, savedAt: new Date().toISOString().slice(0, 10),
+              preset: { style: obj.style || {}, layersByFigure: obj.layersByFigure || null, layers: obj.layers || null, layerOrders: obj.layerOrders || null, layerGroupOrders: obj.layerGroupOrders || null }
+            }]);
+            this.persistPresets(list);
+            this.setState({ exportOpen: false });
+          } catch (err) { this.setState({ specStatus: 'Profile import failed: ' + err.message, exportOpen: false }); }
+        };
+        rd.readAsText(f);
+        e.target.value = '';
+      },
+      exportOpen: st.exportOpen, exportItems,
+      // plot
+      plotRef: el => { this.plotEl = el; if (el) this.embed(); },
+      onCanvasDbl: e => this.onCanvasDblClick(e),
+      canvasRef: el => {
+        this.canvasEl = el;
+        if (el && !el._mtdaWheel) {
+          el._mtdaWheel = true;
+          el.addEventListener('wheel', ev => this.onAxisWheel(ev), { passive: false });
+        }
+      },
+      // inline label editor
+      inlineEditOpen: !!st.inlineEdit,
+      inlineEditLabel: st.inlineEdit ? st.inlineEdit.label : '',
+      inlineEditValue: st.inlineEdit ? st.inlineEdit.value : '',
+      inlineEditStyle: st.inlineEdit
+        ? 'position: absolute; z-index: 25; left: ' + st.inlineEdit.x + 'px; top: ' + st.inlineEdit.y + 'px;'
+        : 'display: none;',
+      inlineInputRef: el => { this.inlineInput = el; },
+      inlineBoxRef: el => { this.inlineBox = el; },
+      inlinePreviewRef: el => { this.inlinePreview = el; },
+      inlineEditPreview: st.inlineEdit ? this.mathText(st.inlineEdit.value) : '',
+      onInlinePreview: e => { if (this.inlinePreview) this.inlinePreview.textContent = this.mathText(e.target.value); },
+      onInlineKey: e => { if (e.key === 'Enter') { e.preventDefault(); this.commitInline(); } else if (e.key === 'Escape') { this._cancelInline = true; this.setState({ inlineEdit: null }); } },
+      onInlineCommit: () => this.commitInline(),
+      // inspector
+      segItems, resetKey: 'rk' + st.resetGen + '-' + st.segment + '-' + st.figure,
+      figTabs: [['aggregate', 'Stress–strain'], ['bending', 'Bending candle']].map(f => ({
+        label: f[1],
+        on: () => { this.setState({ figure: f[0], datasetSel: f[0] === 'bending' ? 'bend' : 'band', dataOpen: false, specOpen: false, dataPage: 0, specStatus: 'Generated from the current controls. Edit freely, then Apply.' }); setTimeout(() => this.embed(), 60); },
+        style: st.figure === f[0]
+          ? 'border: 1px solid #185f8f; background: #185f8f; color: #ffffff; border-radius: 999px; padding: 4px 14px; font-size: 12px; font-weight: 700; cursor: pointer;'
+          : 'border: 1px solid #c5cfd9; background: #ffffff; color: #4a5868; border-radius: 999px; padding: 4px 14px; font-size: 12px; cursor: pointer;'
+      })),
+      figHint: st.figure === 'bending'
+        ? 'in-window bending per run · ' + this.runCount + ' runs · candlestick = q1–q3 body, median line, wick min→max'
+        : 'renormalised to Fmax = 100% · curves truncated at failure · Fmax candlestick at the right edge',
+      segStyle: st.segment === 'style', segLayers: st.segment === 'layers',
+      segData: st.segment === 'data', segSpec: st.segment === 'data',
+      // collapsible style sections
+      secTitles: st.secOpen.titles, secAxis: st.secOpen.axis, secType: st.secOpen.type,
+      secPlot: st.secOpen.plot, secLegend: st.secOpen.legend,
+      chevTitles: st.secOpen.titles ? '▾' : '▸', chevAxis: st.secOpen.axis ? '▾' : '▸',
+      chevType: st.secOpen.type ? '▾' : '▸', chevPlot: st.secOpen.plot ? '▾' : '▸', chevLegend: st.secOpen.legend ? '▾' : '▸',
+      onTitlesSec: () => this.setState(s => ({ secOpen: { titles: !s.secOpen.titles } })),
+      onAxisSec: () => this.setState(s => ({ secOpen: { axis: !s.secOpen.axis } })),
+      onTypeSec: () => this.setState(s => ({ secOpen: { type: !s.secOpen.type } })),
+      onPlotSec: () => this.setState(s => ({ secOpen: { plot: !s.secOpen.plot } })),
+      onLegendSec: () => this.setState(s => ({ secOpen: { legend: !s.secOpen.legend } })),
+      sTitle: S.title, sXLabel: S.xLabel, sYLabel: S.yLabel,
+      sXMin: S.xMin, sXMax: S.xMax, sYMin: S.yMin, sYMax: S.yMax,
+      sFont: S.font, sTitleSize: S.titleSize, sAxisSize: S.axisSize, sTickSize: S.tickSize,
+      sLegend: S.legend, sInterp: S.interp,
+      sCw: S.cw, sCh: S.ch, sAspect: S.aspect,
+      onCw: setStyle('cw'), onCh: setStyle('ch'), onAspect: setStyle('aspect'),
+      onAspectPreset: e => { const v = e.target.value; if (v) { S.aspect = v; if (!this.specOverride) { this.setState({ resetGen: st.resetGen + 1 }); this.replotSoon(); } } },
+      // X axis
+      sXGrid: S.xGrid, sXTicks: S.xTicks, sXLine: S.xLine, sXMode: S.xMode, sXManual: S.xMode === 'manual',
+      sXStart: S.xStart, sXEnd: S.xEnd, sXStep: S.xStep, sXCount: S.xCount, sXMinStep: S.xMinStep, sXAngle: S.xAngle,
+      onXGrid: setStyle('xGrid'), onXTicks: setStyle('xTicks'), onXLine: setStyle('xLine'), onXMode: setStyleR('xMode'),
+      onXStart: setStyle('xStart'), onXEnd: setStyle('xEnd'), onXStep: setStyle('xStep'), onXCount: setStyle('xCount'), onXMinStep: setStyle('xMinStep'), onXAngle: setStyle('xAngle'),
+      // Y axis
+      sYGrid: S.yGrid, sYTicks: S.yTicks, sYLine: S.yLine, sYMode: S.yMode, sYManual: S.yMode === 'manual',
+      sYStart: S.yStart, sYEnd: S.yEnd, sYStep: S.yStep, sYCount: S.yCount, sYMinStep: S.yMinStep, sYAngle: S.yAngle,
+      onYGrid: setStyle('yGrid'), onYTicks: setStyle('yTicks'), onYLine: setStyle('yLine'), onYMode: setStyleR('yMode'),
+      onYStart: setStyle('yStart'), onYEnd: setStyle('yEnd'), onYStep: setStyle('yStep'), onYCount: setStyle('yCount'), onYMinStep: setStyle('yMinStep'), onYAngle: setStyle('yAngle'),
+      onTitle: setStyle('title'), onXLabel: setStyle('xLabel'), onYLabel: setStyle('yLabel'),
+      onXMin: setStyle('xMin'), onXMax: setStyle('xMax'), onYMin: setStyle('yMin'), onYMax: setStyle('yMax'),
+      onFont: setStyle('font'),
+      sScale: S.scale,
+      onScale: e => {
+        S.scale = this.cleanScale(e.target.value);
+        e.target.value = S.scale;
+        if (!this.specOverride) {
+          this.setState({ resetGen: st.resetGen + 1 });
+          this.replotSoon();
+        }
+      },
+      onTitleSize: e => { S.titleSize = +e.target.value || 12; if (!this.specOverride) this.replotSoon(); },
+      onAxisSize: e => { S.axisSize = +e.target.value || 10; if (!this.specOverride) this.replotSoon(); },
+      onTickSize: e => { S.tickSize = +e.target.value || 8; if (!this.specOverride) this.replotSoon(); },
+      onLegend: setStyle('legend'), onInterp: setStyle('interp'),
+      sBg: S.bg, sLegendSize: S.legendSize, sLegendDir: S.legendDir,
+      onBg: setStyle('bg'), onLegendDir: setStyle('legendDir'),
+      onLegendSize: e => { S.legendSize = +e.target.value || 9; if (!this.specOverride) this.replotSoon(); },
+      sLegSymSize: S.legendSymbolSize, sLegSymStroke: S.legendSymbolStroke, sLegSymOpacity: S.legendSymbolOpacity, sLegColumns: S.legendColumns, sLegLabelLimit: S.legendLabelLimit,
+      onLegSymSize: setStyle('legendSymbolSize'), onLegSymStroke: setStyle('legendSymbolStroke'), onLegSymOpacity: setStyle('legendSymbolOpacity'), onLegColumns: setStyle('legendColumns'), onLegLabelLimit: setStyle('legendLabelLimit'),
+      presetNameRef: el => { this.presetNameInput = el; },
+      savePreset: () => {
+        const name = (this.presetNameInput && this.presetNameInput.value.trim()) || 'Preset ' + (st.presets.length + 1);
+        const list = st.presets.filter(p => p.name !== name).concat([{ name, savedAt: new Date().toISOString().slice(0, 10), preset: this.stylePreset() }]);
+        this.persistPresets(list);
+        if (this.presetNameInput) this.presetNameInput.value = '';
+      },
+      importPreset: () => { if (this.profileInput) this.profileInput.click(); },
+      noPresets: st.presets.length === 0,
+      presetRows: st.presets.map(p => ({
+        name: p.name, meta: 'saved ' + (p.savedAt || ''),
+        onApply: () => this.applyPreset(p.preset),
+        onExport: () => this.download(p.name.replace(/\s+/g, '_') + '.settings_only.plot_profile.json', JSON.stringify(Object.assign({ kind: 'mtda_plot_style_profile', contains: 'settings_only' }, p.preset), null, 2), 'application/json'),
+        onDelete: () => this.persistPresets(st.presets.filter(q => q !== p))
+      })),
+      layersShowAll: () => { for (const k in L) L[k].visible = true; this.specOverride = null; this.setState({ resetGen: st.resetGen + 1 }); this.replotSoon(); },
+      layersHideEvidence: () => { for (const k of (st.figure === 'bending' ? ['hatch', 'wick'] : ['range', 'std', 'replicates'])) if (L[k]) L[k].visible = false; this.specOverride = null; this.setState({ resetGen: st.resetGen + 1 }); this.replotSoon(); },
+      isBending: isBendFig,
+      bThr: this.bendThreshold, bWinLo: '', bWinHi: '',
+      onThr: setThreshold, onWinLo: () => {}, onWinHi: () => {},
+      resetData: () => { this.recomputeWorkingData(); this.specOverrides = { aggregate: null, bending: null }; this.setState({ resetGen: st.resetGen + 1 }); this.replotSoon(); },
+      layerCards, layerGroups,
+      // main results — per-run compressive strength + validity (package results table)
+      mainResults, mainRunGroups,
+      mainValiditySummary: (() => {
+        return this.activeRunIds().length + ' / ' + this.D.runs.length + ' plotted';
+      })(),
+      mainValiditySummaryStyle: this.activeRunIds().length === this.D.runs.length
+        ? 'border: 1px solid #b8d7a8; background: #f2fbef; color: #2f6424; border-radius: 999px; padding: 1px 9px; font-size: 11px; font-weight: 650;'
+        : 'border: 1px solid #d9bd7c; background: #fff8e6; color: #73520a; border-radius: 999px; padding: 1px 9px; font-size: 11px; font-weight: 650;',
+      mainMeanStrength: (() => {
+        const active = this.activeRunIds().map(id => this.runMetaById[id]).filter(Boolean);
+        const m = active.length ? active.reduce((a, r) => a + (r.strength || 0), 0) / active.length : 0;
+        return m.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      })(),
+      // data sheet
+      openData: () => this.setState({ dataOpen: true, specOpen: false }),
+      openSpec: () => {
+        this.setState({ specOpen: true, dataOpen: false });
+        setTimeout(() => { if (this.specTa) this.specTa.value = JSON.stringify(this.specOverride || this.buildSpec(), null, 2); }, 60);
+      },
+      closeSheets: () => this.setState({ dataOpen: false, specOpen: false }),
+      dataOpen: st.dataOpen, specOpen: st.specOpen,
+      datasetSel: st.datasetSel,
+      datasetOptions: st.figure === 'bending'
+        ? [{ value: 'bend', label: 'per-run bending summary (' + this.runCount + ' runs)' }]
+        : [{ value: 'band', label: 'aligned mean & variability (500 grid points)' }, { value: 'char', label: 'characteristic points — σmax per run (11 rows)' }],
+      dataHint: st.datasetSel === 'bend'
+        ? 'Min, q1, median, q3 and max cells are editable — the candlestick replots live. Edits change this working view only, never the CSV files of record.'
+        : st.datasetSel === 'char'
+        ? 'Strain-position and σmax cells are editable — the plot replots live. Edits change this working view only, never the CSV files of record.'
+        : 'Mean, σ and min/max cells are editable — the plot replots live. Edits change this working view only, never the CSV files of record.',
+      onDataset: e => this.setState({ datasetSel: e.target.value, dataPage: 0 }),
+      pagerLabel: 'rows ' + (page * per + 1) + '–' + Math.min(rows.length, (page + 1) * per) + ' of ' + rows.length,
+      pagePrev: () => this.setState({ dataPage: Math.max(0, page - 1) }),
+      pageNext: () => this.setState({ dataPage: Math.min(pages - 1, page + 1) }),
+      downloadCsv: () => this.download('dataset_' + st.datasetSel + '.csv', this.rowsToCsv(), 'text/csv'),
+      dataTable: this.buildDataTable(),
+      // spec sheet
+      specRef: el => { this.specTa = el; if (el) el.value = JSON.stringify(this.specOverride || this.buildSpec(), null, 2); },
+      specStatus: st.specStatus,
+      specFormat: () => {
+        if (!this.specTa) return;
+        try { this.specTa.value = JSON.stringify(JSON.parse(this.specTa.value), null, 2); this.setState({ specStatus: 'Formatted.' }); }
+        catch (err) { this.setState({ specStatus: 'Invalid JSON: ' + err.message }); }
+      },
+      specValidate: () => {
+        if (!this.specTa) return;
+        try {
+          const sp = JSON.parse(this.specTa.value);
+          if (window.vegaLite && window.vegaLite.compile) window.vegaLite.compile(sp);
+          this.setState({ specStatus: 'Valid Vega-Lite specification.' });
+        } catch (err) { this.setState({ specStatus: 'Invalid: ' + err.message }); }
+      },
+      specCopy: () => {
+        if (!this.specTa) return;
+        this.specTa.select();
+        document.execCommand('copy');
+        this.setState({ specStatus: 'Copied to clipboard.' });
+      },
+      applySpec: () => {
+        if (!this.specTa) return;
+        try {
+          this.specOverride = JSON.parse(this.specTa.value);
+          this.setState({ customSpec: true, specStatus: 'Custom spec applied — style/layer controls paused until Regenerate.' });
+          this.embed();
+        } catch (err) {
+          this.setState({ specStatus: 'Invalid JSON: ' + err.message });
+        }
+      },
+      resetSpec: () => {
+        this.specOverride = null;
+        if (this.specTa) this.specTa.value = JSON.stringify(this.buildSpec(), null, 2);
+        this.setState({ customSpec: false, specStatus: 'Regenerated from the current controls.' });
+        this.embed();
+      },
+      exportSpec: () => this.download('dataset_' + this.datasetName + '_aggregate.full_vegalite_spec_with_data.vl.json', JSON.stringify(this.specOverride || this.buildSpec(), null, 2), 'application/json')
+    };
+  }
+}
+</script>
+</body>
+</html>

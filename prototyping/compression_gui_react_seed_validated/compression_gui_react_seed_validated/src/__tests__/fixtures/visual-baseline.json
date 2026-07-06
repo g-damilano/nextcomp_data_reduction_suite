@@ -1,0 +1,97 @@
+{
+  "schema": "gui-transition-visual-baseline/v1",
+  "screenConfig": {
+    "home": {
+      "label": "Launcher",
+      "title": "Compression Model Launcher",
+      "width": 980,
+      "height": 930,
+      "minWidth": 980,
+      "minHeight": 930
+    },
+    "packaging": {
+      "label": "Dataset Packaging",
+      "title": "Dataset Packaging",
+      "width": 1480,
+      "height": 960,
+      "minWidth": 1360,
+      "minHeight": 860
+    },
+    "method-editor": {
+      "label": "Method Editor",
+      "title": "Analysis Method Editor",
+      "width": 988,
+      "height": 960,
+      "minWidth": 988,
+      "minHeight": 900
+    },
+    "analysis": {
+      "label": "Method Analysis",
+      "title": "Method Analysis",
+      "width": 1460,
+      "height": 940,
+      "minWidth": 1280,
+      "minHeight": 820
+    }
+  },
+  "chrome": {
+    "windowControlGroupCount": 1,
+    "windowControls": ["close", "maximize", "minimize"]
+  },
+  "surfaces": [
+    {
+      "screen": "home",
+      "mode": "launcher",
+      "label": "Launcher",
+      "visibleText": "Data Reduction Suite",
+      "shadowHosts": 0,
+      "shadowViewports": 0,
+      "dcRuntimeHosts": 1,
+      "launcherHitLayers": 1,
+      "launcherHits": 3,
+      "launcherButtons": 3,
+      "noLauncherLeak": false
+    },
+    {
+      "screen": "packaging",
+      "mode": "child",
+      "label": "Dataset Packaging",
+      "visibleText": "Dataset Packaging",
+      "shadowHosts": 1,
+      "shadowClass": "packaging-shadow",
+      "shadowViewports": 1,
+      "dcRuntimeHosts": 0,
+      "launcherHitLayers": 0,
+      "launcherHits": 0,
+      "launcherButtons": 0,
+      "noLauncherLeak": true
+    },
+    {
+      "screen": "analysis",
+      "mode": "child",
+      "label": "Method Analysis",
+      "visibleText": "Choose package",
+      "shadowHosts": 1,
+      "shadowClass": "analysis-shadow",
+      "shadowViewports": 1,
+      "dcRuntimeHosts": 0,
+      "launcherHitLayers": 0,
+      "launcherHits": 0,
+      "launcherButtons": 0,
+      "noLauncherLeak": true
+    },
+    {
+      "screen": "method-editor",
+      "mode": "child",
+      "label": "Method Editor",
+      "visibleText": "Method Editor",
+      "shadowHosts": 0,
+      "shadowViewports": 0,
+      "dcRuntimeHosts": 1,
+      "launcherHitLayers": 0,
+      "launcherHits": 0,
+      "launcherButtons": 0,
+      "noLauncherLeak": true
+    }
+  ]
+}

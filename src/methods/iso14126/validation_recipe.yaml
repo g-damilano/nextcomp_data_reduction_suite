@@ -1,0 +1,71 @@
+validation:
+  recipe_id: iso14126_validation_v0_1
+  reference_values:
+    mapping_key: validation.reference_values_path
+  checks:
+    - reference_field: width_mm
+      computed_field: width_mm
+      source: specimen_results
+      unit: mm
+      tolerance_abs: 0.0001
+      severity: fail
+      recipe_step_id: resolve.map_width
+      description: Specimen width carried from MTDP metadata.
+    - reference_field: thickness_mm
+      computed_field: thickness_mm
+      source: specimen_results
+      unit: mm
+      tolerance_abs: 0.0001
+      severity: fail
+      recipe_step_id: resolve.map_thickness
+      description: Specimen thickness carried from MTDP metadata.
+    - reference_field: area_mm2
+      computed_field: area_mm2
+      source: specimen_results
+      unit: mm^2
+      tolerance_abs: 0.0001
+      severity: fail
+      recipe_step_id: resolve.derive_area
+      description: Cross-section area derived from width and thickness.
+    - reference_field: max_load_N
+      computed_field: max_load_N
+      source: specimen_results
+      unit: N
+      tolerance_abs: 0.1
+      severity: fail
+      recipe_step_id: reduce.max_load
+      description: Maximum load from the reduced load series.
+    - reference_field: compressive_strength_MPa
+      computed_field: compressive_strength_MPa
+      source: specimen_results
+      unit: MPa
+      tolerance_abs: 0.5
+      severity: warn
+      recipe_step_id: reduce.max_stress
+      description: Strength is sensitive to cross-section metadata precision.
+    - reference_field: compressive_modulus_GPa
+      computed_field: compressive_modulus_MPa
+      computed_scale: 0.001
+      source: specimen_results
+      unit: GPa
+      tolerance_abs: 1.0
+      severity: warn
+      recipe_step_id: reduce.chord_modulus
+      description: Reference workbook uses row-pair modulus; method output uses the ISO strain-window chord.
+    - reference_field: mean_strain_microstrain
+      computed_field: mean_strain
+      computed_scale: 1000000
+      source: curve_family
+      unit: usn
+      tolerance_abs: 0.01
+      severity: fail
+      recipe_step_id: resolve.derive_mean_strain
+      description: Average strain after explicit strain-channel orientation.
+    - reference_field: stress_MPa
+      computed_field: stress_MPa
+      source: curve_family
+      unit: MPa
+      tolerance_abs: 0.5
+      severity: warn
+      recipe_step_id: reduce.derive_stress
+      description: Stress comparison allows cross-section metadata precision differences.

@@ -1,0 +1,78 @@
+from_schema_version: 0.2.0
+to_schema_version: 0.3.0
+schema_id: mechanical.compression
+status: active
+notes:
+  - Adds structured failure-observation metadata for ISO 14126 Failure Analysis.
+  - Preserves clean legacy failure-mode values by moving them into Primary failure mode where possible.
+  - Maps explicit ISO loading-method and specimen-type values to controlled choices; ambiguous legacy text is left unresolved.
+operations:
+  - operation: map_enum_value
+    source_field: loading_method
+    target_field: loading_method
+    storage: dataset_json
+    value_map:
+      method_1_shear_loading: method_1_shear_loading
+      Method 1: method_1_shear_loading
+      method 1: method_1_shear_loading
+      shear loading: method_1_shear_loading
+      Shear loading: method_1_shear_loading
+      Shear loading (Method 1): method_1_shear_loading
+      method_2_combined_loading: method_2_combined_loading
+      Method 2: method_2_combined_loading
+      method 2: method_2_combined_loading
+      combined loading: method_2_combined_loading
+      Combined loading: method_2_combined_loading
+      Combined loading (Method 2): method_2_combined_loading
+      other_specified: other_specified
+      Other specified: other_specified
+  - operation: map_enum_value
+    source_field: specimen_type
+    target_field: specimen_type
+    storage: dataset_json
+    value_map:
+      type_a: type_a
+      Type A: type_a
+      type A: type_a
+      A: type_a
+      type_b1: type_b1
+      Type B1: type_b1
+      type B1: type_b1
+      B1: type_b1
+      type_b2: type_b2
+      Type B2: type_b2
+      type B2: type_b2
+      B2: type_b2
+      other_specified: other_specified
+      Other specified: other_specified
+  - operation: map_enum_value
+    source_field: failure_mode
+    target_field: primary_failure_mode
+    source_token: Failure mode
+    target_token: Primary failure mode
+    storage: token_preamble
+    value_map:
+      in_plane_shear: in_plane_shear
+      in-plane shear: in_plane_shear
+      In-plane shear: in_plane_shear
+      in plane shear: in_plane_shear
+      complex: complex
+      Complex: complex
+      through_thickness_shear: through_thickness_shear
+      through-thickness shear: through_thickness_shear
+      Through-thickness shear: through_thickness_shear
+      through thickness shear: through_thickness_shear
+      splitting: splitting
+      Splitting: splitting
+      delamination: delamination
+      Delamination: delamination
+      not_recorded: not_recorded
+      not recorded: not_recorded
+      Not recorded: not_recorded
+      unknown: not_recorded
+      Unknown: not_recorded
+      Valid: not_recorded
+      Invalid: not_recorded
+      Requires review: not_recorded
+      '1': not_recorded
+      '0': not_recorded

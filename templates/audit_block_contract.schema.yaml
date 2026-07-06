@@ -1,0 +1,41 @@
+# Audit Block Contract Schema
+# Purpose: human-facing grouped audit block consuming one or more operation evidence records.
+
+audit_block:
+  id: string                             # e.g. run_stress_strain_reduction
+  scope: run|dataset|selection|global
+  title: string
+  purpose: string
+  default_order: integer
+
+  consumes_operations:
+    - operation_type: string             # e.g. chord_slope
+      required: true
+      role_in_block: primary|supporting|table_only|link_only
+
+  consumes_artifacts:
+    - path: string                       # e.g. audit/operation_log.json
+      required: true
+
+  visualization:
+    type: none|vega|html_table|summary_card|composite
+    default_renderer: string|null
+    overlays:
+      - id: string
+        source_operation: string
+        required: false
+
+  table:
+    columns:
+      - key: string
+        label: string
+        source: string
+
+  drilldown:
+    include_operation_links: true
+    include_workbench_links: true
+    default_expanded: false
+
+  bloat_control:
+    concise_default: true
+    expand_for_details: true

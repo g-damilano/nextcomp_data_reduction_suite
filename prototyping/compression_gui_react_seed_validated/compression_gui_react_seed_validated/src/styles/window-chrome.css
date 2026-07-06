@@ -1,0 +1,83 @@
+:root {
+  --desktop-chrome-surface: #ffffff;
+  --desktop-chrome-border: #e1e4e8;
+  --desktop-chrome-hover: #eef0f3;
+  --desktop-chrome-ink: #1b1e23;
+  --desktop-chrome-muted: #5a626c;
+  --desktop-chrome-danger: #c4392a;
+}
+
+.desktop-window-controls,
+[data-window-controls="true"] {
+  height: 100% !important;
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+  margin-left: 0 !important;
+  border-left: 1px solid var(--desktop-chrome-border) !important;
+}
+
+.desktop-window-control,
+[data-window-control],
+[data-window-action="maximize"],
+[data-window-action="toggle-maximize"] {
+  width: 44px !important;
+  height: 100% !important;
+  min-width: 44px !important;
+  min-height: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+  background: transparent !important;
+  color: var(--desktop-chrome-muted) !important;
+  font: inherit !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.desktop-window-control:hover,
+[data-window-control]:hover,
+[data-window-action="maximize"]:hover,
+[data-window-action="toggle-maximize"]:hover {
+  background: var(--desktop-chrome-hover) !important;
+  color: var(--desktop-chrome-ink) !important;
+}
+
+.desktop-window-control--close:hover,
+[data-window-control="close"]:hover {
+  background: var(--desktop-chrome-danger) !important;
+  color: #ffffff !important;
+}
+
+[data-window-control="maximize"][data-window-state-synced="true"]::before {
+  content: "" !important;
+}
+
+html[data-window-resizing="true"] *,
+html[data-window-resizing="true"] *::before,
+html[data-window-resizing="true"] *::after,
+[data-window-resizing="true"] *,
+[data-window-resizing="true"] *::before,
+[data-window-resizing="true"] *::after {
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+:host([data-window-resizing="true"]) *,
+:host([data-window-resizing="true"]) *::before,
+:host([data-window-resizing="true"]) *::after {
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  scroll-behavior: auto !important;
+}

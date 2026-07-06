@@ -1,0 +1,35 @@
+# Surface Role Map
+surfaces:
+  wizard:
+    role: action_decision_repair
+    description: Operator acts on package/method/mapping/readiness/report metadata/selection/output.
+    should_not_do:
+      - duplicate full audit evidence
+      - edit method code
+      - silently change method-impacting parameters after execution
+
+  audit_report:
+    role: evidence_traceability
+    description: Run-wise and aggregate evidence showing how results and decisions were produced.
+    should_not_do:
+      - become the formal Test Report
+      - expose editing controls
+      - show one plot per operation by default
+
+  test_report:
+    role: formal_results
+    description: Standard-facing result report with formal metadata and summary values.
+    should_not_do:
+      - contain operation-level debug details
+      - become a method-development tool
+
+  workbench:
+    role: operation_debug_development
+    description: Operation-level trace, before/after plots, method recipe/development support.
+    should_not_do:
+      - replace the concise Audit Report
+      - be required for ordinary report reading
+
+  mtda:
+    role: evidence_archive
+    description: Persistent archive backing all surfaces.

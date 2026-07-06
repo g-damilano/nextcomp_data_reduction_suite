@@ -1,0 +1,147 @@
+method_id: iso14126_2023
+version: 0.1.0
+purpose: Concrete package readiness requirements for ISO 14126 method execution.
+
+requirements:
+  - requirement_id: iso14126.geometry.width
+    method_field: specimen.width_mm
+    source_role: width
+    severity: execution_critical
+    scope: per_run
+    required_for:
+      - stress_calculation
+      - strength_calculation
+    empty_policy: fail
+    expected_unit: mm
+
+  - requirement_id: iso14126.geometry.thickness
+    method_field: specimen.thickness_mm
+    source_role: thickness
+    severity: execution_critical
+    scope: per_run
+    required_for:
+      - stress_calculation
+      - strength_calculation
+    empty_policy: fail
+    expected_unit: mm
+
+  - requirement_id: iso14126.channel.load
+    method_field: channel.load_N
+    source_role: load
+    severity: execution_critical
+    scope: per_run
+    required_for:
+      - stress_curve
+      - strength_calculation
+      - bending_window
+    empty_policy: fail
+    expected_unit: N
+
+  - requirement_id: iso14126.channel.front_strain
+    method_field: channel.front_strain
+    source_role: front_strain
+    severity: execution_critical
+    scope: per_run
+    required_for:
+      - mean_strain
+      - bending_diagnostic
+      - modulus
+      - failure_strain
+    empty_policy: fail
+    expected_unit: mm/mm
+
+  - requirement_id: iso14126.channel.rear_strain
+    method_field: channel.rear_strain
+    source_role: rear_strain
+    severity: execution_critical
+    scope: per_run
+    required_for:
+      - mean_strain
+      - bending_diagnostic
+      - modulus
+      - failure_strain
+    empty_policy: fail
+    expected_unit: mm/mm
+
+  - requirement_id: iso14126.geometry.gauge_length_if_extension_strain
+    method_field: specimen.gauge_length_mm
+    source_role: gauge_length
+    severity: execution_critical
+    scope: per_run
+    required_when: strain_source == extension_derived
+    required_for:
+      - extension_derived_strain
+    empty_policy: fail
+    expected_unit: mm
+
+  - requirement_id: iso14126.report.operator
+    method_field: report.operator
+    source_role: operator
+    severity: report_completeness
+    scope: per_dataset
+    required_for:
+      - test_report
+    empty_policy: warn
+
+  - requirement_id: iso14126.report.fixture_description
+    method_field: report.fixture_description
+    source_role: fixture_description
+    severity: report_completeness
+    scope: per_dataset
+    required_for:
+      - test_report
+    empty_policy: warn
+
+  - requirement_id: iso14126.report.conditioning
+    method_field: report.conditioning
+    source_role: conditioning
+    severity: report_completeness
+    scope: per_dataset
+    required_for:
+      - test_report
+    empty_policy: warn
+
+  - requirement_id: iso14126.report.testing_speed
+    method_field: report.testing_speed
+    source_role: testing_speed
+    severity: report_completeness
+    scope: per_dataset
+    required_for:
+      - test_report
+    empty_policy: warn
+
+  - requirement_id: iso14126.report.strain_measurement_method
+    method_field: report.strain_measurement_method
+    source_role: strain_measurement_method
+    severity: report_completeness
+    scope: per_dataset
+    required_for:
+      - test_report
+    empty_policy: warn
+
+  - requirement_id: iso14126.report.specimen_type
+    method_field: report.specimen_type
+    source_role: specimen_type
+    severity: report_completeness
+    scope: per_dataset
+    required_for:
+      - test_report
+    empty_policy: warn
+
+  - requirement_id: iso14126.report.loading_method
+    method_field: report.loading_method
+    source_role: loading_method
+    severity: report_completeness
+    scope: per_dataset
+    required_for:
+      - test_report
+    empty_policy: warn
+
+  - requirement_id: iso14126.report.failure_mode
+    method_field: report.failure_mode
+    source_role: failure_mode
+    severity: report_completeness
+    scope: per_run
+    required_for:
+      - test_report
+    empty_policy: warn

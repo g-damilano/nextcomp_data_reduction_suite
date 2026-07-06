@@ -1,0 +1,77 @@
+projection_id: aggregate_curve_family
+golden_id: golden_aggregate_curve_family
+version: 0.1.0
+schema_version: plot_projection_recipe.v0_1
+plot_type: aggregate_curve_family
+production_state: production
+surface_profiles:
+  - surface: audit_report
+    role: aggregate curve-shape evidence
+    renderer: Vega-Lite
+  - surface: wizard
+    role: acceptance cockpit curve-shape evidence
+    renderer: Vega-Lite via React
+data_contract:
+  source_tables:
+    - acceptance/curve_family/aligned_curve_family.csv
+    - acceptance/curve_family/reference_curves.csv
+    - acceptance/curve_family/curve_diagnostic_scores.csv
+  required_fields:
+    - run_id
+    - y_observed
+  optional_fields:
+    - x_common
+    - analysis_progress_percent
+    - experiment_progress
+    - distance_rank
+    - mad_upper_z
+    - diagnostic_classification
+  forbidden_transforms:
+    - boundary_reselection
+transform_ids:
+  - aggregate.all_runs_resampled_curve_family.v1
+semantic_contract:
+  layers:
+    - layer_id: all_evaluable_curves
+      semantic_role: all evaluable curves
+      required: true
+    - layer_id: reference_curve
+      semantic_role: cohort reference curve
+      required: false
+    - layer_id: variability_band
+      semantic_role: cohort variability band
+      required: false
+    - layer_id: mad_zscore_coloring
+      semantic_role: upper-tail MAD score color encoding
+      required: false
+    - layer_id: dixon_rank_coloring
+      semantic_role: Dixon rank color encoding
+      required: false
+    - layer_id: run_endpoint_labels
+      semantic_role: run endpoint labels
+      required: false
+    - layer_id: focused_run_curve
+      semantic_role: highlighted acceptance-review curve
+      required: false
+    - layer_id: outlier_candidate_curves
+      semantic_role: curve-shape outlier candidates
+      required: false
+quality_contract:
+  requires_data: true
+  requires_axis_labels: true
+  requires_tooltips: true
+staleness_contract:
+  status_source: spec.usermeta.plot_data_freshness
+  stale_if_alignment_domain_not_experiment_progress: true
+  stale_if_boundary_source_not_method_resolve: true
+artifact_contract:
+  primary_artifacts:
+    - Vega-Lite spec
+  export_formats:
+    - html
+    - json
+migration_metadata:
+  current_builder: plotting.plots.aggregate_curve_family.build_aggregate_curve_family
+  current_router: plotting.registry.create_default_registry
+  migration_status: recipe documented; production routing unchanged
+  parity_reference: tests/plotting/test_modular_plotting.py

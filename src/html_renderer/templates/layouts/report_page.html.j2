@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.page_title }}</title>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <style>
+{% include page.report_style_template %}
+{{ page.formatting_css }}
+  </style>
+{% if page.report_head_script_template %}  <script>
+{% include page.report_head_script_template %}
+  </script>
+{% endif %}</head>
+<body>
+  <div class="page">
+    {{ page.report_hero_html }}
+    <div class="layout">
+      {{ page.report_tracker_html }}
+      <main class="report-content">
+        {{ page.report_main_html }}
+        {{ page.report_appendix_html }}
+      </main>
+    </div>
+  </div>
+{% if page.report_body_script_template %}  <script>
+{% include page.report_body_script_template %}
+  </script>
+{% endif %}  {{ page.formatting_script }}
+</body>
+</html>

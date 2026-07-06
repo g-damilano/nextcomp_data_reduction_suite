@@ -1,0 +1,15 @@
+method_id: iso14126_2023
+method_name: BS EN ISO 14126:2023 compression properties
+analysis_type: mechanical.compression
+version: 0.1.0
+outputs:
+  curves:
+    - stress_strain
+  specimen_properties:
+    - max_load_N
+    - compressive_strength_MPa
+    - compressive_failure_strain
+    - compressive_modulus_MPa
+  diagnostics:
+    - bending_between_10_90_percent_max_load
+

@@ -1,0 +1,53 @@
+# ISO 14126 Audit Block Layout Patch
+# Method-owned grouping/order; operation-owned visual fragments remain reusable.
+
+audit_layout:
+  id: iso14126_audit_layout_v1
+  report_structure:
+    overview:
+      title: Audit Overview
+      blocks:
+        - audit_overview_summary
+        - surface_handoff_links
+
+    run_packets:
+      title: Per-run audit evidence
+      repeat_over: final_or_candidate_runs
+      blocks:
+        - run_identity_disposition
+        - run_stress_strain_reduction
+        - run_bending_evidence
+        - run_validation_warning_evidence
+        - run_selection_consequence
+
+    aggregate_packet:
+      title: Dataset / aggregate evidence
+      blocks:
+        - final_selection_trace
+        - aggregate_curve_family_evidence
+        - aggregate_statistics_evidence
+
+  block_bindings:
+    run_stress_strain_reduction:
+      collect_step_ids:
+        - resolve.experiment_boundaries
+        - resolve.derive_mean_strain
+        - reduce.derive_stress
+        - reduce.max_strength
+        - reduce.failure_strain
+        - reduce.compressive_modulus
+      default_plot: stress_strain_reduction_overlay
+      show_table: true
+
+    run_bending_evidence:
+      collect_step_ids:
+        - reduce.bending_diagnostic
+      default_plot: bending_pattern_overlay
+      show_table: true
+
+    aggregate_curve_family_evidence:
+      collect_artifacts:
+        - report/aligned_curves.csv
+        - acceptance/curve_family/curve_family_scores.csv
+        - acceptance/curve_family/reference_curves.csv
+      default_plot: aggregate_stress_strain_mean_variability

@@ -1,0 +1,44 @@
+schema_id: method.plot_style_recipe.v0_1
+method_id: iso14126_2023
+data_contract:
+  agency: depiction_only
+  rule: Plot recipes may select already-processed evidence products and styling only; they must not recalculate, re-bound, resample, smooth, infer, or otherwise transform analytical data.
+  allowed_data_products:
+    stress_strain_reduction:
+      required:
+        - bounded_stress_strain_curve
+      optional:
+        - front_rear_strain_traces
+        - strain_agreement_envelope
+        - analysis_markers
+        - modulus_chord_line
+        - post_peak_audit_trace_processed
+      order_by: point_index
+      forbidden_transforms:
+        - boundary_reselection
+        - max_point_recalculation
+        - failure_marker_recalculation
+        - post_peak_derivation_from_raw_rows
+        - downsampling
+        - smoothing
+        - interpolation
+plots:
+  aggregate_stress_strain:
+    title: Aggregate Stress-Strain
+    x_axis:
+      field: analysis_progress_percent
+      label: Analysis-window progress / %
+      scale: percent
+    y_axis:
+      field: stress_MPa
+      label: Stress / MPa
+    layers:
+      range:
+        color: "#6baed6"
+        opacity: 0.18
+      standard_deviation:
+        color: "#3182bd"
+        opacity: 0.28
+      mean:
+        color: "#08519c"
+        stroke_width: 3

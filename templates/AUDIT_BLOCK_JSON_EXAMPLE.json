@@ -1,0 +1,61 @@
+{
+  "audit_blocks_version": "0.1.0",
+  "runs": {
+    "run_006": [
+      {
+        "block_id": "run_identity_and_status",
+        "title": "Run identity and final status",
+        "status": "included",
+        "summary": {
+          "machine_selection": "accepted",
+          "human_override": false,
+          "final_report_inclusion": true
+        }
+      },
+      {
+        "block_id": "run_stress_strain_reduction",
+        "title": "Stress-strain reduction evidence",
+        "collected_operations": [
+          "resolve_experiment_boundaries",
+          "construct_mean_series",
+          "derive_stress",
+          "max_point",
+          "failure_strain_at_max",
+          "chord_slope"
+        ],
+        "plot_spec": {
+          "view_type": "stress_strain_reduction_overlay",
+          "data_ref": "method_outputs/curves/run_006_stress_strain_bounded.csv",
+          "overlays": [
+            "experiment_start_marker",
+            "experiment_end_marker",
+            "max_point_marker",
+            "failure_strain_marker",
+            "chord_modulus_anchors",
+            "chord_modulus_line"
+          ]
+        },
+        "summary_table": {
+          "max_load_N": 4953.57,
+          "compressive_strength_MPa": 234.45,
+          "compressive_modulus_MPa": 55277.0,
+          "failure_strain": 0.00505
+        }
+      },
+      {
+        "block_id": "run_bending_evidence",
+        "title": "Bending evidence",
+        "collected_operations": [
+          "bending_diagnostic",
+          "bending_pattern_assessment"
+        ],
+        "summary_table": {
+          "threshold_percent": 10.0,
+          "points_above_threshold": 0,
+          "classification": "PASS"
+        }
+      }
+    ]
+  },
+  "aggregate_blocks": []
+}

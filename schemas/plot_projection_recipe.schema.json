@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mtdp.local/schemas/plot_projection_recipe.schema.json",
+  "title": "Plot Projection Recipe",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "projection_id",
+    "golden_id",
+    "version",
+    "plot_type",
+    "production_state",
+    "surface_profiles",
+    "data_contract",
+    "transform_ids",
+    "semantic_contract",
+    "quality_contract",
+    "staleness_contract",
+    "artifact_contract",
+    "migration_metadata"
+  ],
+  "properties": {
+    "projection_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "golden_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "plot_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "production_state": {
+      "type": "string",
+      "enum": [
+        "production",
+        "support",
+        "diagnostic",
+        "legacy",
+        "stale",
+        "unknown",
+        "quarantined",
+        "removal_candidate"
+      ]
+    },
+    "surface_profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["surface"],
+        "properties": {
+          "surface": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "renderer": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "data_contract": {
+      "type": "object",
+      "required": ["source_tables"],
+      "properties": {
+        "source_tables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "required_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "forbidden_transforms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "transform_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "semantic_contract": {
+      "type": "object",
+      "required": ["layers"],
+      "properties": {
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["layer_id"],
+            "properties": {
+              "layer_id": {
+                "type": "string"
+              },
+              "semantic_role": {
+                "type": "string"
+              },
+              "required": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "quality_contract": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "staleness_contract": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "artifact_contract": {
+      "type": "object",
+      "required": ["primary_artifacts"],
+      "properties": {
+        "primary_artifacts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "migration_metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

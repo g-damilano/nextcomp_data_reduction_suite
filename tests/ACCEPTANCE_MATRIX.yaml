@@ -1,0 +1,55 @@
+acceptance_matrix:
+  - id: A1
+    requirement: Operations expose evidence contracts.
+    evidence: tests for operation metadata/contracts
+    status: pending
+
+  - id: A2
+    requirement: MTDA contains procedure evidence index.
+    evidence: audit/procedure_evidence_index.json exists and validates
+    status: pending
+
+  - id: A3
+    requirement: MTDA contains audit block index.
+    evidence: audit/audit_block_index.json exists and validates
+    status: pending
+
+  - id: A4
+    requirement: Audit Report is run-wise first.
+    evidence: audit_report.html sections/order or audit_report.json structure
+    status: pending
+
+  - id: A5
+    requirement: Boundary/max/modulus/failure evidence grouped in one stress-strain block.
+    evidence: audit_block_index contains run_stress_strain_reduction with expected operations
+    status: pending
+
+  - id: A6
+    requirement: Bending evidence remains a separate block.
+    evidence: audit_block_index contains run_bending_evidence
+    status: pending
+
+  - id: A7
+    requirement: Aggregate evidence follows per-run evidence.
+    evidence: audit_report structure and aggregate block present
+    status: pending
+
+  - id: A8
+    requirement: Wizard pages expose actions/repair paths.
+    evidence: page-model tests and UI tests
+    status: pending
+
+  - id: A9
+    requirement: Test Report remains concise/formal.
+    evidence: report tests unchanged and role-boundary test
+    status: pending
+
+  - id: A10
+    requirement: Workbench remains operation-level debug/development surface.
+    evidence: workbench operation trace tests still pass
+    status: pending
+
+  - id: A11
+    requirement: Full suite passes.
+    evidence: pytest output
+    status: pending

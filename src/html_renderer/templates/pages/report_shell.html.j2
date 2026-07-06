@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page.page_title }}</title>
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#fff;color:#1d2a36;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.mtda-report-shell{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr)}
+.mtda-report-shell-banner{box-sizing:border-box;min-height:44px;padding:9px 20px;display:flex;align-items:center;justify-content:space-between;gap:18px;background:#fff;border-bottom:1px solid #d8e1ea}
+.mtda-report-shell-banner a{color:#126292;text-decoration:none;font-weight:700}
+.mtda-report-shell-banner a:hover{text-decoration:underline}
+.mtda-report-shell-left{display:flex;align-items:center;gap:13px;min-width:0}
+.mtda-report-shell-divider{width:1px;height:26px;background:#d8e1ea;display:inline-block;flex:0 0 auto}
+.mtda-report-shell-title{font-size:14px;font-weight:750;white-space:nowrap}
+.mtda-report-shell-subtitle{font-size:13px;color:#748394;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mtda-report-shell-right{display:flex;align-items:center;gap:16px;font-size:12px;color:#748394;white-space:nowrap}
+.mtda-report-shell-links{display:flex;align-items:center;gap:10px}
+.mtda-report-shell-links a{font-size:12px;font-weight:650;color:#185f8f}
+.mtda-report-frame{display:block;width:100%;height:100%;border:0;background:#fff}
+@media(max-width:820px){
+  .mtda-report-shell-banner{align-items:flex-start;flex-direction:column;padding:10px 14px}
+  .mtda-report-shell-right{align-items:flex-start;flex-direction:column;gap:8px}
+}
+@media print{
+  html,body{height:auto;overflow:visible}
+  .mtda-report-shell{display:block;height:auto}
+  .mtda-report-shell-banner{display:none!important}
+  .mtda-report-frame{height:100vh}
+}
+</style>
+</head>
+<body>
+<main class="mtda-report-shell" data-mtda-report-shell="{{ page.report_kind }}">
+<header class="mtda-report-shell-banner">
+<div class="mtda-report-shell-left">
+<a href="{{ page.archive_href }}">&larr; Archive</a>
+<span class="mtda-report-shell-divider" aria-hidden="true"></span>
+<span class="mtda-report-shell-title">{{ page.report_title }}</span>
+<span class="mtda-report-shell-subtitle">&middot; {{ page.dataset_name }}</span>
+</div>
+<div class="mtda-report-shell-right">
+{% if page.right_label -%}
+<span>{{ page.right_label }}</span>
+{% endif -%}
+<nav class="mtda-report-shell-links" aria-label="Report navigation">
+{% for link in page.navigation_links -%}
+<a href="{{ link.href }}">{{ link.label }}</a>
+{% endfor -%}
+</nav>
+</div>
+</header>
+<iframe class="mtda-report-frame" src="{{ page.report_href }}" title="{{ page.report_title }}"></iframe>
+</main>
+</body>
+</html>

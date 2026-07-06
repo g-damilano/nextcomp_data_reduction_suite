@@ -1,0 +1,69 @@
+projection_id: aggregate_stress_strain_mean_variability
+golden_id: golden_aggregate_stress_strain_mean_variability
+version: 0.1.0
+schema_version: plot_projection_recipe.v0_1
+plot_type: aggregate_curve_family
+production_state: production
+surface_profiles:
+  - surface: test_report
+    role: formal aggregate stress-strain mean and variability plot
+    renderer: reporting block Vega-Lite adapter
+  - surface: mtda_archive
+    role: report/vega_specs aggregate plot artifact
+    renderer: Vega-Lite
+data_contract:
+  source_tables:
+    - report/aligned_curves.csv
+    - report/aggregate_statistics.csv
+    - method_outputs/curves/stress_strain_family_bounded.csv
+  required_fields:
+    - analysis_progress
+    - mean
+  optional_fields:
+    - min
+    - max
+    - std
+    - run_id
+    - mean_strain
+    - stress_MPa
+  forbidden_transforms:
+    - stale_boundary_policy
+transform_ids:
+  - aggregate.stress_band_from_run_grid.v1
+semantic_contract:
+  layers:
+    - layer_id: individual_replicates
+      semantic_role: selected boundary-resolved individual replicate curves
+      required: false
+    - layer_id: aggregate_range_band
+      semantic_role: aggregate min/max stress range
+      required: false
+    - layer_id: aggregate_std_band
+      semantic_role: aggregate standard deviation band
+      required: false
+    - layer_id: aggregate_mean_curve
+      semantic_role: aggregate mean stress-strain curve
+      required: true
+    - layer_id: characteristic_markers
+      semantic_role: aggregate characteristic marker points
+      required: false
+quality_contract:
+  requires_data: true
+  requires_axis_labels: true
+  requires_plot_data_freshness: true
+staleness_contract:
+  status_source: spec.usermeta.plot_data_freshness
+  stale_if_boundary_policy_signature_outdated: true
+  stale_if_replicates_exceed_resolved_boundary: true
+artifact_contract:
+  primary_artifacts:
+    - report/vega_specs/aggregate_stress_strain_mean_variability.json
+    - report/test_report.html data-vega-block
+  export_formats:
+    - html
+    - json
+migration_metadata:
+  current_builder: plotting.plots.formal_report.aggregate_stress_strain_vega_lite
+  current_router: reporting.blocks.vega_plot.VegaPlotBlock -> plotting.registry.plot_registry -> plotting.plots.formal_report
+  migration_status: plotting-layer compatibility builder; Vega output preserved
+  parity_reference: tests/reporting/test_report_engine_blocks.py

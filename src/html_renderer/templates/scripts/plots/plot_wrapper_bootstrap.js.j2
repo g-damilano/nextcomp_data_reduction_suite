@@ -1,0 +1,144 @@
+const spec = {{ page.spec_json }};
+const baseSpec = clone(spec);
+let rendered = null;
+let currentSpec = null;
+const state = {visibleLayers:{}};
+const controls = {
+  xMin: document.getElementById("xMin"), xMax: document.getElementById("xMax"),
+  yMin: document.getElementById("yMin"), yMax: document.getElementById("yMax"),
+  xLabel: document.getElementById("xLabel"), yLabel: document.getElementById("yLabel"),
+  lineWidth: document.getElementById("lineWidth"), opacity: document.getElementById("opacity"),
+  pointSize: document.getElementById("pointSize"), bendingMode: document.getElementById("bendingMode"),
+  pointLabels: document.getElementById("pointLabels"), plotTitle: document.getElementById("plotTitle")
+};
+function clone(value){return JSON.parse(JSON.stringify(value));}
+function layerList(source){return Array.isArray(source.layer) ? source.layer : [source];}
+function layerName(layer,index){return layer.name || layer.usermeta?.layer_id || `layer ${index+1}`;}
+function markObject(mark){return typeof mark === "string" ? {type:mark} : {...(mark || {type:"line"})};}
+function markType(layer){return markObject(layer.mark).type || "line";}
+function isBendingLayer(layer){return /bending|threshold|fmax|exceedance/i.test(layerName(layer,0)) || JSON.stringify(layer.encoding || {}).includes("bending_percent");}
+function isTextLayer(layer){return markType(layer) === "text";}
+function initControls(){
+  controls.plotTitle.value = baseSpec.title?.text || baseSpec.title || document.getElementById("pageTitle").textContent;
+  const firstEncoding = firstXYEncoding(baseSpec);
+  controls.xLabel.value = firstEncoding?.x?.title || "";
+  controls.yLabel.value = firstEncoding?.y?.title || "";
+  const container = document.getElementById("layerControls");
+  container.innerHTML = "";
+  layerList(baseSpec).forEach((layer,index) => {
+    const id = `layer_${index}`;
+    const name = layerName(layer,index);
+    state.visibleLayers[name] = true;
+    const row = document.createElement("div");
+    row.className = "check";
+    row.innerHTML = `<input type="checkbox" id="${id}" checked><label for="${id}">${escapeHtml(name)}</label>`;
+    row.querySelector("input").addEventListener("change", event => {state.visibleLayers[name] = event.target.checked; render();});
+    container.appendChild(row);
+  });
+}
+function firstXYEncoding(source){
+  if (source.encoding?.x || source.encoding?.y) return source.encoding;
+  for (const layer of layerList(source)) if (layer.encoding?.x || layer.encoding?.y) return layer.encoding;
+  return {};
+}
+function renderSpec(){
+  const next = clone(baseSpec);
+  const title = controls.plotTitle.value.trim();
+  if (title) next.title = title;
+  next.width = "container";
+  next.height = Number(next.height || 420);
+  next.autosize = {type:"fit-x", contains:"padding"};
+  if (Array.isArray(next.layer)) next.layer = next.layer.filter(layer => layerVisible(layer));
+  applyRecursive(next, layer => {
+    if (!layer.encoding) return;
+    applyAxis(layer.encoding.x, controls.xLabel.value, controls.xMin.value, controls.xMax.value);
+    applyAxis(layer.encoding.y, controls.yLabel.value, controls.yMin.value, controls.yMax.value);
+    if (controls.bendingMode.value === "secondary" && isBendingLayer(layer) && layer.encoding.y) {
+      layer.encoding.y.axis = {...(layer.encoding.y.axis || {}), orient:"right"};
+    }
+    if (controls.bendingMode.value === "normalized" && isBendingLayer(layer) && layer.encoding.y?.field === "bending_percent") {
+      normalizeBendingLayer(layer);
+      layer.encoding.y = {...layer.encoding.y, field:"bending_normalized", title:"Normalized bending"};
+    }
+  });
+  applyStyle(next);
+  return next;
+}
+function layerVisible(layer){
+  const name = layerName(layer,0);
+  if (state.visibleLayers[name] === false) return false;
+  if (controls.bendingMode.value === "hidden" && isBendingLayer(layer)) return false;
+  if (controls.pointLabels.value === "hide" && isTextLayer(layer)) return false;
+  return true;
+}
+function applyAxis(axis, title, minValue, maxValue){
+  if (!axis) return;
+  if (title) axis.title = title;
+  const min = parseNumber(minValue), max = parseNumber(maxValue);
+  if (min !== null && max !== null) {
+    axis.scale = {...(axis.scale || {})};
+    axis.scale.domain = [min, max];
+  }
+}
+function applyStyle(source){
+  const lineScale = Number(controls.lineWidth.value || 1);
+  const opacityScale = Number(controls.opacity.value || 1);
+  const pointScale = Number(controls.pointSize.value || 1);
+  applyRecursive(source, layer => {
+    const mark = markObject(layer.mark);
+    if (["line","rule","area","trail"].includes(mark.type)) mark.strokeWidth = baseNumber(mark.strokeWidth, 2) * lineScale;
+    if (["point","circle","square"].includes(mark.type)) sizePoint(mark, baseNumber(mark.size, 42) * pointScale);
+    if (mark.type !== "rect" && mark.type !== "text") mark.opacity = Math.max(0.01, Math.min(1, baseNumber(mark.opacity, 1) * opacityScale));
+    layer.mark = mark;
+  });
+}
+function sizePoint(mark, pointSize){mark.size = pointSize; mark.filled = mark.filled ?? true;}
+function baseNumber(value, fallback){const number = Number(value); return Number.isFinite(number) ? number : fallback;}
+function normalizeBendingLayer(layer){
+  const values = layer.data?.values;
+  if (!Array.isArray(values)) return;
+  const maxValue = values.reduce((max,row) => Math.max(max, Math.abs(Number(row.bending_percent || 0))), 0) || 1;
+  values.forEach(row => { row.bending_normalized = Number(row.bending_percent || 0) / maxValue; });
+}
+function applyRecursive(node, fn){
+  if (!node || typeof node !== "object") return;
+  if (node.mark || node.encoding) fn(node);
+  for (const key of ["layer","hconcat","vconcat","concat"]) if (Array.isArray(node[key])) node[key].forEach(item => applyRecursive(item, fn));
+}
+async function render(){
+  currentSpec = renderSpec();
+  document.getElementById("pageTitle").textContent = controls.plotTitle.value || "{{ page.title_html }}";
+  document.getElementById("plotStatus").textContent = "";
+  try {
+    rendered = await window.vegaEmbed("#plot", currentSpec, {actions:true, renderer:"canvas"});
+  } catch (error) {
+    document.getElementById("plotStatus").textContent = `Plot render failed: ${error.message || error}`;
+  }
+}
+function reset(){
+  Object.values(document.querySelectorAll("#layerControls input[type=checkbox]")).forEach(input => {input.checked = true;});
+  Object.keys(state.visibleLayers).forEach(key => state.visibleLayers[key] = true);
+  ["xMin","xMax","yMin","yMax"].forEach(key => controls[key].value = "");
+  controls.lineWidth.value = 1; controls.opacity.value = 1; controls.pointSize.value = 1;
+  controls.bendingMode.value = "overlay"; controls.pointLabels.value = "show";
+  initControls(); render();
+}
+function parseNumber(value){if (value === "") return null; const number = Number(value); return Number.isFinite(number) ? number : null;}
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g, char => {
+    if (char === "&") return "&amp;";
+    if (char === "<") return "&lt;";
+    if (char === ">") return "&gt;";
+    if (char === '"') return "&quot;";
+    return "&#39;";
+  });
+}
+function downloadBlob(name, type, content){const blob = new Blob([content], {type}); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = name; link.click(); URL.revokeObjectURL(url);}
+document.getElementById("applyControls").addEventListener("click", render);
+document.getElementById("resetControls").addEventListener("click", reset);
+["xMin","xMax","yMin","yMax","xLabel","yLabel","lineWidth","opacity","pointSize","bendingMode","pointLabels","plotTitle"].forEach(key => controls[key].addEventListener("change", render));
+document.getElementById("downloadSpec").addEventListener("click", () => downloadBlob("{{ page.spec_path_html }}", "application/json", JSON.stringify(currentSpec || renderSpec(), null, 2)));
+document.getElementById("downloadSvg").addEventListener("click", async () => {if (rendered) downloadBlob("{{ page.title_html }}.svg", "image/svg+xml", await rendered.view.toSVG());});
+document.getElementById("downloadPng").addEventListener("click", async () => {if (!rendered) return; const canvas = await rendered.view.toCanvas(); canvas.toBlob(blob => {if (blob) downloadBlob("{{ page.title_html }}.png", "image/png", blob);});});
+initControls();
+render();

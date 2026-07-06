@@ -1,0 +1,1 @@
+{% if page.rows %}<div class="table-wrap field-value-table"><table><tbody>{% for row in page.rows %}<tr><th scope="row">{{ row.label_html }}</th><td>{{ row.value_html }}</td></tr>{% endfor %}</tbody></table></div>{% else %}{{ page.empty_message_html }}{% endif %}

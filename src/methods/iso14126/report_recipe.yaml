@@ -1,0 +1,201 @@
+recipe_id: iso14126_report_v0_2
+method_id: iso14126_2023
+schema_version: report.recipe.v0_2
+title: ISO 14126 Test Report
+selection_set: selected
+outputs:
+  html:
+    path: report/iso14126_report.html
+  json:
+    path: report/iso14126_report.json
+  document_json:
+    path: report/report_document.json
+  manifest:
+    path: report/report_manifest.json
+sections:
+  - id: test_identification
+    title: Test Identification
+    blocks:
+      - id: test_identification_fields
+        type: field_table
+        provider: report_values
+        fields:
+          - {label: Standard Reference, key: standard_reference}
+          - {label: Loading Method, key: loading_method}
+          - {label: Specimen Type, key: specimen_type}
+          - {label: Test ID, key: test_id}
+          - {label: Date of Measurement, key: date_of_measurement}
+          - {label: Operator, key: operator}
+  - id: material_identification
+    title: Material Identification
+    blocks:
+      - id: material_fields
+        type: field_table
+        provider: report_values
+        fields:
+          - {label: Material Name, key: material_name}
+          - {label: Material Type, key: material_type}
+          - {label: Matrix Type, key: matrix_type}
+          - {label: Reinforcement Type, key: reinforcement_type}
+          - {label: Manufacturer, key: manufacturer}
+          - {label: Manufacturer Code, key: manufacturer_code}
+          - {label: Source, key: source}
+          - {label: Form, key: form}
+          - {label: Previous History, key: previous_history}
+  - id: specimen_preparation
+    title: Specimen Preparation
+    blocks:
+      - id: preparation_fields
+        type: field_table
+        provider: report_values
+        fields:
+          - {label: Cutting Direction, key: cutting_direction}
+          - {label: Fibre Orientation, key: fibre_orientation}
+          - {label: Layup, key: layup}
+          - {label: Preparation Method, key: preparation_method}
+          - {label: End Tabs, key: end_tabs}
+          - {label: Surface Preparation, key: surface_preparation}
+          - {label: Notes, key: specimen_preparation_notes}
+  - id: loading_fixture
+    title: Loading Fixture
+    blocks:
+      - id: fixture_fields
+        type: field_table
+        provider: report_values
+        fields:
+          - {label: Fixture Type, key: fixture_type}
+          - {label: Standard Reference, key: fixture_standard_reference}
+          - {label: Manufacturer/Design, key: fixture_manufacturer_design}
+          - {label: Alignment Procedure, key: alignment_procedure}
+          - {label: Notes, key: fixture_notes}
+  - id: specimen_geometry
+    title: Specimen Geometry
+    blocks:
+      - id: specimen_geometry_table
+        type: table
+        provider: individual_results
+        columns: [run_id, specimen_name, sample_id, width_mm, thickness_mm, area_mm2, distance_between_end_tabs_mm, tab_length_mm, tab_thickness_mm]
+  - id: test_conditions
+    title: Test Conditions
+    blocks:
+      - id: test_conditions_fields
+        type: field_table
+        provider: report_values
+        fields:
+          - {label: Conditioning Standard, key: conditioning_standard}
+          - {label: Temperature, key: temperature}
+          - {label: Humidity, key: humidity}
+          - {label: Conditioning Time, key: conditioning_time}
+          - {label: Test Environment, key: test_environment}
+          - {label: Speed of Testing, key: speed_of_testing}
+          - {label: Machine ID, key: machine_id}
+  - id: measurement_method
+    title: Measurement Method
+    blocks:
+      - id: measurement_fields
+        type: field_table
+        provider: report_values
+        fields:
+          - {label: Strain Measurement Method, key: strain_measurement_method}
+          - {label: Strain-measurement Gauge Length, key: gauge_length}
+          - {label: Measurement Location, key: measurement_location}
+          - {label: Acquisition System, key: acquisition_system}
+          - {label: Sampling Rate, key: sampling_rate}
+          - {label: Notes, key: measurement_notes}
+  - id: individual_test_results
+    title: Individual Test Results
+    blocks:
+      - id: individual_results_table
+        type: table
+        provider: individual_results
+        columns:
+          - run_id
+          - specimen_name
+          - sample_id
+          - max_load_N
+          - compressive_strength_MPa
+          - compressive_modulus_MPa
+          - failure_strain_percent
+          - failure_mode
+          - acceptance_state
+          - included_in_selection
+  - id: aggregated_results
+    title: Aggregated Results
+    blocks:
+      - id: aggregate_statistics_table
+        type: table
+        provider: aggregate_statistics
+      - id: aggregate_stress_strain_plot
+        type: vega_plot
+        title: Stress-strain aggregate
+        provider: aligned_curves
+        spec: aggregate_stress_strain_mean_variability
+      - id: characteristic_points_table
+        type: table
+        provider: characteristic_points
+      - id: feature_lines_table
+        type: table
+        provider: feature_lines
+  - id: failure_analysis
+    title: Failure Analysis
+    blocks:
+      - id: failure_analysis_summary
+        type: table
+        provider: failure_analysis
+      - id: failure_observation_table
+        type: table
+        title: Specimen Failure Observations
+        provider: failure_analysis_observations
+      - id: bending_distribution_plot
+        type: vega_plot
+        title: Bending distribution over assessed domain
+        provider: failure_analysis_bending_distribution
+        spec: failure_analysis_bending_distribution
+      - id: invalid_specimen_summary
+        type: table
+        provider: failure_analysis_invalid_specimens
+        optional: true
+  - id: deviations_from_standard
+    title: Deviations from Standard
+    blocks:
+      - id: deviations_table
+        type: table
+        provider: deviations_from_standard
+      - id: missing_report_fields
+        type: missing_fields_table
+        provider: missing_report_fields
+  - id: remarks
+    title: Remarks
+    blocks:
+      - id: remarks_text
+        type: text
+        provider: report_values
+        key: remarks
+curve_aggregation:
+  selection_set: selected
+  x_axis: mean_strain
+  y_axis: stress_MPa
+  alignment_policy: experiment_progress
+  x_grid_points: 500
+  include_post_failure: false
+  interpolation: linear
+  alignment:
+    domain: experiment_progress
+    source_boundaries: method_resolve.experiment_boundaries
+    start: analysis_interval.start_index
+    end: analysis_interval.end_index
+    include_endpoint: true
+    resample_points: 500
+  statistics:
+    - mean
+    - std
+    - stderr
+    - min
+    - max
+    - observations
+  output_tables:
+    - aligned_curves.csv
+    - aggregate_curve_statistics.csv
+  output_views:
+    - individual_replicates
+    - mean_curve_with_variability

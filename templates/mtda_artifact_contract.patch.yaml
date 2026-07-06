@@ -1,0 +1,29 @@
+# MTDA Artifact Contract Patch
+add_or_update_artifacts:
+  audit/procedure_evidence_index.json:
+    purpose: Index procedure steps, operation evidence, audit block memberships, report roles, workbench refs.
+    checksum: true
+    provenance: true
+
+  audit/audit_block_index.json:
+    purpose: Index grouped audit blocks and operation evidence they consume.
+    checksum: true
+    provenance: true
+
+  audit/audit_report.html:
+    purpose: Run-wise and aggregate evidence surface.
+    update_required: true
+
+  surface_manifest.json:
+    purpose: Include procedure evidence index and audit block index in surface handoff.
+    update_required: true
+
+preserve_artifacts:
+  - report/test_report.html
+  - report/test_report.json
+  - workbench/index.html
+  - workbench/operation_trace.json
+  - audit/operation_log.json
+  - acceptance/final_report_runs.csv
+  - provenance.json
+  - checksums.json

@@ -1,0 +1,1 @@
+{% from "macros/tables.html.j2" import report_table %}{{ page.optional_table_prefix_html }}{% if page.table %}{{ report_table(page.table) }}{% else %}{{ page.empty_message_html }}{% endif %}

@@ -1,0 +1,73 @@
+projection_id: mtda_run_compact_stress_strain_evidence
+golden_id: golden_mtda_run_compact_stress_strain_evidence
+version: 0.1.0
+schema_version: plot_projection_recipe.v0_1
+plot_type: run_stress_strain_reduction_evidence
+production_state: production
+surface_profiles:
+  - surface: mtda_archive
+    role: per-run compact plot package
+    renderer: compact-vegalite-workbench
+data_contract:
+  source_tables:
+    - processed/runs/{run_label}_stress_strain.csv
+    - processed/runs/{run_label}_stress_strain_experiment_bound.csv
+    - processed/runs/{run_label}_bending.csv
+  required_fields:
+    - run_id
+    - point_index
+    - stress_MPa
+    - mean_strain
+  optional_fields:
+    - front_strain_abs
+    - rear_strain_abs
+    - load_N
+  forbidden_transforms:
+    - plot_side_boundary_reselection
+transform_ids:
+  - run.front_rear_strain_envelope.v1
+  - run.front_rear_strain_traces.v1
+  - run.bounded_average_curve.v1
+  - run.empty_chord_line.v1
+  - run.empty_chord_points.v1
+  - run.analysis_markers.v1
+semantic_contract:
+  layers:
+    - layer_id: bounded_analysis_curve
+      semantic_role: compact package bounded curve template layer
+      required: true
+    - layer_id: front_strain_trace
+      semantic_role: compact package front gauge strain trace
+      required: false
+    - layer_id: rear_strain_trace
+      semantic_role: compact package rear gauge strain trace
+      required: false
+    - layer_id: strain_agreement_envelope
+      semantic_role: compact package front/rear strain agreement envelope
+      required: false
+    - layer_id: analysis_markers
+      semantic_role: compact package run markers
+      required: false
+quality_contract:
+  requires_compact_package: true
+  requires_plot_data_views: true
+  requires_source_refs: true
+staleness_contract:
+  status_source: compact package plot_data_views source checksums
+  stale_if_source_checksum_mismatch: true
+artifact_contract:
+  primary_artifacts:
+    - processed/runs/{run_label}_plot.plot_package.json
+    - processed/runs/{run_label}_plot.template.json
+    - processed/runs/{run_label}_plot.html
+  export_formats:
+    - html
+    - json
+    - csv
+    - svg
+    - png
+migration_metadata:
+  current_builder: archives.mtda.writer._compact_plot_package_files
+  current_router: archives.mtda.writer._aligned_plot_files
+  migration_status: recipe metadata embedded in compact package and surfaced in MTDA surface manifest; rendering route preserved
+  parity_reference: tests/archives/test_mtda_plot_data_views.py

@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExperimentBoundaryRecord",
+  "type": "object",
+  "required": [
+    "run_id",
+    "start",
+    "end",
+    "analysis_interval",
+    "events",
+    "warnings"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "start": {
+      "$ref": "#/$defs/boundary_point"
+    },
+    "end": {
+      "$ref": "#/$defs/boundary_point"
+    },
+    "analysis_interval": {
+      "type": "object",
+      "required": [
+        "start_index",
+        "end_index",
+        "include_endpoint"
+      ],
+      "properties": {
+        "start_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "include_endpoint": {
+          "type": "boolean"
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/boundary_event"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_series_refs": {
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "boundary_point": {
+      "type": "object",
+      "required": [
+        "index",
+        "policy",
+        "reason",
+        "confidence"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "domain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "domain_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "policy": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "boundary_event": {
+      "type": "object",
+      "required": [
+        "event_id",
+        "index"
+      ],
+      "properties": {
+        "event_id": {
+          "type": "string"
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "diagnostic_only": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
