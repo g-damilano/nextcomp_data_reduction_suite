@@ -46,7 +46,7 @@ Python or Node.js.
 3. Run:
 
 ```text
-dist/NextCOMP_data_reduction_suite/NextCOMP_data_reduction_suite.exe
+NextCOMP_data_reduction_suite/NextCOMP_data_reduction_suite.exe
 ```
 
 The distribution folder includes the executable together with `LICENSE`,
