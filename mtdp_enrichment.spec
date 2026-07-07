@@ -11,6 +11,7 @@ Build from the repository root after the React frontend has been compiled:
 """
 
 import sys
+from fnmatch import fnmatch
 from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
@@ -187,6 +188,119 @@ qt_binding_excludes = [
     "PySide2",
 ]
 
+# The desktop shell imports only QtCore, QtGui, QtWidgets, QtWebChannel,
+# QtWebEngineCore, and QtWebEngineWidgets. PyInstaller's PySide6 hooks can
+# otherwise collect broad optional Qt families that are not used by the app.
+unused_pyside6_modules = [
+    "PySide6.Qt3DAnimation",
+    "PySide6.Qt3DCore",
+    "PySide6.Qt3DExtras",
+    "PySide6.Qt3DInput",
+    "PySide6.Qt3DLogic",
+    "PySide6.Qt3DRender",
+    "PySide6.QtBluetooth",
+    "PySide6.QtCharts",
+    "PySide6.QtDataVisualization",
+    "PySide6.QtDesigner",
+    "PySide6.QtGraphs",
+    "PySide6.QtGraphsWidgets",
+    "PySide6.QtHelp",
+    "PySide6.QtLocation",
+    "PySide6.QtMultimedia",
+    "PySide6.QtMultimediaWidgets",
+    "PySide6.QtNetworkAuth",
+    "PySide6.QtNfc",
+    "PySide6.QtPdf",
+    "PySide6.QtPdfWidgets",
+    "PySide6.QtQuick3D",
+    "PySide6.QtQuickControls2",
+    "PySide6.QtQuickWidgets",
+    "PySide6.QtRemoteObjects",
+    "PySide6.QtScxml",
+    "PySide6.QtSensors",
+    "PySide6.QtSerialBus",
+    "PySide6.QtSerialPort",
+    "PySide6.QtSpatialAudio",
+    "PySide6.QtSql",
+    "PySide6.QtStateMachine",
+    "PySide6.QtSvg",
+    "PySide6.QtSvgWidgets",
+    "PySide6.QtTest",
+    "PySide6.QtTextToSpeech",
+    "PySide6.QtUiTools",
+    "PySide6.QtWebSockets",
+    "PySide6.QtXml",
+]
+
+qt_binding_excludes += unused_pyside6_modules
+
+excluded_bundle_patterns = [
+    # QtWebEngine debug resource packs are useful for development diagnostics
+    # but are not needed in the distributed desktop app.
+    "PySide6/resources/*debug*.pak",
+    "PySide6/resources/qtwebengine_devtools_resources.pak",
+    # Optional Qt families not used by the React/WebEngine shell.
+    "PySide6/Qt63D*.dll",
+    "PySide6/Qt6Charts*.dll",
+    "PySide6/Qt6DataVisualization*.dll",
+    "PySide6/Qt6Graphs*.dll",
+    "PySide6/Qt6Labs*.dll",
+    "PySide6/Qt6Location*.dll",
+    "PySide6/Qt6Multimedia*.dll",
+    "PySide6/Qt6Pdf*.dll",
+    "PySide6/Qt6Quick3D*.dll",
+    "PySide6/Qt6QuickControls2*.dll",
+    "PySide6/Qt6QuickDialogs2*.dll",
+    "PySide6/Qt6RemoteObjects*.dll",
+    "PySide6/Qt6Scxml*.dll",
+    "PySide6/Qt6Sensors*.dll",
+    "PySide6/Qt6Serial*.dll",
+    "PySide6/Qt6SpatialAudio*.dll",
+    "PySide6/Qt6StateMachine*.dll",
+    "PySide6/Qt6Svg*.dll",
+    "PySide6/Qt6TextToSpeech*.dll",
+    "PySide6/Qt6VirtualKeyboard*.dll",
+    "PySide6/Qt6WebSockets*.dll",
+    "PySide6/Qt6Xml*.dll",
+    "PySide6/Qt3D*.pyd",
+    "PySide6/QtCharts*.pyd",
+    "PySide6/QtDataVisualization*.pyd",
+    "PySide6/QtGraphs*.pyd",
+    "PySide6/QtMultimedia*.pyd",
+    "PySide6/QtPdf*.pyd",
+    "PySide6/QtQuick3D*.pyd",
+    "PySide6/QtQuickControls2*.pyd",
+    "PySide6/QtQuickWidgets*.pyd",
+    "PySide6/QtSvg*.pyd",
+    "PySide6/qml/Qt3D*",
+    "PySide6/qml/QtCharts*",
+    "PySide6/qml/QtDataVisualization*",
+    "PySide6/qml/QtGraphs*",
+    "PySide6/qml/QtMultimedia*",
+    "PySide6/qml/QtQuick3D*",
+    "PySide6/qml/QtQuick/Controls*",
+    "PySide6/qml/QtQuick/Dialogs*",
+    "PySide6/qml/QtQuick/VirtualKeyboard*",
+    "PySide6/plugins/multimedia/*",
+    "PySide6/plugins/position/*",
+    "PySide6/plugins/sensors/*",
+    "PySide6/plugins/sqldrivers/*",
+    "PySide6/plugins/texttospeech/*",
+    "PySide6/plugins/platforminputcontexts/qtvirtualkeyboardplugin.dll",
+    "PySide6/plugins/qmltooling/qmldbg_quick3dprofiler.dll",
+    "mtdp_enrichment/assets/icons/nextcomp_icon_source.png",
+]
+
+
+def filter_toc(toc, patterns):
+    filtered = []
+    for entry in toc:
+        name = entry[0].replace("\\", "/")
+        if any(fnmatch(name, pattern) for pattern in patterns):
+            continue
+        filtered.append(entry)
+    return filtered
+
 a = Analysis(
     ["src/mtdp_enrichment/react_shell_app.py"],
     pathex=["src"],
@@ -202,6 +316,8 @@ a = Analysis(
     cipher=block_cipher,
     noarchive=False,
 )
+a.binaries = filter_toc(a.binaries, excluded_bundle_patterns)
+a.datas = filter_toc(a.datas, excluded_bundle_patterns)
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,

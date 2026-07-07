@@ -26,7 +26,6 @@ exports/
 .vscode/
 artifacts/
 old/
-*.zip
 *.pyc
 datasets/Unreduced_Data/
 prototyping/LB25G0.8x150HD8x1rpm_derivative_dashboards_patched/
